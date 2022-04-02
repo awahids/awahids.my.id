@@ -545,6 +545,10 @@ img {
   width: 79%;
 }
 
+.skills__ts {
+  width: 59%;
+}
+
 .skills__ci {
   width: 55%;
 }
