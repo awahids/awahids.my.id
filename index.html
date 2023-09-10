@@ -2,9 +2,9 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport"
-    content="width=device-width, initial-scale=1.0" />
+    content="width=device-width, initial-scale=1.0">
 
   <meta property="og:title"
     content="A Wahid Safhadi" />
@@ -53,6 +53,10 @@
   <!--==================== SWIPER CSS ====================-->
   <link rel="stylesheet"
     href="assets/css/swiper-bundle.min.css" />
+
+  <!-- =======================animate.css================== -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
   <!--==================== CSS ====================-->
   <link rel="stylesheet"
@@ -131,7 +135,7 @@
       id="home">
       <div class="home__container container grid">
         <div class="home__content grid">
-          <div class="home__social">
+          <div class="home__social animate__animated animate__slideInUp">
             <a href="https://www.linkedin.com/in/awahids/"
               target="_blank"
               class="home__social-icon">
@@ -165,16 +169,16 @@
                   165.547 130.807 187.559 100.226 186.353C69.6454 185.297 41.0228 161.023 21.7403
                   129.362C2.45775 97.8511 -7.48481 59.1033 6.67581 34.5279C20.9871 10.1032 59.7028
                   -0.149132 97.9666 0.00163737C136.23 0.303176 174.193 10.857 190.312 36.4879Z" />
-                <image class="home__blob-img"
+                <image class="home__blob-img animate__animated animate__fadeInUp "
                   x="12"
                   y="18"
                   xlink:href="assets/img/aw.png" />
               </g>
             </svg>
           </div>
-          <div class="home__data">
-            <h1 class="home__title">Hi, I'am Wahid</h1>
-            <h3 class="home__subtitle">Backend Developer</h3>
+          <div class="home__data ">
+            <h1 class="home__title animate__animated animate__bounce">Hi, I'am Wahid</h1>
+            <h3 class="home__subtitle animate__animated animate__bounceInLeft">Backend Developer</h3>
             <p class="home__description">
               I have just over a year of experience as a backend developer and specialize in using Node.js, Typescript,
               and Javascript. Please don't hesitate to contact me for further information.
@@ -268,7 +272,7 @@
               <div class="skills_data">
                 <div class="skills__titles">
                   <h3 class="skills__name">Node JS</h3>
-                  <span class="skills__number">70%</span>
+                  <span class="skills__number__node">87%</span>
                 </div>
                 <div class="skills__bar">
                   <span class="skills__percentage skills__node"></span>
@@ -298,20 +302,20 @@
               <div class="skills_data">
                 <div class="skills__titles">
                   <h3 class="skills__name">Laravel</h3>
-                  <span class="skills__number">55%</span>
+                  <span class="skills__number__laravel">65%</span>
                 </div>
                 <div class="skills__bar">
-                  <span class="skills__percentage skills__ci"></span>
+                  <span class="skills__percentage skills__laravel"></span>
                 </div>
               </div>
 
               <div class="skills_data">
                 <div class="skills__titles">
-                  <h3 class="skills__name">PHP</h3>
-                  <span class="skills__number">50%</span>
+                  <h3 class="skills__name">Nestjs</h3>
+                  <span class="skills__number__nestjs">80%</span>
                 </div>
                 <div class="skills__bar">
-                  <span class="skills__percentage skills__php"></span>
+                  <span class="skills__percentage skills__nestjs"></span>
                 </div>
               </div>
             </div>
@@ -749,7 +753,7 @@
     </section>
 
     <!--==================== Certificate ====================-->
-    <section class="portfolio section"
+    <section class="certificate section"
       id="certificate">
       <h2 class="section__title">Certificate</h2>
       <span class="section__subtitle"></span>
@@ -953,6 +957,93 @@
       //eruda.show();
       //eruda.add(erudaDom);
     </script>
+
+  <!-- <script>
+    function animatePercentage(finalPercentage) {
+      const percentageElement = document.querySelectorAll('.skills__number');
+
+      let currentPercentage = 0;
+      const interval = 100;
+
+      const updatePercentage = () => {
+        if (currentPercentage >= finalPercentage) {
+          clearInterval(percentageInterval);
+          return;
+        }
+
+        currentPercentage = Math.min(
+          currentPercentage + Math.floor(Math.random() * 15),
+          finalPercentage
+        );
+
+        percentageElement.textContent = `${currentPercentage}%`;
+      };
+
+      const percentageInterval = setInterval(updatePercentage, interval);
+    }
+
+    window.addEventListener('load', function () {
+      const skillsNode = document.querySelector('.skills__nestjs', '.skills__node');
+      skillsNode.classList.add('loaded');
+
+      animatePercentage(90);
+    });
+  </script> -->
+
+  <script>
+    function animatePercentage(initialPercentage, finalPercentage, elementClass) {
+      const percentageElement = document.querySelector(`.${elementClass}`);
+
+      let currentPercentage = initialPercentage;
+      const interval = 100;
+
+      const updatePercentage = () => {
+        if (currentPercentage >= finalPercentage) {
+          clearInterval(percentageInterval);
+          return;
+        }
+
+        currentPercentage = Math.min(
+          currentPercentage + Math.floor(Math.random() * 15),
+          finalPercentage
+        );
+
+        percentageElement.textContent = `${currentPercentage}%`;
+      };
+
+      const percentageInterval = setInterval(updatePercentage, interval);
+    }
+
+    window.addEventListener('load', function () {
+      const skillsNodes = document.querySelectorAll('.skills__nestjs, .skills__node, .skills__laravel, .skills__ts, .skills__express');
+      skillsNodes.forEach(node => {
+        node.classList.add('loaded');
+      });
+
+      animatePercentage(0, 80, 'skills__number__nestjs');
+      animatePercentage(0, 65, 'skills__number__laravel');
+      animatePercentage(0, 87, 'skills__number__node');
+    });
+  </script>
+
+  <script>
+    // JavaScript untuk mengaktifkan animasi saat elemen about masuk dalam tampilan
+    window.addEventListener('scroll', function () {
+      const aboutSection = document.querySelectorAll('.about, .skills, .qualification, .portfolio, .certificate');
+      const windowHeight = window.innerHeight;
+
+      aboutSection.forEach(section => {
+        const sectionTop = section.getBoundingClientRect().top;
+        if (sectionTop < windowHeight) {
+          section.classList.add('animate__animated', 'animate__fadeInUp');
+        } else {
+          section.classList.remove('animate__animated', 'animate__fadeOutUp');
+        }
+      });
+    });
+
+  </script>
+
   <!-- Scripts -->
 </body>
 
