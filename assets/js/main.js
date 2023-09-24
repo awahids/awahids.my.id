@@ -196,3 +196,19 @@ themeButton.addEventListener('click', () => {
   localStorage.setItem('selected-theme', getCurrentTheme())
   localStorage.setItem('selected-icon', getCurrentIcon())
 })
+
+// encoding name of folder
+function encodeFolderName(folderName) {
+  return encodeURIComponent(folderName);
+}
+
+// When the DOM is fully loaded
+window.addEventListener('DOMContentLoaded', function () {
+  var folderName = "assets/cv";
+  var encodedFolderName = encodeFolderName(folderName);
+
+  var linkElement = document.querySelector('.my_cv');
+
+  var url = "https://awahids.my.id/" + encodedFolderName + "/myCV.pdf";
+  linkElement.setAttribute('href', url);
+});
