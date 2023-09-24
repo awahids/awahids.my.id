@@ -944,8 +944,8 @@
     <i class="uil uil-arrow-up scrollup__icon"></i>
   </a>
 
-  <script src="eruda-dom/eruda"></script>
-  <script src="eruda-dom/eruda-dom.js"></script>
+  <!-- <script src="eruda-dom/eruda"></script>
+  <script src="eruda-dom/eruda-dom.js"></script> -->
 
   <!--==================== SWIPER JS ====================-->
   <script src="assets/js/swiper-bundle.min.js"></script>
@@ -953,44 +953,6 @@
   <!--==================== MAIN JS ====================-->
   <script src="assets/js/main.js"></script>
   <!-- Scripts -->
-  <script type="text/javascript"
-    charset="utf-8">
-      //eruda.init();
-      //eruda.show();
-      //eruda.add(erudaDom);
-    </script>
-
-  <!-- <script>
-    function animatePercentage(finalPercentage) {
-      const percentageElement = document.querySelectorAll('.skills__number');
-
-      let currentPercentage = 0;
-      const interval = 100;
-
-      const updatePercentage = () => {
-        if (currentPercentage >= finalPercentage) {
-          clearInterval(percentageInterval);
-          return;
-        }
-
-        currentPercentage = Math.min(
-          currentPercentage + Math.floor(Math.random() * 15),
-          finalPercentage
-        );
-
-        percentageElement.textContent = `${currentPercentage}%`;
-      };
-
-      const percentageInterval = setInterval(updatePercentage, interval);
-    }
-
-    window.addEventListener('load', function () {
-      const skillsNode = document.querySelector('.skills__nestjs', '.skills__node');
-      skillsNode.classList.add('loaded');
-
-      animatePercentage(90);
-    });
-  </script> -->
 
   <script>
     function animatePercentage(initialPercentage, finalPercentage, elementClass) {
@@ -1029,7 +991,6 @@
   </script>
 
   <script>
-    // JavaScript untuk mengaktifkan animasi saat elemen about masuk dalam tampilan
     window.addEventListener('scroll', function () {
       const aboutSection = document.querySelectorAll('.about, .skills, .qualification, .portfolio, .certificate');
       const windowHeight = window.innerHeight;
