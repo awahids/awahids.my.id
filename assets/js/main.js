@@ -209,6 +209,6 @@ window.addEventListener('DOMContentLoaded', function () {
 
   var linkElement = document.querySelector('.my_cv');
 
-  var url = "https://awahids.my.id/" + encodedFolderName + "/myCV.pdf";
+  var url = "https://awahids.my.id/" + encodedFolderName + "/aw-cv.pdf";
   linkElement.setAttribute('href', url);
 });
