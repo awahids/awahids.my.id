@@ -1,5 +1,5 @@
 /*==================== GOOGLE FONTS ====================*/
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
 /*==================== VARIABLES CSS ====================*/
 :root {
@@ -25,7 +25,7 @@
   --scroll-thumb-color: hsl(var(--hue-color), 12%, 80%);
 
   /*========== Font and typography ==========*/
-  --body-font: "Poppins", sans-serif;
+  --body-font: 'Poppins', sans-serif;
 
   /* .5rem = 8px, 1rem = 16px, 1.5rem = 24px ... */
   --big-font-size: 2rem;
@@ -377,12 +377,12 @@ img {
 }
 
 .button--white {
-  background-color: #FFF;
+  background-color: #fff;
   color: var(--first-color);
 }
 
 .button--white:hover {
-  background-color: #FFF;
+  background-color: #fff;
 }
 
 .button--flex {
@@ -745,7 +745,7 @@ img {
 }
 
 .services__button:hover .button__icon {
-  transform: translateX(.25rem)
+  transform: translateX(0.25rem);
 }
 
 .services__modal {
@@ -762,14 +762,14 @@ img {
   z-index: var(--z-modal);
   opacity: 0;
   visibility: hidden;
-  transition: .3s;
+  transition: 0.3s;
 }
 
 .services__modal-content {
   position: relative;
   background-color: var(--container-color);
   padding: 1.5rem;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
 }
 
 .services__modal-services {
@@ -816,7 +816,7 @@ img {
 }
 
 .portfolio__img {
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   justify-content: center;
 }
 
@@ -830,7 +830,7 @@ img {
 }
 
 .portfolio__button:hover .button__icon {
-  transform: translateX(.25rem);
+  transform: translateX(0.25rem);
 }
 
 .swiper-button-prev::after,
@@ -844,14 +844,14 @@ img {
 }
 
 .swiper-button-prev {
-  left: -.5rem;
+  left: -0.5rem;
 }
 
 .swiper-button-next {
-  right: -.5rem;
+  right: -0.5rem;
 }
 
-.swiper-container-horizontal>.swiper-pagination-bullets {
+.swiper-container-horizontal > .swiper-pagination-bullets {
   bottom: -2.5rem;
 }
 
@@ -864,7 +864,6 @@ img {
 .swiper-pagination-bullet {
   outline: none;
 }
-
 
 /*==================== PROJECT IN MIND ====================*/
 .project {
@@ -887,7 +886,7 @@ img {
 
 .project__title,
 .project__description {
-  color: #FFF;
+  color: #fff;
 }
 
 .project__img {
@@ -963,8 +962,8 @@ img {
 
 .contact__content {
   background-color: var(--input-color);
-  border-radius: .5rem;
-  padding: .75rem 1rem .25rem;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem 0.25rem;
 }
 
 .contact__label {
@@ -980,7 +979,7 @@ img {
   font-size: var(--normal-font-size);
   border: none;
   outline: none;
-  padding: .25rem .5rem .5rem 0;
+  padding: 0.25rem 0.5rem 0.5rem 0;
 }
 
 /*==================== FOOTER ====================*/
@@ -1022,7 +1021,7 @@ img {
 }
 
 .footer__social:hover {
-  color: var(--first-color-lighter)
+  color: var(--first-color-lighter);
 }
 
 .footer__copy {
@@ -1036,7 +1035,7 @@ img {
 .footer__subtitle,
 .footer__link,
 .footer__social {
-  color: #FFF;
+  color: #fff;
 }
 
 /*========== SCROLL UP ==========*/
@@ -1045,11 +1044,11 @@ img {
   right: 1rem;
   bottom: -20%;
   background-color: var(--first-color);
-  opacity: .8;
-  padding: 0 .3rem;
-  border-radius: .4rem;
+  opacity: 0.8;
+  padding: 0 0.3rem;
+  border-radius: 0.4rem;
   z-index: var(--z-tooltip);
-  transition: .4s;
+  transition: 0.4s;
 }
 
 .scrollup:hover {
@@ -1058,7 +1057,7 @@ img {
 
 .scrollup__icon {
   font-size: 1.5rem;
-  color: #FFF;
+  color: #fff;
 }
 
 /* Show scroll */
@@ -1068,14 +1067,14 @@ img {
 
 /*========== SCROLL BAR ==========*/
 ::-webkit-scrollbar {
-  width: .60rem;
+  width: 0.6rem;
   background-color: var(--scroll-bar-color);
-  border-radius: .5rem;
+  border-radius: 0.5rem;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: var(--scroll-thumb-color);
-  border-radius: .5rem;
+  border-radius: 0.5rem;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -1091,7 +1090,7 @@ img {
   }
 
   .nav__menu {
-    padding: 2rem .25rem 4rem;
+    padding: 2rem 0.25rem 4rem;
   }
 
   .nav__list {
@@ -1099,7 +1098,7 @@ img {
   }
 
   .home__content {
-    grid-template-columns: .25fr 3fr;
+    grid-template-columns: 0.25fr 3fr;
   }
 
   .home__blob {
@@ -1111,7 +1110,7 @@ img {
   }
 
   .qualification__data {
-    gap: .5rem;
+    gap: 0.5rem;
   }
 
   .services__container {
@@ -1124,7 +1123,7 @@ img {
   }
 
   .services__modal {
-    padding: 0 .5rem;
+    padding: 0 0.5rem;
   }
 
   .project__img {
@@ -1146,7 +1145,6 @@ img {
   .testimonial__description {
     text-align: center;
   }
-
 }
 
 /* For medium devices */
@@ -1175,7 +1173,7 @@ img {
 
   .qualification__sections {
     display: grid;
-    grid-template-columns: .6fr;
+    grid-template-columns: 0.6fr;
     justify-content: center;
   }
 }
@@ -1283,7 +1281,7 @@ img {
   }
 
   .qualification__sections {
-    grid-template-columns: .5fr;
+    grid-template-columns: 0.5fr;
   }
 
   .services__container {
@@ -1329,7 +1327,7 @@ img {
   }
 
   .project__data {
-    padding-top: .8rem;
+    padding-top: 0.8rem;
   }
 
   .footer__container {
@@ -1352,12 +1350,10 @@ img {
   .footer__copy {
     margin-top: 4.5rem;
   }
-
 }
 
 /* For large devices */
 @media screen and (min-width: 1024px) {
-
   .header,
   .main,
   .footer__container {
@@ -1392,7 +1388,7 @@ img {
     right: -3.5rem;
   }
 
-  .swiper-container-horizontal>.swiper-pagination-bullets {
+  .swiper-container-horizontal > .swiper-pagination-bullets {
     bottom: -4.5rem;
   }
 
@@ -1402,5 +1398,191 @@ img {
 
   .contact__inputs {
     grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ===== IMPROVED PORTFOLIO CARD ===== */
+.portfolio__content,
+.certificate .portfolio__content {
+  background: var(--container-color);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 24px rgba(37, 99, 235, 0.1), 0 1.5px 8px rgba(0, 0, 0, 0.04);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  transition: box-shadow 0.28s cubic-bezier(0.39, 0.575, 0.565, 1),
+    transform 0.28s cubic-bezier(0.39, 0.575, 0.565, 1);
+  border: 1.5px solid #e0e7ef;
+  position: relative;
+  overflow: hidden;
+}
+.portfolio__content:hover,
+.certificate .portfolio__content:hover {
+  box-shadow: 0 12px 36px rgba(37, 99, 235, 0.16), 0 4px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px) scale(1.025);
+  border-color: #60a5fa;
+  z-index: 2;
+}
+/* Ukuran gambar seragam di card portfolio */
+.portfolio__img,
+.certificate .portfolio__img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  height: 180px;
+  max-height: 180px;
+  min-height: 120px;
+  object-fit: cover;
+  border-radius: 1.1rem;
+  box-shadow: 0 2px 12px rgba(37, 99, 235, 0.07);
+  margin-bottom: 0;
+  transition: box-shadow 0.2s, transform 0.2s;
+  display: block;
+}
+
+/* Overlay front layer untuk detail portfolio saat hover */
+.portfolio__content {
+  position: relative;
+  overflow: hidden;
+}
+.portfolio__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  background: rgba(37, 99, 235, 0.1);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.39, 0.575, 0.565, 1);
+  z-index: 2;
+  padding: 1.2rem 1rem 1.2rem 1rem;
+}
+.portfolio__content:hover .portfolio__overlay {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Detail dan button hanya tampil saat hover (desktop) */
+.portfolio__data,
+.portfolio__description,
+.portfolio_button.button {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(16px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.portfolio__content:hover .portfolio__data,
+.portfolio__content:hover .portfolio__description,
+.portfolio__content:hover .portfolio_button.button {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+/* Sembunyikan detail asli di luar overlay pada desktop */
+@media (min-width: 601px) {
+  .portfolio__data,
+  .portfolio__description,
+  .portfolio_button.button {
+    display: none !important;
+  }
+}
+
+/* Di mobile, overlay tidak tampil, detail tetap di bawah gambar */
+@media (max-width: 600px) {
+  .portfolio__overlay {
+    display: none !important;
+  }
+  .portfolio__data,
+  .portfolio__description,
+  .portfolio_button.button {
+    display: block !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
+}
+
+/* Jarak antara gambar dan detail */
+.portfolio__content .portfolio__img + .portfolio__data {
+  margin-top: 1.1rem;
+}
+.portfolio__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--first-color);
+  letter-spacing: 0.01em;
+}
+.portfolio__description {
+  color: var(--text-color);
+  font-size: 1rem;
+  margin-bottom: 1.1rem;
+  min-height: 48px;
+}
+.portfolio_button.button {
+  font-size: 1rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 0.7rem;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+}
+
+/* Ukuran card portfolio responsif */
+.portfolio__container .portfolio__content,
+.certificate .portfolio__content {
+  max-width: 340px;
+  min-width: 260px;
+  margin: 0 auto;
+}
+@media (max-width: 600px) {
+  .portfolio__container .portfolio__content,
+  .certificate .portfolio__content {
+    max-width: 98vw;
+    min-width: 0;
+    padding: 1.2rem 0.7rem 1rem 0.7rem;
+  }
+}
+
+/* Button next/prev swiper */
+.swiper-button-next,
+.swiper-button-prev {
+  width: 36px;
+  height: 36px;
+  background: var(--container-color);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--first-color);
+  font-size: 1.3rem;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: var(--first-color-lighter);
+  color: var(--first-color-alt);
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.13);
+}
+.swiper-portfolio-icon {
+  font-size: 1.3rem;
+}
+
+/* Hide default arrow */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  display: none;
+}
+
+/* Gap antar card portfolio */
+.portfolio__container .swiper-wrapper {
+  gap: 2rem !important;
+  display: flex;
+}
+@media (max-width: 600px) {
+  .portfolio__container .swiper-wrapper {
+    gap: 1.1rem !important;
   }
 }

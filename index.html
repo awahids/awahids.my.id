@@ -20,8 +20,7 @@
     content="A Wahid Safhadi - Backend Developer" />
   <meta name="twitter:description"
     content="I have 3+ years of experience as a backend developer and specialize in using Node.js, Typescript, Javascript and Laravel. Please don't hesitate to contact me for further information." />
-  <meta name="twitter:image"
-    content="https://awahids.my.id/assets/img/aw.png" />
+  <meta name="twitter:image" content="https://awahids.my.id/assets/img/aw-pixel.png" />
   <meta name="twitter:url"
     content="https://awahids.my.id" />
   <meta name="twitter:card"
@@ -64,10 +63,17 @@
   <link rel="stylesheet"
     href="assets/css/styles.css" />
 
+  <!-- Ganti Google Fonts Inter dengan Bitcount Single -->
+  <link href="https://fonts.googleapis.com/css2?family=Bitcount+Single:wght@100..900&display=swap" rel="stylesheet">
+
+  <!-- SEO IMPROVEMENT: meta description & keywords -->
+  <meta name="description" content="A Wahid Safhadi - Senior IT Developer at Rasa Group. Expert in NestJS, Vue.js, PostgreSQL, TypeScript, JavaScript, PHP, Laravel, ExpressJS. Certified Backend Developer (Glints X Binar) and Database Programming (Oracle Academy). Experienced in building scalable, reliable fullstack applications.">
+  <meta name="keywords" content="A Wahid Safhadi, Senior IT Developer, Rasa Group, NestJS, Vue.js, PostgreSQL, TypeScript, JavaScript, PHP, Laravel, ExpressJS, Backend Developer, Glints, Binar, Oracle Academy, Database Programming, Fullstack Developer, Software Engineer, Indonesia, Portfolio, Certificate">
+
   <title>A Wahid Safhadi</title>
 </head>
 
-<body>
+<body class="modern-body">
   <!--==================== HEADER ====================-->
   <header class="header"
     id="header">
@@ -181,7 +187,9 @@
           </div>
           <div class="home__data ">
             <h1 class="home__title animate__animated animate__bounce">Hi, I'am Wahid</h1>
-            <h3 class="home__subtitle animate__animated animate__bounceInLeft">Backend Developer</h3>
+            <h3 class="home__subtitle animate__animated animate__bounceInLeft">
+              <span id="typing-text"></span>
+            </h3>
             <p class="home__description"
               loading="lazy">
               I have 3+ years of experience as a backend developer and specialize in using Node.js, Typescript, Javascript and Laravel. Please don't hesitate to contact me for further information.
@@ -216,9 +224,7 @@
           class="about__img"
           style="width: 80%;" />
         <p class="about__description">
-          As a backend developer at a Sharia-compliant FINTECH company, I enjoy pursuing my hobbies of photography and
-          gaming outside of work hours. While my primary focus is on developing reliable and secure backend systems, I
-          find that engaging in creative and leisurely activities helps me maintain a healthy work-life balance.
+          Senior IT Developer di Rasa Group, berpengalaman membangun aplikasi fullstack dengan <b>NestJS</b>, <b>Vue.js</b>, dan <b>PostgreSQL</b>. Mahir <b>TypeScript</b>, <b>JavaScript</b>, <b>PHP</b>, serta framework <b>NestJS</b>, <b>ExpressJS</b>, <b>Laravel</b>, dan <b>Vue.js</b>. Berpengalaman desain dan kelola database <b>PostgreSQL</b>, <b>MySQL</b>, <b>MongoDB</b>. Bersertifikat <b>Backend Developer</b> (Glints X Binar) & <b>Database Programming</b> (Oracle Academy). Mengutamakan teamwork, komunikasi jelas, dan perbaikan berkelanjutan.
         </p>
         <div class="about__info">
           <div>
@@ -704,16 +710,18 @@
             <img src="https://res.cloudinary.com/awhds/image/upload/v1635168014/me/Capture_wkvzdm.jpg"
               class="portfolio__img"
               alt="" />
-            <div class="portfolio__data">
-              <h3 class="portfolio__title">Belajar Ngaji</h3>
-              <p class="portfolio__description">
-                Simple website for basic quran
-              </p>
-              <a href="https://belajar-ngaji.awahids.my.id/"
-                class="button button--flex button--small portfolio_button">
-                Demo
-                <i class="uil uil-arrow-right button__icon"></i>
-              </a>
+            <div class="portfolio__overlay">
+              <div class="portfolio__data">
+                <h3 class="portfolio__title">Belajar Ngaji</h3>
+                <p class="portfolio__description">
+                  Simple website for basic quran
+                </p>
+                <a href="https://belajar-ngaji.awahids.my.id/"
+                  class="button button--flex button--small portfolio_button">
+                  Demo
+                  <i class="uil uil-arrow-right button__icon"></i>
+                </a>
+              </div>
             </div>
           </div>
           <!--==================== PORTFOLIO 1 ====================-->
@@ -722,17 +730,19 @@
               src="https://res.cloudinary.com/awhds/image/upload/v1677671826/me/Screenshot_2023-03-01_at_18.54.02_s4muv8.png"
               class="portfolio__img"
               alt="website arafah group" />
-            <div class="portfolio__data">
-              <h3 class="portfolio__title">Arafah Group</h3>
-              <p class="portfolio__description">
-                Find affordable driving courses in Bandung with Arafah Group. Visit our website for information on our
-                services and pricing.
-              </p>
-              <a href="https://www.arafah-group.com/"
-                class="button button--flex button--small portfolio_button">
-                Demo
-                <i class="uil uil-arrow-right button__icon"></i>
-              </a>
+            <div class="portfolio__overlay">
+              <div class="portfolio__data">
+                <h3 class="portfolio__title">Arafah Group</h3>
+                <p class="portfolio__description">
+                  Find affordable driving courses in Bandung with Arafah Group. Visit our website for information on our
+                  services and pricing.
+                </p>
+                <a href="https://www.arafah-group.com/"
+                  class="button button--flex button--small portfolio_button">
+                  Demo
+                  <i class="uil uil-arrow-right button__icon"></i>
+                </a>
+              </div>
             </div>
           </div>
           <!--==================== PORTFOLIO 1 ====================-->
@@ -740,16 +750,18 @@
             <img src="assets//img/adawms.png"
               class="portfolio__img"
               alt="website arafah group" />
-            <div class="portfolio__data">
-              <h3 class="portfolio__title">AdaWMS</h3>
-              <p class="portfolio__description">
-                Application for goods management in warehouses.
-              </p>
-              <a href="https://www.https://app.adawms.com/"
-                class="button button--flex button--small portfolio_button">
-                Demo
-                <i class="uil uil-arrow-right button__icon"></i>
-              </a>
+            <div class="portfolio__overlay">
+              <div class="portfolio__data">
+                <h3 class="portfolio__title">AdaWMS</h3>
+                <p class="portfolio__description">
+                  Application for goods management in warehouses.
+                </p>
+                <a href="https://www.https://app.adawms.com/"
+                  class="button button--flex button--small portfolio_button">
+                  Demo
+                  <i class="uil uil-arrow-right button__icon"></i>
+                </a>
+              </div>
             </div>
           </div>
           <!--==================== PORTFOLIO 2 ====================-->
@@ -757,15 +769,17 @@
             <img src="https://res.cloudinary.com/awhds/image/upload/v1635170475/me/portfolio2_w4atee.jpg"
               class="portfolio__img"
               alt="" />
-            <div class="portfolio__data">
-              <h3 class="portfolio__title">API Movie Reviews</h3>
-              <p class="portfolio__description">
-                Rest API movie reviews, build with express js
-              </p>
-              <a href="https://api-panas-test.herokuapp.com/"
-                class="button button--flex button--small portfolio_button"> Demo
-                <i class="uil uil-arrow-right button__icon"></i>
-              </a>
+            <div class="portfolio__overlay">
+              <div class="portfolio__data">
+                <h3 class="portfolio__title">API Movie Reviews</h3>
+                <p class="portfolio__description">
+                  Rest API movie reviews, build with express js
+                </p>
+                <a href="https://api-panas-test.herokuapp.com/"
+                  class="button button--flex button--small portfolio_button"> Demo
+                  <i class="uil uil-arrow-right button__icon"></i>
+                </a>
+              </div>
             </div>
           </div>
           <!--==================== PORTFOLIO 3 ====================-->
@@ -773,15 +787,17 @@
             <img src="https://res.cloudinary.com/awhds/image/upload/v1635170475/me/portfolio1_kwnfb2.jpg"
               class="portfolio__img"
               alt="" />
-            <div class="portfolio__data">
-              <h3 class="portfolio__title">API TODOS</h3>
-              <p class="portfolio__description">
-                Rest API todos, build with express js
-              </p>
-              <a href="#"
-                class="button button--flex button--small portfolio_button"> Demo
-                <i class="uil uil-arrow-right button__icon"></i>
-              </a>
+            <div class="portfolio__overlay">
+              <div class="portfolio__data">
+                <h3 class="portfolio__title">API TODOS</h3>
+                <p class="portfolio__description">
+                  Rest API todos, build with express js
+                </p>
+                <a href="#"
+                  class="button button--flex button--small portfolio_button"> Demo
+                  <i class="uil uil-arrow-right button__icon"></i>
+                </a>
+              </div>
             </div>
           </div>
         </div>
