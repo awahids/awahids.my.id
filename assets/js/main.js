@@ -237,3 +237,77 @@ window.addEventListener('DOMContentLoaded', function () {
   }
   type();
 });
+
+// Portfolio Modal Zoom
+window.addEventListener('DOMContentLoaded', function () {
+  const modal = document.getElementById('portfolio-modal');
+  const modalImg = document.getElementById('portfolio-modal-img');
+  const modalTitle = document.getElementById('portfolio-modal-title');
+  const modalTech = document.getElementById('portfolio-modal-tech');
+  const modalDesc = document.getElementById('portfolio-modal-desc');
+  const modalBtn = document.getElementById('portfolio-modal-btn');
+  const modalClose = document.getElementById('portfolio-modal-close');
+  const modalBackdrop = document.querySelector('.portfolio-modal__backdrop');
+
+  document
+    .querySelectorAll('.portfolio__container .portfolio__content')
+    .forEach((card) => {
+      card.addEventListener('click', function (e) {
+        if (e.target.closest('a')) return;
+        const img = card.querySelector('.portfolio__img');
+        const title = card.querySelector('.portfolio__title');
+        const tech = card.querySelector('.portfolio__tech');
+        const desc = card.querySelector('.portfolio__description');
+        const btn = card.querySelector('.portfolio_button');
+        modalImg.src = img ? img.src : '';
+        modalImg.alt = img ? img.alt : '';
+        modalTitle.textContent = title ? title.textContent : '';
+        // Render tech stack as badge
+        if (tech && tech.textContent) {
+          const techArr = tech.textContent
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean);
+          modalTech.innerHTML = techArr
+            .map((t) => `<span>${t}</span>`)
+            .join('');
+          modalTech.style.display = 'flex';
+        } else {
+          modalTech.innerHTML = '';
+          modalTech.style.display = 'none';
+        }
+        modalDesc.textContent = desc ? desc.textContent : '';
+        if (btn) {
+          modalBtn.href = btn.href;
+          modalBtn.style.display = '';
+        } else {
+          modalBtn.href = '#';
+          modalBtn.style.display = 'none';
+        }
+        modal.style.display = 'block';
+        setTimeout(() => {
+          modal.classList.add('show');
+        }, 10);
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+  function closeModal() {
+    modal.classList.remove('show');
+    setTimeout(() => {
+      modal.style.display = 'none';
+    }, 250);
+    document.body.style.overflow = '';
+  }
+  modalClose.addEventListener('click', closeModal);
+  modalBackdrop.addEventListener('click', closeModal);
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeModal();
+  });
+});
+
+// Swiper untuk Github Stats
+window.addEventListener('DOMContentLoaded', function () {
+  // Hapus atau abaikan inisialisasi Swiper untuk .github-stats__swiper
+  // Tidak ada kode Swiper untuk Github Stats yang perlu dipertahankan
+});

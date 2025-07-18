@@ -228,21 +228,21 @@
         </p>
         <div class="about__info">
           <div>
-            <span class="about__info-title">02</span>
+            <span class="about__info-title">03</span>
             <span class="about__info-name"> Years <br />
               experience
             </span>
           </div>
 
           <div>
-            <span class="about__info-title">06</span>
+            <span class="about__info-title">07</span>
             <span class="about__info-name">Completed <br />
               project
             </span>
           </div>
 
           <div>
-            <span class="about__info-title">03</span>
+            <span class="about__info-title">04</span>
             <span class="about__info-name"> Companies <br />
               Worked
             </span>
@@ -532,6 +532,29 @@
           <div class="qualification__content qualification__active"
             data-content
             id="work">
+            <!--==================== QUALIFICATION: Rasa Group ====================-->
+            <div class="qualification__data">
+              <div></div>
+              <div>
+                <span class="qualification__rounder"></span>
+                <div class="qualification__line"></div>
+              </div>
+              <div>
+                <h3 class="qualification__title">IT Developer Spesialis</h3>
+                <span class="qualification__subtitle">
+                  <i class="uil uil-building"></i>
+                  Rasa Group
+                  <br />
+                  <i class="uil uil-location-pin-alt" style="font-size: 10px; color: var(--text-color-light);">
+                    Cikarang, Bekasi
+                  </i>
+                </span>
+                <div class="qualification__calendar">
+                  <i class="uil uil-calendar-alt"></i>
+                  Feb 2025 - Present
+                </div>
+              </div>
+            </div>
             <!--==================== QUALIFICATION 2 ====================-->
             <div class="qualification__data">
               <div>
@@ -550,7 +573,7 @@
                 </span>
                 <div class="qualification__calendar">
                   <i class="uil uil-calendar-alt"></i>
-                  Jan 2022 - Present
+                  Jan 2022 - Feb 2025
                 </div>
               </div>
 
@@ -713,6 +736,7 @@
             <div class="portfolio__overlay">
               <div class="portfolio__data">
                 <h3 class="portfolio__title">Belajar Ngaji</h3>
+                <div class="portfolio__tech" style="display:none;">Vue.js, Node.js, MongoDB</div>
                 <p class="portfolio__description">
                   Simple website for basic quran
                 </p>
@@ -733,9 +757,9 @@
             <div class="portfolio__overlay">
               <div class="portfolio__data">
                 <h3 class="portfolio__title">Arafah Group</h3>
+                <div class="portfolio__tech" style="display:none;">Vue.js, Node.js, PostgreSQL</div>
                 <p class="portfolio__description">
-                  Find affordable driving courses in Bandung with Arafah Group. Visit our website for information on our
-                  services and pricing.
+                  Find affordable driving courses in Bandung with Arafah Group. Visit our website for information on our services and pricing.
                 </p>
                 <a href="https://www.arafah-group.com/"
                   class="button button--flex button--small portfolio_button">
@@ -753,6 +777,7 @@
             <div class="portfolio__overlay">
               <div class="portfolio__data">
                 <h3 class="portfolio__title">AdaWMS</h3>
+                <div class="portfolio__tech" style="display:none;">Vue.js, Node.js, MySQL</div>
                 <p class="portfolio__description">
                   Application for goods management in warehouses.
                 </p>
@@ -772,6 +797,7 @@
             <div class="portfolio__overlay">
               <div class="portfolio__data">
                 <h3 class="portfolio__title">API Movie Reviews</h3>
+                <div class="portfolio__tech" style="display:none;">Express.js, Node.js, MongoDB</div>
                 <p class="portfolio__description">
                   Rest API movie reviews, build with express js
                 </p>
@@ -790,6 +816,7 @@
             <div class="portfolio__overlay">
               <div class="portfolio__data">
                 <h3 class="portfolio__title">API TODOS</h3>
+                <div class="portfolio__tech" style="display:none;">Express.js, Node.js, MongoDB</div>
                 <p class="portfolio__description">
                   Rest API todos, build with express js
                 </p>
@@ -812,6 +839,19 @@
         <div class="swiper-pagination"></div>
       </div>
     </section>
+
+    <!-- Modal Portfolio Zoom -->
+    <div id="portfolio-modal" class="portfolio-modal" style="display:none;">
+      <div class="portfolio-modal__backdrop"></div>
+      <div class="portfolio-modal__content">
+        <button class="portfolio-modal__close" id="portfolio-modal-close" aria-label="Close">&times;</button>
+        <img id="portfolio-modal-img" class="portfolio-modal__img" src="" alt="Portfolio Zoom" />
+        <h3 id="portfolio-modal-title" class="portfolio-modal__title"></h3>
+        <div id="portfolio-modal-tech" class="portfolio-modal__tech"></div>
+        <p id="portfolio-modal-desc" class="portfolio-modal__desc"></p>
+        <a id="portfolio-modal-btn" class="button button--flex portfolio-modal__btn" href="#" target="_blank" rel="noopener">Demo <i class="uil uil-arrow-right button__icon"></i></a>
+      </div>
+    </div>
 
     <!--==================== Certificate ====================-->
     <section class="certificate section"
@@ -903,6 +943,19 @@
         </div>
 
         <div class="swiper-pagination"></div>
+      </div>
+    </section>
+
+        <!--==================== GITHUB STATS ====================-->
+    <section class="github-stats section" id="github-stats">
+      <h2 class="section__title" style="text-align:center;">Github Stats</h2>
+      <div class="github-stats__card" style="max-width:900px;margin:0 auto;box-shadow:0 4px 24px rgba(0,0,0,0.08);border-radius:2rem;padding:2rem 1rem;background:var(--container-color);display:flex;flex-direction:column;align-items:center;gap:2rem;">
+        <!-- <a href="https://git.io/streak-stats"><img src="https://streak-stats.demolab.com?user=awahids&theme=monokai-metallian&hide_border=true" alt="GitHub Streak" style="max-width:100%;height:auto;"/></a> -->
+        <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;width:100%;">
+          <a href="https://github.com/anuraghazra/github-readme-stats"><img alt="awahids's Github Stats" src="https://denvercoder1-github-readme-stats.vercel.app/api/?username=awahids&show_icons=true&count_private=true&theme=calm&hide_border=true&bg_color=1F222E&title_color=F85D7F&icon_color=F8D866" height="192px"/></a>
+          <a href="https://github.com/anuraghazra/github-readme-stats"><img alt="awahids's Top Languages" src="https://github-readme-stats.vercel.app/api/top-langs/?username=awahids&langs_count=8&layout=compact&theme=calm&hide_border=true&bg_color=1F222E&title_color=F85D7F&icon_color=F8D866&hide=Jupyter%20Notebook" height="192px"/></a>
+        </div>
+        <img src="https://github-readme-activity-graph.vercel.app/graph?username=awahids&theme=react-dark&bg_color=20232a&hide_border=true" width="100%" style="border-radius:1rem;max-width:100%;height:auto;"/>
       </div>
     </section>
 
