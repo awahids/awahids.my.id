@@ -15,12 +15,14 @@ import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
 import Portfolio from './components/Portfolio';
 import WhatIBuild from './components/WhatIBuild';
+import AILab from './components/AILab';
 import Skills from './components/Skills';
 import Experience from './components/Experience';
 import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+const AI_LAB_PATH = '/ai-lab';
 
 const BOT_USER_AGENT_PATTERN =
   /bot|crawler|spider|crawling|facebookexternalhit|slackbot|twitterbot|linkedinbot|discordbot|whatsapp|google-inspectiontool|lighthouse/i;
@@ -36,7 +38,17 @@ const shouldBypassPreloader = () => {
   return prefersReducedMotion || botLikeAgent;
 };
 
+const normalizePathname = (pathname = '') => {
+  const normalized = pathname.replace(/\/+$/, '');
+  return normalized || '/';
+};
+
+const isAiLabRoute = (pathname = '') =>
+  normalizePathname(pathname) === AI_LAB_PATH;
+
 function App() {
+  const aiLabPage =
+    typeof window !== 'undefined' && isAiLabRoute(window.location.pathname);
   const [loading, setLoading] = useState(() => !shouldBypassPreloader());
   const {
     viewport: sectionViewport,
@@ -122,90 +134,108 @@ function App() {
       </div>
 
       <CustomCursor />
-      <Navbar />
-      <MobileNav />
-      <SocialRail />
+      <Navbar isAiLabPage={aiLabPage} />
+      {!aiLabPage && <MobileNav />}
+      {!aiLabPage && <SocialRail />}
 
-      <main>
-        <Hero />
-        <Ticker />
+      <main className={aiLabPage ? 'main-ai-lab-page' : ''}>
+        {aiLabPage ? (
+          <>
+            <section className="ai-page-head" id="home">
+              <div className="ai-page-head-inner">
+                <a href="/" className="ai-page-back-link">
+                  ← Back to Portfolio
+                </a>
+                <div className="ai-page-head-note">
+                  Experimental tools for brief analysis and portfolio Q&A.
+                </div>
+              </div>
+            </section>
+            <AILab />
+          </>
+        ) : (
+          <>
+            <Hero />
+            <Ticker />
 
-        <WhatIBuild />
+            <WhatIBuild />
 
-        <motion.section
-          id="about"
-          className="s-about"
-          initial="hidden"
-          whileInView="visible"
-          viewport={sectionViewport}
-          variants={sectionContainer}
-        >
-          <div className="about-bg">A.W.S</div>
-          <motion.div className="about-left" variants={sectionItem}>
-            <motion.div className="s-eyebrow" variants={sectionItem}>
-              // BIOGRAPHY
-            </motion.div>
-            <motion.h2 className="s-title" variants={sectionItem}>
-              Backend-first. <span className="s-outline">Fullstack when it matters.</span>
-            </motion.h2>
-            <motion.div className="about-text" variants={sectionItem}>
-              <p>
-                I build complete web products, but my strongest layer is the system behind the screen:
-                <strong> APIs, database design, business logic, automation, and deployment</strong>.
-              </p>
-              <p style={{ marginTop: '12px' }}>
-                Good interfaces matter. Business systems still need reliable workflows,
-                clean data, and backend logic that survives real users. That is the approach
-                I apply in production at <strong>Rasa Group</strong>.
-              </p>
-            </motion.div>
-            <motion.div className="about-tags" variants={staggerTight}>
-              <motion.span className="about-tag" variants={sectionItem}>
-                Frontend to Deployment
-              </motion.span>
-              <motion.span className="about-tag" variants={sectionItem}>
-                Product-Oriented
-              </motion.span>
-              <motion.span className="about-tag" variants={sectionItem}>
-                Backend-First Strength
-              </motion.span>
-            </motion.div>
-          </motion.div>
-          <motion.div className="about-right" variants={sectionItem}>
-            <motion.div className="stats-2x2" variants={staggerTight}>
-              <motion.div className="stat-b" variants={sectionItem}>
-                <div className="stat-b-num">4+</div>
-                <div className="stat-b-lbl">Years Exp.</div>
+            <motion.section
+              id="about"
+              className="s-about"
+              initial="hidden"
+              whileInView="visible"
+              viewport={sectionViewport}
+              variants={sectionContainer}
+            >
+              <div className="about-bg">A.W.S</div>
+              <motion.div className="about-left" variants={sectionItem}>
+                <motion.div className="s-eyebrow" variants={sectionItem}>
+                  // BIOGRAPHY
+                </motion.div>
+                <motion.h2 className="s-title" variants={sectionItem}>
+                  Backend-first. <span className="s-outline">Fullstack when it matters.</span>
+                </motion.h2>
+                <motion.div className="about-text" variants={sectionItem}>
+                  <p>
+                    I build complete web products, but my strongest layer is the system behind the screen:
+                    <strong> APIs, database design, business logic, automation, and deployment</strong>.
+                  </p>
+                  <p style={{ marginTop: '12px' }}>
+                    Good interfaces matter. Business systems still need reliable workflows,
+                    clean data, and backend logic that survives real users. That is the approach
+                    I apply in production at <strong>Rasa Group</strong>.
+                  </p>
+                </motion.div>
+                <motion.div className="about-tags" variants={staggerTight}>
+                  <motion.span className="about-tag" variants={sectionItem}>
+                    Frontend to Deployment
+                  </motion.span>
+                  <motion.span className="about-tag" variants={sectionItem}>
+                    Product-Oriented
+                  </motion.span>
+                  <motion.span className="about-tag" variants={sectionItem}>
+                    Backend-First Strength
+                  </motion.span>
+                </motion.div>
               </motion.div>
-              <motion.div className="stat-b" variants={sectionItem}>
-                <div className="stat-b-num">20+</div>
-                <div className="stat-b-lbl">Products Built</div>
+              <motion.div className="about-right" variants={sectionItem}>
+                <motion.div className="stats-2x2" variants={staggerTight}>
+                  <motion.div className="stat-b" variants={sectionItem}>
+                    <div className="stat-b-num">4+</div>
+                    <div className="stat-b-lbl">Years Exp.</div>
+                  </motion.div>
+                  <motion.div className="stat-b" variants={sectionItem}>
+                    <div className="stat-b-num">20+</div>
+                    <div className="stat-b-lbl">Products Built</div>
+                  </motion.div>
+                  <motion.div className="stat-b" variants={sectionItem}>
+                    <div className="stat-b-num">5+</div>
+                    <div className="stat-b-lbl">Core Domains</div>
+                  </motion.div>
+                  <motion.div className="stat-b" variants={sectionItem}>
+                    <div className="stat-b-num">100%</div>
+                    <div className="stat-b-lbl">Project Ownership</div>
+                  </motion.div>
+                </motion.div>
+                <motion.div className="edu-entry" variants={sectionItem}>
+                  <div className="edu-school">Mataram University</div>
+                  <div className="edu-degree">Bachelor in Engineering Informatics</div>
+                  <div className="edu-year">Aug 2014 — Feb 2022</div>
+                </motion.div>
               </motion.div>
-              <motion.div className="stat-b" variants={sectionItem}>
-                <div className="stat-b-num">5+</div>
-                <div className="stat-b-lbl">Core Domains</div>
-              </motion.div>
-              <motion.div className="stat-b" variants={sectionItem}>
-                <div className="stat-b-num">100%</div>
-                <div className="stat-b-lbl">Project Ownership</div>
-              </motion.div>
-            </motion.div>
-            <motion.div className="edu-entry" variants={sectionItem}>
-              <div className="edu-school">Mataram University</div>
-              <div className="edu-degree">Bachelor in Engineering Informatics</div>
-              <div className="edu-year">Aug 2014 — Feb 2022</div>
-            </motion.div>
-          </motion.div>
-        </motion.section>
+            </motion.section>
 
-        <Portfolio />
-        <Skills />
-        <Experience />
-        <Certificates />
-        <Contact />
+            <Portfolio />
+            <Skills />
+            <Experience />
+            <Certificates />
+            <Contact />
+          </>
+        )}
       </main>
 
-      <Footer />
+      <Footer isAiLabPage={aiLabPage} />
     </div>
   );
 }
