@@ -80,7 +80,6 @@ export const useSectionMotion = () => {
     const media = window.matchMedia(MOBILE_QUERY);
 
     const onChange = (event) => setIsMobile(event.matches);
-    setIsMobile(media.matches);
 
     if (media.addEventListener) {
       media.addEventListener('change', onChange);

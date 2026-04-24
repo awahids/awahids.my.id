@@ -1,10 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { CustomEase } from 'gsap/CustomEase';
-import { SplitText } from 'gsap/SplitText';
-import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin';
 
-gsap.registerPlugin(CustomEase, SplitText, ScrambleTextPlugin);
+gsap.registerPlugin(CustomEase);
 
 const KINETIC_WORDS = [
   { text: 'FOCUS', top: '9%', left: '7%' },
@@ -42,10 +40,9 @@ const Hero = () => {
     CustomEase.create('heroEase', '0.86,0,0.07,1');
     CustomEase.create('heroMouseEase', '0.25,0.1,0.25,1');
 
-    const splitInstances = [];
     const animations = [];
     const disposers = [];
-    let scrambleTimer = 0;
+    let pulseTimer = 0;
     let parallaxRaf = 0;
     let px = 0;
     let py = 0;
@@ -58,37 +55,16 @@ const Hero = () => {
     const kineticWords = Array.from(root.querySelectorAll('.hero-kinetic-word'));
 
     kineticWords.forEach((word, index) => {
-      if (lightweightMotion) {
-        gsap.set(word, { opacity: 0, y: 6 });
-        addAnimation(
-          gsap.to(word, {
-            opacity: 0.3,
-            y: 0,
-            duration: 0.5,
-            ease: 'heroEase',
-            delay: 0.05 * index,
-          })
-        );
-      } else {
-        const split = new SplitText(word, {
-          type: 'chars',
-          charsClass: 'hero-kinetic-char',
-        });
-        splitInstances.push(split);
-
-        gsap.set(split.chars, { opacity: 0, y: 10, filter: 'blur(5px)' });
-        addAnimation(
-          gsap.to(split.chars, {
-            opacity: 0.34,
-            y: 0,
-            filter: 'blur(0px)',
-            duration: 0.62,
-            stagger: 0.025,
-            ease: 'heroEase',
-            delay: 0.08 * index,
-          })
-        );
-      }
+      gsap.set(word, { opacity: 0, y: lightweightMotion ? 6 : 12 });
+      addAnimation(
+        gsap.to(word, {
+          opacity: 0.34,
+          y: 0,
+          duration: lightweightMotion ? 0.5 : 0.62,
+          ease: 'heroEase',
+          delay: lightweightMotion ? 0.05 * index : 0.08 * index,
+        })
+      );
 
       addAnimation(
         gsap.to(word, {
@@ -102,59 +78,78 @@ const Hero = () => {
       );
     });
 
-    if (!prefersReducedMotion && hasFinePointer) {
+    const pulseRandomWord = () => {
+      if (!kineticWords.length) return;
+      const randomWord =
+        kineticWords[Math.floor(Math.random() * kineticWords.length)];
+
+      randomWord.classList.add('is-active');
+      addAnimation(
+        gsap.fromTo(
+          randomWord,
+          { opacity: 0.2 },
+          {
+            opacity: 0.45,
+            duration: 0.35,
+            yoyo: true,
+            repeat: 1,
+            ease: 'sine.inOut',
+            onComplete: () => randomWord.classList.remove('is-active'),
+          }
+        )
+      );
+
+      pulseTimer = window.setTimeout(
+        pulseRandomWord,
+        1200 + Math.random() * 1800
+      );
+    };
+
+    if (!prefersReducedMotion && !lightweightMotion) {
       const headingWords = Array.from(
         root.querySelectorAll('.hn-first, .hn-last, .hn-ghost')
       );
       headingWords.forEach((word) => {
-        word.dataset.original = word.textContent || '';
         const onEnter = () => {
           addAnimation(
-            gsap.to(word, {
-              duration: 0.55,
-              scrambleText: {
-                text: word.dataset.original || '',
-                chars: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-                speed: 0.4,
-              },
-              ease: 'none',
-            })
+            gsap.fromTo(
+              word,
+              { opacity: 0.75, y: 2 },
+              {
+                opacity: 1,
+                y: 0,
+                duration: 0.45,
+                ease: 'heroEase',
+              }
+            )
           );
         };
         word.addEventListener('mouseenter', onEnter);
         disposers.push(() => word.removeEventListener('mouseenter', onEnter));
       });
-    }
 
-    const scrambleRandomWord = () => {
-      if (!kineticWords.length) return;
-      const randomWord =
-        kineticWords[Math.floor(Math.random() * kineticWords.length)];
-      const original = randomWord.dataset.text || randomWord.textContent || '';
-
-      randomWord.classList.add('is-active');
-      addAnimation(
-        gsap.to(randomWord, {
-          duration: 0.85,
-          scrambleText: {
-            text: original,
-            chars: '■▪▌▐▬',
-            revealDelay: 0.25,
-            speed: 0.35,
-          },
-          ease: 'none',
-          onComplete: () => randomWord.classList.remove('is-active'),
-        })
+      pulseTimer = window.setTimeout(pulseRandomWord, 1100);
+    } else if (!prefersReducedMotion && hasFinePointer && !isMobile) {
+      const headingWords = Array.from(
+        root.querySelectorAll('.hn-first, .hn-last, .hn-ghost')
       );
-
-      scrambleTimer = window.setTimeout(
-        scrambleRandomWord,
-        900 + Math.random() * 1400
-      );
-    };
-
-    if (!prefersReducedMotion && !lightweightMotion) {
-      scrambleTimer = window.setTimeout(scrambleRandomWord, 1100);
+      headingWords.forEach((word) => {
+        const onEnter = () => {
+          addAnimation(
+            gsap.fromTo(
+              word,
+              { opacity: 0.8 },
+              {
+                opacity: 1,
+                duration: 0.35,
+                ease: 'heroEase',
+              }
+            )
+          );
+        };
+        word.addEventListener('mouseenter', onEnter);
+        disposers.push(() => word.removeEventListener('mouseenter', onEnter));
+      });
     }
 
     const renderParallax = () => {
@@ -206,12 +201,11 @@ const Hero = () => {
     }
 
     return () => {
-      window.clearTimeout(scrambleTimer);
+      window.clearTimeout(pulseTimer);
       window.cancelAnimationFrame(parallaxRaf);
 
       disposers.forEach((dispose) => dispose());
       animations.forEach((animation) => animation?.kill?.());
-      splitInstances.forEach((split) => split?.revert?.());
     };
   }, []);
 

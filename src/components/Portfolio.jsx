@@ -1,6 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
+
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(',');
+
+const getFocusableElements = (container) =>
+  Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
+    (element) => !element.hasAttribute('aria-hidden')
+  );
 
 const projects = [
   {
@@ -91,26 +105,80 @@ const projects = [
 
 const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState(null);
+  const modalRef = useRef(null);
+  const closeButtonRef = useRef(null);
+  const previousFocusedRef = useRef(null);
   const { viewport, sectionContainer, sectionItem, staggerGrid, ease, reduceMotion } =
     useSectionMotion();
 
-  const openModal = (project) => {
+  const openModal = useCallback((project) => {
     setSelectedProject(project);
-    document.body.style.overflow = 'hidden';
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setSelectedProject(null);
-    document.body.style.overflow = '';
-  };
+  }, []);
 
   useEffect(() => {
-    const handleEsc = (e) => {
-      if (e.key === 'Escape') closeModal();
+    if (!selectedProject) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    previousFocusedRef.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+    const focusHandle = window.requestAnimationFrame(() => {
+      closeButtonRef.current?.focus();
+    });
+
+    const handleModalKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeModal();
+        return;
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const modal = modalRef.current;
+      if (!modal) return;
+
+      const focusableElements = getFocusableElements(modal);
+      if (!focusableElements.length) {
+        event.preventDefault();
+        modal.focus();
+        return;
+      }
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      const currentFocused = document.activeElement;
+
+      if (event.shiftKey && currentFocused === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && currentFocused === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
     };
-    window.addEventListener('keydown', handleEsc);
-    return () => window.removeEventListener('keydown', handleEsc);
-  }, []);
+
+    document.addEventListener('keydown', handleModalKeyDown);
+
+    return () => {
+      window.cancelAnimationFrame(focusHandle);
+      document.removeEventListener('keydown', handleModalKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocusedRef.current?.focus?.();
+    };
+  }, [selectedProject, closeModal]);
+
+  const handleCardKeyDown = (event, project) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      openModal(project);
+    }
+  };
 
   return (
     <section className="s-portfolio" id="portfolio">
@@ -140,8 +208,11 @@ const Portfolio = () => {
               key={p.id}
               className={`port-card ${p.bento}`}
               onClick={() => openModal(p)}
+              onKeyDown={(event) => handleCardKeyDown(event, p)}
               role="button"
               tabIndex="0"
+              aria-haspopup="dialog"
+              aria-label={`Open project details for ${p.title}`}
               variants={sectionItem}
             >
               <div className="port-card-num">{p.num}</div>
@@ -154,7 +225,7 @@ const Portfolio = () => {
                   <span key={s} className="port-tag">{s}</span>
                 ))}
               </div>
-              <button className="port-link">Open Case ↗</button>
+              <span className="port-link" aria-hidden="true">Open Case ↗</span>
             </motion.div>
           ))}
         </motion.div>
@@ -172,6 +243,11 @@ const Portfolio = () => {
           >
             <motion.div
               className="modal-card"
+              ref={modalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={`project-modal-title-${selectedProject.id}`}
+              tabIndex="-1"
               onClick={e => e.stopPropagation()}
               initial={reduceMotion ? { opacity: 1 } : { scale: 0.9, y: 20 }}
               animate={reduceMotion ? { opacity: 1 } : { scale: 1, y: 0 }}
@@ -182,12 +258,12 @@ const Portfolio = () => {
                   : { type: 'spring', damping: 25, stiffness: 300 }
               }
             >
-              <button className="modal-close" onClick={closeModal}>✕</button>
+              <button ref={closeButtonRef} className="modal-close" onClick={closeModal} aria-label="Close project details">✕</button>
               <div className="modal-header">
                 {selectedProject.cat && (
                   <div className="mh-cat">{selectedProject.cat}</div>
                 )}
-                <h2 className="mh-title">{selectedProject.title}</h2>
+                <h2 id={`project-modal-title-${selectedProject.id}`} className="mh-title">{selectedProject.title}</h2>
                 {selectedProject.year && (
                   <div className="mh-year">Release: {selectedProject.year}</div>
                 )}
@@ -207,10 +283,10 @@ const Portfolio = () => {
                   </div>
                   <div className="m-actions">
                     {selectedProject.live !== '#' && (
-                      <a href={selectedProject.live} target="_blank" rel="noopener" className="m-btn prime">Live Product ↗</a>
+                      <a href={selectedProject.live} target="_blank" rel="noopener noreferrer" className="m-btn prime">Live Product ↗</a>
                     )}
                     {selectedProject.case !== '#' && (
-                      <a href={selectedProject.case} target="_blank" rel="noopener" className="m-btn ghost">Case Study ↗</a>
+                      <a href={selectedProject.case} target="_blank" rel="noopener noreferrer" className="m-btn ghost">Case Study ↗</a>
                     )}
                   </div>
                 </div>

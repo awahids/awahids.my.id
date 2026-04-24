@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 
+const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
+
 const Contact = () => {
   const { viewport, sectionContainer, sectionItem, staggerGrid } =
     useSectionMotion();
@@ -28,7 +30,7 @@ const Contact = () => {
               <span className="contact-badge-name">Curriculum Vitae</span>
               <span className="contact-badge-role">PDF Resume</span>
             </div>
-            <a href="/assets/cv/my-cv.pdf" target="_blank" rel="noopener noreferrer" className="contact-badge-link">Open CV ↗</a>
+            <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="contact-badge-link">Open CV ↗</a>
           </motion.div>
         </motion.div>
 

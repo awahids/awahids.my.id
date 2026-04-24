@@ -1,24 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
-import { TextPlugin } from 'gsap/TextPlugin';
 
 import Preloader from './components/Preloader';
 import Navbar from './components/Navbar';
+import MobileNav from './components/MobileNav';
 import Hero from './components/Hero';
 import Ticker from './components/Ticker';
-import Experience from './components/Experience';
-import Skills from './components/Skills';
-import Portfolio from './components/Portfolio';
-import Certificates from './components/Certificates';
-import Contact from './components/Contact';
 import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
+import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, TextPlugin);
+const Portfolio = lazy(() => import('./components/Portfolio'));
+const Skills = lazy(() => import('./components/Skills'));
+const Experience = lazy(() => import('./components/Experience'));
+const Certificates = lazy(() => import('./components/Certificates'));
+const Contact = lazy(() => import('./components/Contact'));
+
+const SectionFallback = () => (
+  <div className="section-fallback" aria-hidden="true">
+    <div className="section-fallback-line"></div>
+  </div>
+);
+
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -28,6 +36,11 @@ function App() {
     sectionItem,
     staggerTight,
   } = useSectionMotion();
+
+  useEffect(() => {
+    document.body.classList.toggle('is-preloading', loading);
+    return () => document.body.classList.remove('is-preloading');
+  }, [loading]);
 
   useEffect(() => {
     if (loading) return undefined;
@@ -104,6 +117,8 @@ function App() {
           
           <CustomCursor />
           <Navbar />
+          <MobileNav />
+          <SocialRail />
           
           <main>
             <Hero />
@@ -175,11 +190,21 @@ function App() {
               </motion.div>
             </motion.section>
 
-            <Portfolio />
-            <Skills />
-            <Experience />
-            <Certificates />
-            <Contact />
+            <Suspense fallback={<SectionFallback />}>
+              <Portfolio />
+            </Suspense>
+            <Suspense fallback={<SectionFallback />}>
+              <Skills />
+            </Suspense>
+            <Suspense fallback={<SectionFallback />}>
+              <Experience />
+            </Suspense>
+            <Suspense fallback={<SectionFallback />}>
+              <Certificates />
+            </Suspense>
+            <Suspense fallback={<SectionFallback />}>
+              <Contact />
+            </Suspense>
           </main>
           
           <Footer />
