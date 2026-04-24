@@ -16,6 +16,7 @@
 <meta name="language"    content="English">
 <meta name="revisit-after" content="7 days">
 <meta name="category"    content="Technology, Software Development, Portfolio">
+<meta name="contact-form-endpoint" content="">
 <link rel="canonical"    href="https://awahids.my.id/">
 
 <!-- ═══════════════════════════════════════════════
@@ -372,10 +373,26 @@
   .hn-ghost { display:block; -webkit-text-stroke:1px rgba(255,255,255,.12); color:transparent; }
   .hero-desc {
     font-family:'Syne',sans-serif; font-size:15px; line-height:1.75;
-    color:rgba(255,255,255,.45); max-width:420px; margin-bottom:40px;
+    color:rgba(255,255,255,.45); max-width:560px; margin-bottom:24px;
   }
   .hero-desc strong { color:var(--white); }
   .hero-desc em     { color:var(--lime); font-style:normal; }
+  .hero-proof {
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    max-width:620px; margin-bottom:34px;
+  }
+  .hero-proof-chip {
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.03);
+    color:rgba(255,255,255,.72); padding:8px 12px;
+    font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.08em; text-transform:uppercase;
+  }
+  .hero-proof-chip b { color:var(--lime); font-weight:600; }
+  .hero-proof-dot {
+    width:6px; height:6px; border-radius:50%;
+    background:var(--lime); box-shadow:0 0 10px rgba(200,255,0,.55);
+    flex-shrink:0;
+  }
   .hero-btns { display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
   .btn-prime {
     font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
@@ -409,6 +426,24 @@
   .tc-g{color:rgba(255,255,255,.2)} .tc-gr{color:#7ee787} .tc-b{color:#79c0ff}
   .tc-y{color:#e3b341} .tc-p{color:#d2a8ff} .tc-l{color:var(--lime)}
   .tc-r{color:#ff7b72} .tc-w{color:rgba(255,255,255,.8)}
+  .term-body .tl {
+    opacity:0; transform:translateY(8px);
+    animation:termline .45s ease forwards;
+  }
+  .term-body .tl:nth-child(1)  { animation-delay:.95s; }
+  .term-body .tl:nth-child(2)  { animation-delay:1.02s; }
+  .term-body .tl:nth-child(3)  { animation-delay:1.09s; }
+  .term-body .tl:nth-child(4)  { animation-delay:1.16s; }
+  .term-body .tl:nth-child(5)  { animation-delay:1.23s; }
+  .term-body .tl:nth-child(6)  { animation-delay:1.30s; }
+  .term-body .tl:nth-child(7)  { animation-delay:1.37s; }
+  .term-body .tl:nth-child(8)  { animation-delay:1.44s; }
+  .term-body .tl:nth-child(9)  { animation-delay:1.51s; }
+  .term-body .tl:nth-child(10) { animation-delay:1.58s; }
+  .term-body .tl:nth-child(11) { animation-delay:1.65s; }
+  .term-body .tl:nth-child(12) { animation-delay:1.72s; }
+  .term-body .tl:nth-child(13) { animation-delay:1.79s; }
+  @keyframes termline { to { opacity:1; transform:translateY(0); } }
   .term-cursor {
     display:inline-block; width:8px; height:14px; background:var(--lime);
     vertical-align:middle; animation:blinkc .9s step-end infinite;
@@ -728,6 +763,11 @@
     box-shadow:0 22px 48px rgba(0,0,0,.45);
     border-color:rgba(200,255,0,.34);
   }
+  .port-card:focus-visible {
+    transform:translateY(-6px);
+    box-shadow:0 0 0 2px rgba(200,255,0,.2), 0 22px 48px rgba(0,0,0,.45);
+    border-color:rgba(200,255,0,.56);
+  }
   .port-card:hover::after { opacity:.45; }
   .port-card.bento-hero:hover,
   .port-card.bento-accent:hover {
@@ -777,6 +817,7 @@
     color:var(--lime); padding:10px 14px; cursor:none;
     font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.14em;
     text-transform:uppercase; font-weight:700;
+    pointer-events:none;
     transition:background var(--tr-fast), color var(--tr-fast), border-color var(--tr-fast);
   }
   .port-link:hover { background:var(--lime); color:var(--dark); border-color:var(--lime); }
@@ -811,6 +852,11 @@
     transition:transform var(--tr-base), color var(--tr-fast), background var(--tr-fast), border-color var(--tr-fast);
   }
   .modal-close:hover { transform:rotate(90deg); color:var(--lime); background:rgba(200,255,0,.08); border-color:var(--lime); }
+  .modal-close:focus-visible,
+  .cf-submit:focus-visible {
+    outline:2px solid rgba(200,255,0,.72);
+    outline-offset:2px;
+  }
 
   /* Modal screenshot preview */
   .modal-preview {
@@ -1153,6 +1199,32 @@
   }
   .fc { font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--gray); }
   .fc b { color:var(--lime); font-weight:400; }
+  .floating-top-btn {
+    position:fixed; right:26px; bottom:28px;
+    width:52px; height:52px; border-radius:50%;
+    border:1px solid rgba(200,255,0,.42);
+    background:linear-gradient(145deg, rgba(200,255,0,.2), rgba(200,255,0,.08));
+    color:var(--lime); z-index:1400;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'DM Mono',monospace; font-size:16px; font-weight:700; cursor:none;
+    box-shadow:0 14px 34px rgba(0,0,0,.42);
+    opacity:0; transform:translateY(14px) scale(.94);
+    pointer-events:none;
+    transition:opacity .26s var(--ease-standard), transform .26s var(--ease-standard), background .22s var(--ease-standard), color .22s var(--ease-standard), box-shadow .22s var(--ease-standard), border-color .22s var(--ease-standard);
+  }
+  .floating-top-btn.is-visible {
+    opacity:1; transform:translateY(0) scale(1);
+    pointer-events:auto;
+  }
+  .floating-top-btn:hover {
+    background:var(--lime); color:var(--dark); border-color:var(--lime);
+    box-shadow:0 16px 36px rgba(200,255,0,.25);
+    transform:translateY(-2px);
+  }
+  .floating-top-btn:focus-visible {
+    outline:2px solid rgba(200,255,0,.72);
+    outline-offset:2px;
+  }
 
   /* RESPONSIVE */
   @media (max-width:1100px) {
@@ -1187,6 +1259,7 @@
     .hero-right { justify-content:center; padding:0 0 56px; }
     .terminal { width:100%; max-width:340px; }
     .hero-badge { left:8px; bottom:56px; }
+    .hero-proof { margin-bottom:28px; }
     .s-exp,.s-skills,.s-portfolio,.s-cert,.s-about,.s-contact { padding:var(--section-pad-y-mobile) var(--section-pad-x-mobile); }
     .skill-card { min-height:220px; padding:34px 22px; }
     .skill-card-name { font-size:28px; }
@@ -1232,9 +1305,19 @@
     .modal-content { padding:28px 24px; gap:26px; grid-template-columns:1fr; }
     .modal-close { top:16px; right:16px; }
     footer { flex-direction:column; gap:8px; text-align:center; padding:20px; }
+    .floating-top-btn { right:18px; bottom:18px; width:48px; height:48px; }
     #cursor,#cursor-ring { display:none; }
     body { cursor:auto; }
     a,button { cursor:pointer; }
+  }
+  @media (hover:none), (pointer:coarse) {
+    #cursor,#cursor-ring { display:none; }
+    body { cursor:auto; }
+    a,button,.nav-cta,.btn-prime,.btn-ghost,.port-card,.port-link,.cf-submit,.floating-top-btn { cursor:pointer !important; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .floating-top-btn { transition:none; }
+    .term-body .tl { animation:none; opacity:1; transform:none; }
   }
   @media (max-width:800px) {
     .port-grid { grid-template-columns:1fr; grid-auto-rows:auto; gap:14px; }
@@ -1282,7 +1365,7 @@
 
 <!-- NAV -->
 <nav id="nav">
-  <a href="#" class="nav-logo">A<b>.</b>W<b>.</b>S<b>.</b></a>
+  <a href="#home" class="nav-logo">A<b>.</b>W<b>.</b>S<b>.</b></a>
   <div class="nav-right">
     <ul class="nav-links">
       <li><a href="#home"><span>01</span> ABOUT</a></li>
@@ -1297,28 +1380,32 @@
       <span id="time-display">00:00:00 WIB</span>
     </div>
   </div>
-  <a href="assets/cv/my-cv.pdf" target="_blank" rel="noopener noreferrer" class="nav-cta">View CV</a>
+  <a href="#contact" class="nav-cta">Hire Me</a>
 </nav>
 
 <!-- HERO -->
 <section class="hero" id="home">
   <div class="hero-glow"></div>
   <div class="hero-left">
-    <div class="hero-eyebrow hfi"><svg width="8" height="8" viewBox="0 0 8 8" fill="var(--lime)" style="animation:blinkc .9s step-end infinite"><circle cx="4" cy="4" r="4"/></svg> Open to Opportunities · Cikarang, Bekasi, Jawa Barat</div>
+    <div class="hero-eyebrow hfi"><svg width="8" height="8" viewBox="0 0 8 8" fill="var(--lime)" style="animation:blinkc .9s step-end infinite"><circle cx="4" cy="4" r="4"/></svg> Backend-first · Open to Opportunities · Cikarang, Bekasi</div>
     <h1 class="hero-name">
-      <div class="hw"><span class="hi hn-sub">Fullstack Developer</span></div>
+      <div class="hw"><span class="hi hn-sub">Senior IT Developer · Fullstack Engineer</span></div>
       <div class="hw"><span class="hi hn-first">A Wahid</span></div>
       <div class="hw"><span class="hi hn-last">Safhadi</span></div>
       <div class="hw"><span class="hi hn-ghost">Engineer</span></div>
     </h1>
     <p class="hero-desc hfi">
-      <strong>Senior IT Developer</strong> at Rasa Group. 4+ years building scalable backend systems
-      with <em>NestJS, Node.js &amp; Laravel</em>. I turn complex business logic into clean, performant APIs.
+      <strong>Designing reliable backend systems</strong> for real operations and production traffic.
+      4+ years shipping clean APIs and scalable data models with <em>NestJS, TypeScript, PostgreSQL, Laravel, and Go</em>.
     </p>
+    <div class="hero-proof hfi">
+      <div class="hero-proof-chip"><span class="hero-proof-dot"></span><b>4+ Years</b> Production Experience</div>
+      <div class="hero-proof-chip"><span class="hero-proof-dot"></span><b>Senior IT Developer</b> at Rasa Group</div>
+      <div class="hero-proof-chip"><span class="hero-proof-dot"></span><b>Certified</b> Backend + Database</div>
+    </div>
     <div class="hero-btns hfi">
-      <a href="#portfolio" class="btn-prime">View My Work</a>
-      <a href="#contact"   class="btn-ghost">Say Hello</a>
-      <a href="assets/cv/my-cv.pdf" target="_blank" rel="noopener noreferrer" class="btn-ghost">Open CV PDF</a>
+      <a href="#contact" class="btn-prime">Hire Me</a>
+      <a href="#portfolio" class="btn-ghost">View Work</a>
     </div>
   </div>
 
@@ -1336,12 +1423,14 @@
           <div class="tl">&nbsp;&nbsp;<span class="tc-gr">name</span><span class="tc-w">:</span> <span class="tc-y">"A Wahid Safhadi"</span><span class="tc-w">,</span></div>
           <div class="tl">&nbsp;&nbsp;<span class="tc-gr">role</span><span class="tc-w">:</span> <span class="tc-y">"Senior IT Developer"</span><span class="tc-w">,</span></div>
           <div class="tl">&nbsp;&nbsp;<span class="tc-gr">company</span><span class="tc-w">:</span> <span class="tc-y">"Rasa Group"</span><span class="tc-w">,</span></div>
-          <div class="tl">&nbsp;&nbsp;<span class="tc-gr">city</span><span class="tc-w">:</span> <span class="tc-y">"Cikarang, Bekasi, Jawa Barat"</span><span class="tc-w">,</span></div>
+          <div class="tl">&nbsp;&nbsp;<span class="tc-gr">years</span><span class="tc-w">:</span> <span class="tc-y">"4+"</span><span class="tc-w">,</span></div>
+          <div class="tl">&nbsp;&nbsp;<span class="tc-gr">city</span><span class="tc-w">:</span> <span class="tc-y">"Cikarang, Bekasi"</span><span class="tc-w">,</span></div>
           <div class="tl">&nbsp;&nbsp;<span class="tc-gr">stack</span><span class="tc-w">: [</span></div>
-          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc-y">"NestJS"</span><span class="tc-w">,</span> <span class="tc-y">"ExpressJS"</span><span class="tc-w">,</span></div>
-          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc-y">"PostgreSQL"</span><span class="tc-w">,</span> <span class="tc-y">"TypeORM"</span><span class="tc-w">,</span></div>
-          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc-y">"Laravel"</span><span class="tc-w">,</span> <span class="tc-y">"GraphQL Server"</span></div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc-y">"TypeScript"</span><span class="tc-w">,</span> <span class="tc-y">"NestJS"</span><span class="tc-w">,</span></div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc-y">"PostgreSQL"</span><span class="tc-w">,</span> <span class="tc-y">"Laravel"</span><span class="tc-w">,</span></div>
+          <div class="tl">&nbsp;&nbsp;&nbsp;&nbsp;<span class="tc-y">"Go"</span><span class="tc-w">,</span> <span class="tc-y">"GraphQL Server"</span></div>
           <div class="tl">&nbsp;&nbsp;<span class="tc-w">],</span></div>
+          <div class="tl">&nbsp;&nbsp;<span class="tc-gr">certified</span><span class="tc-w">:</span> <span class="tc-l">"Backend + Database"</span><span class="tc-w">,</span></div>
           <div class="tl">&nbsp;&nbsp;<span class="tc-gr">openToWork</span><span class="tc-w">:</span> <span class="tc-l">true</span></div>
           <div class="tl"><span class="tc-w">}</span></div>
           <div class="tl" style="margin-top:8px"><span class="tc-g">// execute?</span> <span class="term-cursor"></span></div>
@@ -1415,9 +1504,9 @@
 </div>
 
 <!-- PROJECT MODAL -->
-<div class="modal-overlay" id="project-modal">
+<div class="modal-overlay" id="project-modal" role="dialog" aria-modal="true" aria-labelledby="m-title" aria-describedby="m-desc" aria-hidden="true">
   <div class="modal-card">
-    <button class="modal-close" id="modal-close-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    <button class="modal-close" id="modal-close-btn" aria-label="Close project details"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
     <div class="modal-header">
       <div class="mh-cat" id="m-cat"></div>
       <h2 class="mh-title" id="m-title"></h2>
@@ -1746,33 +1835,33 @@
         <div class="cc-loc">Cikarang, Bekasi,<br>Jawa Barat</div>
         <div class="cc-remote"><div class="status-pulse"></div>OPEN TO REMOTE</div>
       </div>
-      <form id="contact-form" class="contact-form reveal rd3" novalidate data-endpoint="https://formspree.io/f/your-form-id" data-fallback-email="awahid.safhadi@gmail.com">
+      <form id="contact-form" class="contact-form reveal rd3" novalidate data-endpoint="" data-fallback-email="awahid.safhadi@gmail.com">
         <div class="contact-form-head">
           <h3 class="cf-title">Send a Message</h3>
-          <p class="cf-desc">Direct submit via Formspree + mail fallback</p>
+          <p class="cf-desc">Direct submit endpoint + mail fallback</p>
         </div>
         <div class="contact-form-grid">
           <label class="cf-field">
             <span>Full Name</span>
-            <input type="text" name="name" placeholder="Your full name" required>
+            <input type="text" name="name" placeholder="Your full name" autocomplete="name" required>
           </label>
           <label class="cf-field">
             <span>Email Address</span>
-            <input type="email" name="email" placeholder="name@company.com" required>
+            <input type="email" name="email" placeholder="name@company.com" autocomplete="email" inputmode="email" required>
           </label>
           <label class="cf-field full">
             <span>Subject</span>
-            <input type="text" name="subject" placeholder="Project inquiry">
+            <input type="text" name="subject" placeholder="Project inquiry" autocomplete="off">
           </label>
           <label class="cf-field full">
             <span>Message</span>
-            <textarea name="message" placeholder="Tell me about your project and timeline..." required></textarea>
+            <textarea name="message" placeholder="Tell me about your project and timeline..." autocomplete="off" required></textarea>
           </label>
-          <input class="cf-hp" type="text" name="company" tabindex="-1" autocomplete="off">
+          <input class="cf-hp" type="text" name="company" tabindex="-1" autocomplete="off" aria-hidden="true">
         </div>
         <div class="cf-actions">
           <button type="submit" class="cf-submit">Send Message ↗</button>
-          <p id="cf-status" class="cf-status" aria-live="polite">Required fields: name, email, message</p>
+          <p id="cf-status" class="cf-status" aria-live="polite" aria-atomic="true">Required fields: name, email, message</p>
         </div>
       </form>
     </div>
@@ -1781,18 +1870,44 @@
 
 <!-- FOOTER -->
 <footer>
-  <div class="fc">© 2025 A Wahid Safhadi · Built with <b><svg viewBox="0 0 24 24" width="10" height="10" fill="var(--lime)" stroke="none" style="vertical-align:middle"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></b> &amp; too much coffee</div>
+  <div class="fc">© <span id="footer-year">2026</span> A Wahid Safhadi · Built with <b><svg viewBox="0 0 24 24" width="10" height="10" fill="var(--lime)" stroke="none" style="vertical-align:middle"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></b> &amp; too much coffee</div>
   <div class="fc">Cikarang, Bekasi, Jawa Barat · <b>awahids.my.id</b></div>
 </footer>
+<button type="button" class="floating-top-btn" id="floating-top-btn" aria-label="Back to top">↑</button>
 
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
 <script>
+  // Footer year
+  const footerYearEl = document.getElementById('footer-year');
+  if (footerYearEl) footerYearEl.textContent = String(new Date().getFullYear());
+
   // Cursor
-  const cur = document.getElementById('cursor'), ring = document.getElementById('cursor-ring');
-  let mx=0,my=0,rx=0,ry=0;
-  document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; });
-  (function loop(){ cur.style.left=mx+'px'; cur.style.top=my+'px'; rx+=(mx-rx)*.11; ry+=(my-ry)*.11; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+  const cur = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (cur && ring && hasFinePointer) {
+    let mx = 0;
+    let my = 0;
+    let rx = 0;
+    let ry = 0;
+    document.addEventListener('mousemove', (e) => {
+      mx = e.clientX;
+      my = e.clientY;
+    }, { passive: true });
+    (function loop() {
+      cur.style.left = `${mx}px`;
+      cur.style.top = `${my}px`;
+      rx += (mx - rx) * 0.11;
+      ry += (my - ry) * 0.11;
+      ring.style.left = `${rx}px`;
+      ring.style.top = `${ry}px`;
+      requestAnimationFrame(loop);
+    })();
+  } else {
+    if (cur) cur.style.display = 'none';
+    if (ring) ring.style.display = 'none';
+  }
 
   // Nav scroll
   const nav = document.getElementById('nav');
@@ -1811,6 +1926,24 @@
 
   const hasGsap = Boolean(window.gsap && window.ScrollTrigger);
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const floatingTopBtn = document.getElementById('floating-top-btn');
+  const floatingTopThreshold = () => Math.max(320, window.innerHeight * 0.35);
+  const updateFloatingTopBtn = () => {
+    if (!floatingTopBtn) return;
+    const modalEl = document.getElementById('project-modal');
+    const modalActive = Boolean(modalEl && modalEl.classList.contains('active'));
+    const shouldShow = window.scrollY > floatingTopThreshold() && !modalActive && !document.body.classList.contains('is-preloading');
+    floatingTopBtn.classList.toggle('is-visible', shouldShow);
+  };
+  if (floatingTopBtn) {
+    floatingTopBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    });
+    window.addEventListener('scroll', updateFloatingTopBtn, { passive: true });
+    window.addEventListener('resize', updateFloatingTopBtn, { passive: true });
+    window.addEventListener('load', updateFloatingTopBtn, { once: true });
+    updateFloatingTopBtn();
+  }
   const preloaderEl = document.getElementById('preloader');
   const preloaderPanel = document.getElementById('preloader-panel');
   const preloaderFill = document.getElementById('pl-progress-fill');
@@ -1829,6 +1962,7 @@
       if (preloaderEl) preloaderEl.remove();
       document.body.classList.remove('is-preloading');
       if (window.ScrollTrigger) ScrollTrigger.refresh(true);
+      updateFloatingTopBtn();
     };
 
     if (hasGsap && !prefersReducedMotion && preloaderEl) {
@@ -1902,7 +2036,12 @@
 
   // Reveal (GSAP ScrollTrigger + section stagger)
   const revealTargets = Array.from(document.querySelectorAll('.reveal'));
-  if (hasGsap) {
+  if (prefersReducedMotion) {
+    revealTargets.forEach((el) => {
+      el.style.transition = 'none';
+      el.classList.add('in');
+    });
+  } else if (hasGsap) {
     gsap.registerPlugin(ScrollTrigger);
     document.body.classList.add('is-gsap-motion');
 
@@ -1916,7 +2055,7 @@
         y: 0,
         duration: 0.82,
         ease: 'power3.out',
-        stagger: prefersReducedMotion ? 0 : 0.08,
+        stagger: 0.08,
         scrollTrigger: {
           trigger: section,
           start: 'top 82%',
@@ -1960,7 +2099,7 @@
   const projectInfo = {
     'arafah-group':      { title:'Arafah Group',      cat:'NEXT.JS · JAVASCRIPT · VERCEL',    year:'2023', desc:'Website for driving course services in Bandung and surrounding areas, with focus on service information, pricing, and lead capture.', stack:['Next.js','CSS','JavaScript','HTML','Vercel','IDCloudHost'], live:'https://arafah-group.com', case:'#' },
     'adawms':            { title:'AdaWMS',            cat:'NESTJS · MYSQL · AWS S3',          year:'2024', desc:'Inventory and warehouse management platform to keep stock data synchronized between warehouses and online shop channels.', stack:['NestJS','MySQL','AWS S3','Postman','ExpressJS','NodeMailer','JWT','OAuth','Git'], live:'http://adawms.com/', case:'#' },
-    'ngaji-app':         { title:'Belajar Ngaji',     cat:'NEXT.JS · GOLANG · DOCKER',        year:'2021', desc:'Simple website to learn the basics of Quran reading with interactive lesson flow and media support.', stack:['Next.js','TypeScript','Vercel','Golang','OAuth','JWT','PostgreSQL','Docker', 'Gorm'], live:'https://belajar-ngaji.awahids.my.id/', case:'#' },
+    'ngaji-app':         { title:'Belajar Ngaji',     cat:'HTML · JAVASCRIPT · JQUERY',       year:'2021', desc:'Simple website to learn the basics of Quran reading with interactive lesson flow and media support.', stack:['HTML','CSS','JavaScript','jQuery'], live:'https://belajar-ngaji.awahids.my.id/', case:'#' },
     'api-movie-reviews': { title:'API Movie Reviews', cat:'EXPRESSJS · POSTGRESQL · HEROKU',  year:'2021', desc:'Movie review API/platform project for creating and managing ratings and reviews, aligned with CV project stack.', stack:['ExpressJS','PostgreSQL','Heroku','Postman','Git','Cloudinary'], live:'https://github.com/awahids/API-panas.git', case:'#' },
     'tokokupon':         { title:'Tokokupon.id',      cat:'NEXT.JS · NESTJS · MYSQL',         year:'2024', desc:'Landing page and CMS build for Tokokupon platform with production deployment and content management workflow.', stack:['Next.js','NestJS','Ant Design','MySQL','HTML','CSS'], live:'https://tokokupon.com', case:'#' },
     'wms-rasa-group':    { title:'WMS Rasa Group',    cat:'VUE.JS · NESTJS · POSTGRESQL',     year:'2025', desc:'Fullstack warehouse management application initiated from scratch at Rasa Group with scalable backend architecture.', stack:['NestJS','Prisma ORM','Vue.js','PostgreSQL'], live:'', case:'#' },
@@ -1968,10 +2107,19 @@
   };
   const modal = document.getElementById('project-modal');
   const modalCard = modal ? modal.querySelector('.modal-card') : null;
+  const modalCloseBtn = document.getElementById('modal-close-btn');
   const modalLiveLink = document.getElementById('m-link-live');
   const modalCaseLink = document.getElementById('m-link-case');
   const canHover = window.matchMedia('(hover: hover)').matches;
   const useMotion = hasGsap && !prefersReducedMotion;
+  let activeProjectCard = null;
+  let lastFocusedElement = null;
+  const restoreFocusAfterModal = () => {
+    if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+      lastFocusedElement.focus({ preventScroll: true });
+    }
+    lastFocusedElement = null;
+  };
   const setModalLinkState = (el, url, label) => {
     const hasUrl = typeof url === 'string' && url.trim() && url.trim() !== '#';
     if (hasUrl) {
@@ -1990,9 +2138,17 @@
   };
   const openModal = (sourceCard) => {
     if (!modal) return;
+    lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow='hidden';
-    if (!useMotion || !modalCard || !sourceCard) return;
+    updateFloatingTopBtn();
+    if (!useMotion || !modalCard || !sourceCard) {
+      requestAnimationFrame(() => {
+        if (modalCloseBtn) modalCloseBtn.focus({ preventScroll: true });
+      });
+      return;
+    }
 
     const cardRect = sourceCard.getBoundingClientRect();
     const modalRect = modalCard.getBoundingClientRect();
@@ -2004,23 +2160,34 @@
     gsap.killTweensOf([modal, modalCard]);
     gsap.set(modal, { autoAlpha: 0 });
     gsap.set(modalCard, { x: dx, y: dy, scaleX: sx, scaleY: sy, transformOrigin: 'center center' });
-    gsap.timeline()
+    gsap.timeline({
+      onComplete: () => {
+        if (modalCloseBtn) modalCloseBtn.focus({ preventScroll: true });
+      }
+    })
       .to(modal, { autoAlpha: 1, duration: 0.16, ease: 'power1.out' }, 0)
       .to(modalCard, { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.74, ease: 'elastic.out(1, 0.82)' }, 0.02);
   };
 
   const closeModal = () => {
     if (!modal || !modal.classList.contains('active')) return;
-    if (!useMotion || !modalCard) {
+    const finalizeClose = () => {
       modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
       document.body.style.overflow='';
+      if (activeProjectCard) activeProjectCard.setAttribute('aria-expanded', 'false');
+      activeProjectCard = null;
+      updateFloatingTopBtn();
+      restoreFocusAfterModal();
+    };
+    if (!useMotion || !modalCard) {
+      finalizeClose();
       return;
     }
     gsap.killTweensOf([modal, modalCard]);
     gsap.timeline({
       onComplete: () => {
-        modal.classList.remove('active');
-        document.body.style.overflow='';
+        finalizeClose();
         gsap.set(modal, { clearProps: 'opacity,visibility' });
         gsap.set(modalCard, { clearProps: 'transform' });
       }
@@ -2030,6 +2197,22 @@
   };
 
   const projectCards = Array.from(document.querySelectorAll('.port-card'));
+  projectCards.forEach((card) => {
+    const projectTitle = (card.querySelector('.port-name')?.textContent || '').trim();
+    card.setAttribute('role', 'button');
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('aria-haspopup', 'dialog');
+    card.setAttribute('aria-controls', 'project-modal');
+    card.setAttribute('aria-expanded', 'false');
+    if (projectTitle) {
+      card.setAttribute('aria-label', `Open project details: ${projectTitle}`);
+    }
+    const cardCta = card.querySelector('.port-link');
+    if (cardCta) {
+      cardCta.setAttribute('tabindex', '-1');
+      cardCta.setAttribute('aria-hidden', 'true');
+    }
+  });
   if (useMotion && canHover) {
     projectCards.forEach((card) => {
       const deco = card.querySelector('.port-deco');
@@ -2056,26 +2239,61 @@
     });
   }
 
-  projectCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const p = projectInfo[card.dataset.project]; if(!p) return;
-      document.getElementById('m-title').textContent = p.title;
-      document.getElementById('m-cat').textContent   = p.cat;
-      document.getElementById('m-year').textContent  = p.year;
-      document.getElementById('m-desc').textContent  = p.desc;
-      document.getElementById('m-stack').innerHTML   = p.stack.map(s=>`<span class="m-ss-tag">${s}</span>`).join('');
-      setModalLinkState(modalLiveLink, p.live, 'LIVE PRODUCT');
-      setModalLinkState(modalCaseLink, p.case, 'CASE STUDY');
-      if (useMotion) gsap.fromTo(card, { scale: 1 }, { scale: 0.985, duration: 0.1, yoyo: true, repeat: 1, ease: 'power1.inOut' });
-      openModal(card);
+  const openProjectDetails = (card) => {
+    const p = projectInfo[card.dataset.project];
+    if (!p) return;
+    if (activeProjectCard && activeProjectCard !== card) activeProjectCard.setAttribute('aria-expanded', 'false');
+    activeProjectCard = card;
+    activeProjectCard.setAttribute('aria-expanded', 'true');
+    document.getElementById('m-title').textContent = p.title;
+    document.getElementById('m-cat').textContent   = p.cat;
+    document.getElementById('m-year').textContent  = p.year;
+    document.getElementById('m-desc').textContent  = p.desc;
+    document.getElementById('m-stack').innerHTML   = p.stack.map((s) => `<span class="m-ss-tag">${s}</span>`).join('');
+    setModalLinkState(modalLiveLink, p.live, 'LIVE PRODUCT');
+    setModalLinkState(modalCaseLink, p.case, 'CASE STUDY');
+    if (useMotion) gsap.fromTo(card, { scale: 1 }, { scale: 0.985, duration: 0.1, yoyo: true, repeat: 1, ease: 'power1.inOut' });
+    openModal(card);
+  };
+
+  projectCards.forEach((card) => {
+    card.addEventListener('click', () => openProjectDetails(card));
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openProjectDetails(card);
+      }
     });
   });
 
-  document.getElementById('modal-close-btn').addEventListener('click', closeModal);
-  modal.addEventListener('click', e => { if(e.target===modal) closeModal(); });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-  });
+  if (modal && modalCloseBtn) {
+    modalCloseBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+    const getModalFocusable = () => Array.from(
+      modal.querySelectorAll('a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])')
+    ).filter((el) => el.getAttribute('aria-hidden') !== 'true' && el.offsetParent !== null);
+    document.addEventListener('keydown', (e) => {
+      if (!modal.classList.contains('active')) return;
+      if (e.key === 'Escape') {
+        closeModal();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const focusable = getModalFocusable();
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  }
 
   // Career Journey
   const journeyData = {
@@ -2142,6 +2360,10 @@
   const cfStatus = document.getElementById('cf-status');
   if (contactForm && cfStatus) {
     const cfSubmitBtn = contactForm.querySelector('.cf-submit');
+    const cfEmailInput = contactForm.querySelector('input[name="email"]');
+    const endpointMeta = document.querySelector('meta[name="contact-form-endpoint"]');
+    const endpointFromMeta = (endpointMeta?.getAttribute('content') || '').trim();
+    const requestTimeoutMs = 12000;
     const fallbackEmail = (contactForm.dataset.fallbackEmail || 'awahid.safhadi@gmail.com').trim();
 
     const setCfStatus = (message, type) => {
@@ -2164,11 +2386,40 @@
       window.location.href = `mailto:${fallbackEmail}?subject=${mailSubject}&body=${mailBody}`;
       return true;
     };
+    const resolveContactEndpoint = () => {
+      const runtimeEndpoint = (window.CONTACT_FORM_ENDPOINT || '').toString().trim();
+      const endpointRaw = runtimeEndpoint || endpointFromMeta || (contactForm.dataset.endpoint || '').trim();
+      if (!endpointRaw || endpointRaw.includes('your-form-id')) return '';
+      try {
+        const parsed = new URL(endpointRaw, window.location.href);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+        return parsed.href;
+      } catch (_err) {
+        return '';
+      }
+    };
+    const postContactPayload = async (endpoint, payload) => {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), requestTimeoutMs);
+      try {
+        return await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+    };
 
     contactForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(contactForm);
-      const endpoint = (contactForm.dataset.endpoint || '').trim();
+      const endpoint = resolveContactEndpoint();
       const hp = (fd.get('company') || '').toString().trim();
       const name = (fd.get('name') || '').toString().trim();
       const email = (fd.get('email') || '').toString().trim();
@@ -2183,28 +2434,30 @@
         setCfStatus('Please complete required fields first.', 'is-error');
         return;
       }
-      if (!endpoint || endpoint.includes('your-form-id')) {
+      if (cfEmailInput && !cfEmailInput.checkValidity()) {
+        setCfStatus('Please enter a valid email address.', 'is-error');
+        cfEmailInput.focus();
+        return;
+      }
+      if (!endpoint) {
         const opened = openMailClient({ name, email, subject, message });
-        setCfStatus(opened ? 'Opening email app for fallback submit...' : 'Set your Formspree endpoint first.', opened ? 'is-info' : 'is-error');
+        setCfStatus(opened ? 'Endpoint not configured. Opening email app...' : 'Set your form endpoint first.', opened ? 'is-info' : 'is-error');
         return;
       }
 
-      if (cfSubmitBtn) cfSubmitBtn.disabled = true;
+      if (cfSubmitBtn) {
+        cfSubmitBtn.disabled = true;
+        cfSubmitBtn.setAttribute('aria-disabled', 'true');
+      }
+      contactForm.setAttribute('aria-busy', 'true');
       setCfStatus('Sending message...', 'is-info');
 
       try {
-        const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            name,
-            email,
-            subject,
-            message
-          })
+        const response = await postContactPayload(endpoint, {
+          name,
+          email,
+          subject,
+          message
         });
 
         if (!response.ok) {
@@ -2216,22 +2469,38 @@
         setCfStatus('Message sent successfully.', 'is-success');
       } catch (error) {
         const opened = openMailClient({ name, email, subject, message });
+        const isTimeout = error?.name === 'AbortError';
         if (opened) {
-          setCfStatus('Direct submit failed. Opening email app...', 'is-info');
+          setCfStatus(isTimeout ? 'Request timed out. Opening email app...' : 'Direct submit failed. Opening email app...', 'is-info');
         } else {
-          setCfStatus(error.message || 'Failed to send message.', 'is-error');
+          setCfStatus(isTimeout ? 'Request timed out. Please try again.' : (error.message || 'Failed to send message.'), 'is-error');
         }
       } finally {
-        if (cfSubmitBtn) cfSubmitBtn.disabled = false;
+        if (cfSubmitBtn) {
+          cfSubmitBtn.disabled = false;
+          cfSubmitBtn.removeAttribute('aria-disabled');
+        }
+        contactForm.removeAttribute('aria-busy');
       }
     });
   }
 
   // Smooth scroll
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-      const t = document.querySelector(a.getAttribute('href'));
-      if(t){ e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+  document.querySelectorAll('a[href^="#"]').forEach((a) => {
+    a.addEventListener('click', (e) => {
+      const targetSelector = (a.getAttribute('href') || '').trim();
+      if (!targetSelector || targetSelector === '#') return;
+      const target = document.querySelector(targetSelector);
+      if (!target) return;
+      e.preventDefault();
+      const navOffset = nav ? nav.offsetHeight + 12 : 0;
+      const targetTop = targetSelector === '#home'
+        ? 0
+        : Math.max(0, target.getBoundingClientRect().top + window.scrollY - navOffset);
+      window.scrollTo({
+        top: targetTop,
+        behavior: prefersReducedMotion ? 'auto' : 'smooth'
+      });
     });
   });
 </script>
