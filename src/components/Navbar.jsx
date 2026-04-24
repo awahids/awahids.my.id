@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BOOKING_URL } from '../lib/links';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -15,14 +16,14 @@ const Navbar = () => {
       <div className="nav-right">
         <ul className="nav-links">
           <li><a href="#about" data-scroll-target="#about"><span>01</span> ABOUT</a></li>
-          <li><a href="#portfolio" data-scroll-target="#portfolio"><span>02</span> WORK</a></li>
-          <li><a href="#skills" data-scroll-target="#skills"><span>03</span> STACK</a></li>
-          <li><a href="#experience" data-scroll-target="#experience"><span>04</span> CAREER</a></li>
-          <li><a href="#certificates" data-scroll-target="#certificates"><span>05</span> CERT</a></li>
+          <li><a href="#services" data-scroll-target="#services"><span>02</span> BUILD</a></li>
+          <li><a href="#portfolio" data-scroll-target="#portfolio"><span>03</span> PROJECTS</a></li>
+          <li><a href="#skills" data-scroll-target="#skills"><span>04</span> STACK</a></li>
+          <li><a href="#experience" data-scroll-target="#experience"><span>05</span> CAREER</a></li>
           <li><a href="#contact" data-scroll-target="#contact"><span>06</span> CONTACT</a></li>
         </ul>
       </div>
-      <a href="#contact" data-scroll-target="#contact" className="nav-cta">Hire Me</a>
+      <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">Discuss a Project</a>
     </nav>
   );
 };

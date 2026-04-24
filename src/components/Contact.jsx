@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
+import { BOOKING_URL } from '../lib/links';
 
 const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
 
@@ -18,10 +19,25 @@ const Contact = () => {
         variants={sectionContainer}
       >
         <motion.div className="contact-top" variants={sectionItem}>
-          <motion.h2 className="contact-headline" variants={sectionItem}>
-            Got a <em>project?</em><br />
-            Let's build it<span>.</span>
-          </motion.h2>
+          <motion.div variants={sectionItem}>
+            <motion.h2 className="contact-headline" variants={sectionItem}>
+              Have a web app,<br />
+              dashboard, or <em>backend system</em><br />
+              to build<span>?</span>
+            </motion.h2>
+            <motion.p className="contact-kicker" variants={sectionItem}>
+              Tell me what you&apos;re building, what needs to scale, or what is currently
+              broken. I can help from interface to infrastructure.
+            </motion.p>
+            <motion.div className="contact-top-actions" variants={sectionItem}>
+              <a href="#portfolio" data-scroll-target="#portfolio" className="contact-top-link">
+                View Fullstack Work
+              </a>
+              <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="contact-top-link">
+                Discuss a Project
+              </a>
+            </motion.div>
+          </motion.div>
           <motion.div className="contact-badge" variants={sectionItem}>
             <div className="contact-badge-icon">
               <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M14 2v6h6" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M9 13h6" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M9 17h6" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
@@ -30,7 +46,7 @@ const Contact = () => {
               <span className="contact-badge-name">Curriculum Vitae</span>
               <span className="contact-badge-role">PDF Resume</span>
             </div>
-            <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="contact-badge-link">Open CV ↗</a>
+            <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="contact-badge-link">Download Resume ↗</a>
           </motion.div>
         </motion.div>
 
@@ -42,7 +58,7 @@ const Contact = () => {
             <div className="cc-lbl">EMAIL</div>
             <a href="mailto:awahid.safhadi@gmail.com" className="cc-val">awahid.safhadi@gmail.com</a>
             <div className="cc-remote">
-              <div className="status-pulse"></div> AVAILABLE FOR FREELANCE
+              <div className="status-pulse"></div> AVAILABLE FOR FULLSTACK PROJECTS
             </div>
           </motion.div>
 

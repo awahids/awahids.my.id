@@ -15,7 +15,7 @@ const Footer = () => {
         &copy; {new Date().getFullYear()} — CREATED BY <b>A WAHID SAFHADI</b>
       </div>
       <div className="fc">
-        BACKEND ENGINEER · FULLSTACK SYSTEMS
+        FULLSTACK DEVELOPER · BACKEND-FIRST DELIVERY
       </div>
       <button 
         className="floating-top-btn"

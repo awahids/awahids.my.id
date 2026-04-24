@@ -15,6 +15,7 @@ import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
 
 const Portfolio = lazy(() => import('./components/Portfolio'));
+const WhatIBuild = lazy(() => import('./components/WhatIBuild'));
 const Skills = lazy(() => import('./components/Skills'));
 const Experience = lazy(() => import('./components/Experience'));
 const Certificates = lazy(() => import('./components/Certificates'));
@@ -123,6 +124,10 @@ function App() {
           <main>
             <Hero />
             <Ticker />
+
+            <Suspense fallback={<SectionFallback />}>
+              <WhatIBuild />
+            </Suspense>
             
             <motion.section
               id="about"
@@ -138,28 +143,28 @@ function App() {
                   // BIOGRAPHY
                 </motion.div>
                 <motion.h2 className="s-title" variants={sectionItem}>
-                  Systems & <span className="s-outline">Scalability</span>
+                  Backend-First, <span className="s-outline">Fullstack</span>
                 </motion.h2>
                 <motion.div className="about-text" variants={sectionItem}>
                   <p>
-                    I am A Wahid Safhadi, a <strong>System Architect & Senior Backend Developer</strong> based in Indonesia.
-                    I specialize in building the hidden architecture that powers modern web applications—focusing on 
-                    <em> bulletproof data integrity, API performance, and technical scalability</em>.
+                    I&apos;m Wahid, a <strong>fullstack developer with a backend-first mindset</strong>.
+                    I build complete web products from frontend interfaces to API services,
+                    database architecture, integrations, and deployment.
                   </p>
                   <p style={{ marginTop: '12px' }}>
-                    Currently leading high-stakes infrastructure initiatives at <strong>Rasa Group</strong>,
-                    optimizing production backends to handle complex real-world operations without latency.
+                    My strongest area is translating messy business workflows into clean, usable,
+                    and scalable systems, currently applied in production at <strong>Rasa Group</strong>.
                   </p>
                 </motion.div>
                 <motion.div className="about-tags" variants={staggerTight}>
                   <motion.span className="about-tag" variants={sectionItem}>
-                    Problem Solver
+                    Frontend to Deployment
                   </motion.span>
                   <motion.span className="about-tag" variants={sectionItem}>
-                    Team Lead
+                    Product-Oriented
                   </motion.span>
                   <motion.span className="about-tag" variants={sectionItem}>
-                    Coffee Driven
+                    Backend-First Strength
                   </motion.span>
                 </motion.div>
               </motion.div>
@@ -171,15 +176,15 @@ function App() {
                   </motion.div>
                   <motion.div className="stat-b" variants={sectionItem}>
                     <div className="stat-b-num">20+</div>
-                    <div className="stat-b-lbl">Projects</div>
+                    <div className="stat-b-lbl">Products Built</div>
                   </motion.div>
                   <motion.div className="stat-b" variants={sectionItem}>
                     <div className="stat-b-num">5+</div>
-                    <div className="stat-b-lbl">Certificates</div>
+                    <div className="stat-b-lbl">Core Domains</div>
                   </motion.div>
                   <motion.div className="stat-b" variants={sectionItem}>
                     <div className="stat-b-num">100%</div>
-                    <div className="stat-b-lbl">Delivery</div>
+                    <div className="stat-b-lbl">Project Ownership</div>
                   </motion.div>
                 </motion.div>
                 <motion.div className="edu-entry" variants={sectionItem}>

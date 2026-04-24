@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { CustomEase } from 'gsap/CustomEase';
-
-gsap.registerPlugin(CustomEase);
+import { BOOKING_URL } from '../lib/links';
 
 const KINETIC_WORDS = [
   { text: 'FOCUS', top: '9%', left: '7%' },
@@ -21,6 +19,19 @@ const KINETIC_WORDS = [
   { text: 'IMPACT', top: '88%', right: '10%' },
 ];
 
+const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
+
+const PROOF_CHIPS = [
+  'Vue.js',
+  'Next.js',
+  'Node.js',
+  'NestJS',
+  'PostgreSQL',
+  'Docker',
+  'Vercel',
+  'API Integration',
+];
+
 const Hero = () => {
   const rootRef = useRef(null);
 
@@ -35,177 +46,205 @@ const Hero = () => {
     const hasFinePointer = window.matchMedia(
       '(hover: hover) and (pointer: fine)'
     ).matches;
+    
+    // Safety conditions
     const lightweightMotion = isMobile || !hasFinePointer;
+    const allowHoverInteractions = !prefersReducedMotion && hasFinePointer;
+    const allowParallax = allowHoverInteractions && !isMobile;
 
-    CustomEase.create('heroEase', '0.86,0,0.07,1');
-    CustomEase.create('heroMouseEase', '0.25,0.1,0.25,1');
-
-    const animations = [];
-    const disposers = [];
     let pulseTimer = 0;
     let parallaxRaf = 0;
     let px = 0;
     let py = 0;
+    const scrambleIntervals = [];
 
-    const addAnimation = (animation) => {
-      animations.push(animation);
-      return animation;
-    };
+    // Use GSAP Context for 100% clean React 18 integration and memory management
+    const ctx = gsap.context(() => {
+      const kineticWords = gsap.utils.toArray('.hero-kinetic-word');
 
-    const kineticWords = Array.from(root.querySelectorAll('.hero-kinetic-word'));
+      kineticWords.forEach((word, index) => {
+        // Initial setup
+        gsap.set(word, { opacity: 0, y: lightweightMotion ? 5 : 10 });
+        
+        // Sequence the animations so entrance doesn't overwrite floating setup
+        const tl = gsap.timeline({
+          delay: lightweightMotion ? 0.04 * index : 0.08 * index
+        });
 
-    kineticWords.forEach((word, index) => {
-      gsap.set(word, { opacity: 0, y: lightweightMotion ? 6 : 12 });
-      addAnimation(
-        gsap.to(word, {
+        // 1) Entrance phase
+        tl.to(word, {
           opacity: 0.34,
           y: 0,
-          duration: lightweightMotion ? 0.5 : 0.62,
-          ease: 'heroEase',
-          delay: lightweightMotion ? 0.05 * index : 0.08 * index,
+          duration: lightweightMotion ? 0.4 : 0.6,
+          ease: 'power3.out',
         })
-      );
-
-      addAnimation(
-        gsap.to(word, {
-          y: `+=${lightweightMotion ? 2 + (index % 3) : 4 + (index % 4) * 2}`,
-          duration: lightweightMotion ? 3.8 + (index % 2) * 0.4 : 2.8 + (index % 3) * 0.35,
+        // 2) Floating phase (chained immediately after entrance)
+        .to(word, {
+          y: lightweightMotion ? `-${2 + (index % 3)}` : `-${4 + (index % 3) * 2}`,
+          duration: lightweightMotion ? 3.5 + (index % 2) * 0.4 : 2.5 + (index % 3) * 0.3,
           ease: 'sine.inOut',
           repeat: -1,
           yoyo: true,
-          delay: index * 0.14,
-        })
-      );
-    });
+        });
 
-    const pulseRandomWord = () => {
-      if (!kineticWords.length) return;
-      const randomWord =
-        kineticWords[Math.floor(Math.random() * kineticWords.length)];
+        // Setup mouse interactions (opacity only)
+        if (allowHoverInteractions) {
+          word.addEventListener('mouseenter', () => {
+            word.classList.add('is-active');
+            gsap.to(word, {
+              opacity: 0.65,
+              duration: 0.22,
+              ease: 'sine.out',
+              overwrite: 'auto'
+            });
+          });
+          
+          word.addEventListener('mouseleave', () => {
+            word.classList.remove('is-active');
+            gsap.to(word, {
+              opacity: 0.34,
+              duration: 0.28,
+              ease: 'sine.inOut',
+              overwrite: 'auto'
+            });
+          });
+        }
+      });
 
-      randomWord.classList.add('is-active');
-      addAnimation(
-        gsap.fromTo(
-          randomWord,
-          { opacity: 0.2 },
-          {
-            opacity: 0.45,
-            duration: 0.35,
-            yoyo: true,
-            repeat: 1,
-            ease: 'sine.inOut',
-            onComplete: () => randomWord.classList.remove('is-active'),
+      // Pulse randomly chosen words with opacity
+      const pulseRandomWord = () => {
+        if (!kineticWords.length || prefersReducedMotion) return;
+        
+        const randomWord = kineticWords[Math.floor(Math.random() * kineticWords.length)];
+        
+        // Skip if user is hovering over this word directly
+        if (randomWord.classList.contains('is-active')) {
+          pulseTimer = window.setTimeout(pulseRandomWord, 500);
+          return;
+        }
+
+        randomWord.classList.add('is-active');
+        
+        gsap.to(randomWord, {
+          opacity: 0.55,
+          duration: 0.45,
+          yoyo: true,
+          repeat: 1,
+          ease: 'sine.inOut',
+          overwrite: 'auto',
+          onComplete: () => {
+            randomWord.classList.remove('is-active');
+            // Hard reset to ensure it doesn't get stuck
+            gsap.to(randomWord, { opacity: 0.34, duration: 0.2, overwrite: 'auto' });
+          },
+        });
+
+        pulseTimer = window.setTimeout(
+          pulseRandomWord,
+          1500 + Math.random() * 2500
+        );
+      };
+
+      if (!prefersReducedMotion) {
+        pulseTimer = window.setTimeout(pulseRandomWord, lightweightMotion ? 800 : 1500);
+      }
+
+      // Main specific headings interaction
+      if (allowHoverInteractions) {
+        const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        const headingWords = gsap.utils.toArray('.hn-first, .hn-last, .hn-ghost');
+        
+        headingWords.forEach((word) => {
+          const origText = word.getAttribute('data-text') || word.textContent;
+          if (!word.hasAttribute('data-text')) {
+             word.setAttribute('data-text', origText);
           }
-        )
-      );
 
-      pulseTimer = window.setTimeout(
-        pulseRandomWord,
-        1200 + Math.random() * 1800
-      );
-    };
+          let localIv;
 
-    if (!prefersReducedMotion && !lightweightMotion) {
-      const headingWords = Array.from(
-        root.querySelectorAll('.hn-first, .hn-last, .hn-ghost')
-      );
-      headingWords.forEach((word) => {
-        const onEnter = () => {
-          addAnimation(
+          word.addEventListener('mouseenter', () => {
             gsap.fromTo(
               word,
-              { opacity: 0.75, y: 2 },
+              { opacity: 0.75, y: 3 },
               {
                 opacity: 1,
                 y: 0,
-                duration: 0.45,
-                ease: 'heroEase',
-              }
-            )
-          );
-        };
-        word.addEventListener('mouseenter', onEnter);
-        disposers.push(() => word.removeEventListener('mouseenter', onEnter));
-      });
-
-      pulseTimer = window.setTimeout(pulseRandomWord, 1100);
-    } else if (!prefersReducedMotion && hasFinePointer && !isMobile) {
-      const headingWords = Array.from(
-        root.querySelectorAll('.hn-first, .hn-last, .hn-ghost')
-      );
-      headingWords.forEach((word) => {
-        const onEnter = () => {
-          addAnimation(
-            gsap.fromTo(
-              word,
-              { opacity: 0.8 },
-              {
-                opacity: 1,
                 duration: 0.35,
-                ease: 'heroEase',
+                ease: 'power3.out',
+                overwrite: 'auto'
               }
-            )
-          );
-        };
-        word.addEventListener('mouseenter', onEnter);
-        disposers.push(() => word.removeEventListener('mouseenter', onEnter));
-      });
-    }
+            );
 
-    const renderParallax = () => {
-      const rect = root.getBoundingClientRect();
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const offsetX = (px - centerX) / Math.max(centerX, 1);
-      const offsetY = (py - centerY) / Math.max(centerY, 1);
+            if (localIv) clearInterval(localIv);
+            let i = 0;
+            
+            localIv = setInterval(() => {
+              word.textContent = origText.split('').map((c, j) => {
+                if (j < i) return origText[j];
+                if (c === ' ') return ' ';
+                return CHARS[Math.floor(Math.random() * CHARS.length)];
+              }).join('');
+              
+              if (i++ >= origText.length) clearInterval(localIv);
+            }, 28);
 
-      kineticWords.forEach((word, index) => {
-        const depth = 8 + (index % 5) * 3;
-        gsap.to(word, {
-          x: offsetX * depth,
-          y: offsetY * depth * 0.7,
-          duration: 0.9,
-          ease: 'heroMouseEase',
-          overwrite: 'auto',
+            scrambleIntervals.push(localIv);
+          });
         });
-      });
-      parallaxRaf = 0;
-    };
-
-    const onPointerMove = (event) => {
-      const rect = root.getBoundingClientRect();
-      px = event.clientX - rect.left;
-      py = event.clientY - rect.top;
-
-      if (!parallaxRaf) {
-        parallaxRaf = window.requestAnimationFrame(renderParallax);
       }
-    };
 
-    const onPointerLeave = () => {
-      kineticWords.forEach((word) => {
-        gsap.to(word, {
-          x: 0,
-          y: 0,
-          duration: 1.1,
-          ease: 'heroEase',
+      // Parallax mouse follow using xPercent/yPercent only!
+      const renderParallax = () => {
+        const rect = root.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const offsetX = (px - centerX) / Math.max(centerX, 1);
+        const offsetY = (py - centerY) / Math.max(centerY, 1);
+
+        kineticWords.forEach((word, index) => {
+          const depth = 5 + (index % 5) * 3;
+          gsap.to(word, {
+            xPercent: offsetX * depth,
+            yPercent: offsetY * depth * 0.8,
+            duration: 1.2,
+            ease: 'power2.out',
+            overwrite: 'auto',
+          });
         });
-      });
-    };
+        parallaxRaf = 0;
+      };
 
-    if (!prefersReducedMotion && hasFinePointer && !isMobile) {
-      root.addEventListener('pointermove', onPointerMove, { passive: true });
-      root.addEventListener('pointerleave', onPointerLeave);
-      disposers.push(() => root.removeEventListener('pointermove', onPointerMove));
-      disposers.push(() => root.removeEventListener('pointerleave', onPointerLeave));
-    }
+      if (allowParallax) {
+        root.addEventListener('pointermove', (event) => {
+          const rect = root.getBoundingClientRect();
+          px = event.clientX - rect.left;
+          py = event.clientY - rect.top;
+
+          if (!parallaxRaf) {
+            parallaxRaf = window.requestAnimationFrame(renderParallax);
+          }
+        }, { passive: true });
+
+        root.addEventListener('pointerleave', () => {
+          kineticWords.forEach((word) => {
+            gsap.to(word, {
+              xPercent: 0,
+              yPercent: 0,
+              duration: 1.5,
+              ease: 'power2.out',
+              overwrite: 'auto'
+            });
+          });
+        });
+      }
+
+    }, rootRef);
 
     return () => {
       window.clearTimeout(pulseTimer);
       window.cancelAnimationFrame(parallaxRaf);
-
-      disposers.forEach((dispose) => dispose());
-      animations.forEach((animation) => animation?.kill?.());
+      scrambleIntervals.forEach(clearInterval);
+      ctx.revert();
     };
   }, []);
 
@@ -237,11 +276,14 @@ const Hero = () => {
           >
             <circle cx="4" cy="4" r="4" />
           </svg>
-          Backend-first | Open to Opportunities | Cikarang, Bekasi
+          Fullstack Developer | Backend-first Strength | Cikarang, Bekasi
         </div>
         <h1 className="hero-name">
           <div className="hw">
-            <span className="hi hn-sub">Fullstack Developer | Senior Backend Developer</span>
+            <span className="hi hn-sub">
+              Fullstack Developer building modern web apps, reliable APIs, and scalable
+              business systems.
+            </span>
           </div>
           <div className="hw">
             <span className="hi hn-first">A Wahid</span>
@@ -254,30 +296,26 @@ const Hero = () => {
           </div>
         </h1>
         <p className="hero-desc hfi">
-          <strong>Architecting high-performance backends</strong> for high-stakes production.
-          I bridge the gap between complex data logic and seamless user experiences with
-          <em> NestJS, TypeScript, PostgreSQL, and Go</em>.
+          I build end-to-end web applications, from responsive frontend interfaces and
+          frontend flows to backend APIs, database design, integrations, and deployment.
         </p>
         <div className="hero-proof hfi">
-          <div className="hero-proof-chip">
-            <span className="hero-proof-dot"></span>
-            <b>4+ Years</b> Production Experience
-          </div>
-          <div className="hero-proof-chip">
-            <span className="hero-proof-dot"></span>
-            <b>Senior IT Developer</b> at Rasa Group
-          </div>
-          <div className="hero-proof-chip">
-            <span className="hero-proof-dot"></span>
-            <b>Certified</b> Backend + Database
-          </div>
+          {PROOF_CHIPS.map((chip) => (
+            <div className="hero-proof-chip" key={chip}>
+              <span className="hero-proof-dot"></span>
+              {chip}
+            </div>
+          ))}
         </div>
         <div className="hero-btns hfi">
-          <a href="#contact" className="btn-prime">
-            Hire Me
+          <a href="#portfolio" className="btn-prime">
+            View Fullstack Projects
           </a>
-          <a href="#portfolio" className="btn-ghost">
-            View Work
+          <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+            Download Resume
+          </a>
+          <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+            Discuss a Project
           </a>
         </div>
       </div>
@@ -305,7 +343,7 @@ const Hero = () => {
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">role</span>
                 <span className="tc-w">:</span>{' '}
-                <span className="tc-y">&quot;System Architect&quot;</span>
+                <span className="tc-y">&quot;Fullstack Developer&quot;</span>
                 <span className="tc-w">,</span>
               </div>
               <div className="tl">
@@ -330,7 +368,13 @@ const Hero = () => {
                 <span className="tc-w">: [</span>
               </div>
               <div className="tl">
-                &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;TypeScript&quot;</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;React&quot;</span>
+                <span className="tc-w">,</span>{' '}
+                <span className="tc-y">&quot;Next.js&quot;</span>
+                <span className="tc-w">,</span>
+              </div>
+              <div className="tl">
+                &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;Node.js&quot;</span>
                 <span className="tc-w">,</span>{' '}
                 <span className="tc-y">&quot;NestJS&quot;</span>
                 <span className="tc-w">,</span>
@@ -338,13 +382,7 @@ const Hero = () => {
               <div className="tl">
                 &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;PostgreSQL&quot;</span>
                 <span className="tc-w">,</span>{' '}
-                <span className="tc-y">&quot;Laravel&quot;</span>
-                <span className="tc-w">,</span>
-              </div>
-              <div className="tl">
-                &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;Go&quot;</span>
-                <span className="tc-w">,</span>{' '}
-                <span className="tc-y">&quot;GraphQL Server&quot;</span>
+                <span className="tc-y">&quot;Docker&quot;</span>
               </div>
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-w">],</span>
@@ -352,7 +390,7 @@ const Hero = () => {
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">certified</span>
                 <span className="tc-w">:</span>{' '}
-                <span className="tc-l">&quot;Backend + Database&quot;</span>
+                <span className="tc-l">&quot;Backend + Database + API&quot;</span>
                 <span className="tc-w">,</span>
               </div>
               <div className="tl">

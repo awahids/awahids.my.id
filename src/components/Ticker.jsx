@@ -3,11 +3,10 @@ import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 
 const techStack = [
-  "TypeScript", "JavaScript", "PHP", "HTML", "CSS", "Go",
-  "NestJS", "ExpressJS", "Bootstrap", "Laravel", "Gin Gonic",
-  "TypeORM", "GORM", "Sequelize", "MySQL", "PostgreSQL",
-  "MongoDB", "Oracle Apex", "Git", "Jira", "Scrum",
-  "GraphQL Server", "Postman", "JWT"
+  "React", "Next.js", "TypeScript", "Node.js", "NestJS",
+  "Laravel", "PostgreSQL", "MySQL", "Prisma", "Docker",
+  "Vercel", "Nginx", "Cloudflare", "API Integration", "Automation",
+  "GraphQL", "REST API", "JWT", "Git", "Scrum"
 ];
 
 const Ticker = () => {

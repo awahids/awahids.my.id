@@ -5,25 +5,25 @@ import { useSectionMotion } from '../lib/sectionMotion';
 const journeyData = {
   rasa: {
     title: 'Rasa Group',
-    blurb: 'Senior IT Developer — fullstack systems with NestJS, Vue, and Postgres.',
+    blurb: 'Senior IT Developer — leading backend-first fullstack systems across operations dashboard, API architecture, and PostgreSQL data workflows.',
     tag: 'Feb 2025 — Present · Cikarang, Bekasi',
     glyph: '✺'
   },
   ethis: {
     title: 'PT. Ethis Fintech Indonesia',
-    blurb: 'Backend Developer — designed and deployed scalable APIs with NestJS, MySQL, and TypeORM.',
+    blurb: 'Backend Developer — designed and deployed scalable API services and contributed to end-to-end product delivery with NestJS, MySQL, and TypeORM.',
     tag: 'Aug 2022 — Feb 2025 · West Jakarta',
     glyph: '◍'
   },
   tokokupon: {
     title: 'Tokokupon.com',
-    blurb: 'Fullstack Engineer — built top-up platform with Next.js, NestJS, and MySQL.',
+    blurb: 'Fullstack Engineer — built top-up product across frontend flow, service API, and operational backend using Next.js, NestJS, and MySQL.',
     tag: 'Jul — Sep 2024 · Remote',
     glyph: '❍'
   },
   adala: {
     title: 'adala.id',
-    blurb: 'Backend Developer — developed scalable inventory and warehouse APIs with NestJS and MySQL.',
+    blurb: 'Backend Developer — developed scalable inventory APIs and helped shape warehouse product workflows with NestJS and MySQL.',
     tag: 'Jan 2022 — Aug 2022 · Remote',
     glyph: '✦'
   }
@@ -49,7 +49,7 @@ const Experience = () => {
         <motion.div className="journey-head" variants={sectionItem}>
           <h2 className="journey-title">
             The <span className="j-badge">journey</span>.<br />
-            Mostly <span className="j-serif">backend</span>.<br />
+            Backend-first <span className="j-serif">fullstack</span>.<br />
             Always <span className="j-stroke">shipping</span>.
           </h2>
           <div className="journey-meta">
