@@ -5,27 +5,27 @@ import { useSectionMotion } from '../lib/sectionMotion';
 const offerings = [
   {
     title: 'Web Applications',
-    desc: 'Responsive web apps with clean interfaces, maintainable architecture, and business-focused workflows.',
+    desc: 'Responsive web apps with clean UI, structured user flows, and maintainable frontend architecture.',
   },
   {
     title: 'Admin Dashboards',
-    desc: 'Operational dashboards for users, stock, reporting, approvals, and role-based business processes.',
+    desc: 'Internal tools for users, operations, reporting, approvals, and role-based business workflows.',
   },
   {
     title: 'Backend APIs',
-    desc: 'REST APIs, authentication, authorization, business rules, and robust data integration layers.',
+    desc: 'REST APIs, authentication, authorization, business logic, and integrations for production use.',
   },
   {
     title: 'Automation & Integration',
-    desc: 'Webhook pipelines, third-party API integrations, and workflow automation for real operations.',
+    desc: 'Webhook flows, third-party API integrations, and automation pipelines that reduce manual work.',
   },
   {
-    title: 'Database Architecture',
-    desc: 'Schema design, query optimization, and data integrity strategy for long-term scalability.',
+    title: 'Architecture',
+    desc: 'Database modeling, app structure, role access, and backend patterns that stay maintainable at scale.',
   },
   {
     title: 'Deployment Setup',
-    desc: 'Production deployment and runtime setup with Vercel, Docker, VPS, Nginx, and Cloudflare.',
+    desc: 'Production deployment with Vercel, Docker, VPS, Nginx, Cloudflare, and CI/CD-ready workflows.',
   },
 ];
 
@@ -44,11 +44,11 @@ const WhatIBuild = () => {
           // WHAT_I_BUILD
         </motion.div>
         <motion.h2 className="s-title" variants={sectionItem}>
-          End-to-End <span className="s-outline">Delivery</span>
+          End-to-End Web Product <span className="s-outline">Development</span>
         </motion.h2>
         <motion.p className="build-intro" variants={sectionItem}>
-          I help teams build complete products across frontend, backend, database,
-          integration, and deployment.
+          I work across the full product layer: interface, backend logic, database,
+          integration, automation, and deployment from scope to production release.
         </motion.p>
 
         <motion.div className="build-grid" variants={staggerGrid}>

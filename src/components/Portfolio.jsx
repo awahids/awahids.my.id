@@ -21,17 +21,44 @@ const projects = [
   {
     id: 'arafah-group',
     title: 'Arafah Group',
-    cat: 'Fullstack · Marketing Platform',
+    cat: 'Fullstack · Service Platform',
     year: '2023',
-    desc: 'Built a fullstack service platform for driving-course operations with responsive pages, lead capture flow, CMS updates, and deployment pipeline.',
+    desc: 'Built a fullstack service platform for driving-course operations with conversion-focused pages, lead capture handling, content workflow, and stable production deployment.',
     problem:
-      'The business needed a stronger digital funnel to explain services clearly, keep content current, and convert visitors into inbound leads.',
+      'Arafah Group needed a clearer online presence to explain driving-course services, reduce manual inquiries, keep service content updated, and turn visitors into qualified leads.',
     built:
-      'Implemented responsive marketing pages, service and pricing structure, lead capture flow, and production deployment setup for stable release cycles.',
+      'Implemented responsive service pages, structured pricing content, lead capture handling, CMS-ready content workflow, backend service layer, and production deployment setup.',
     result:
-      'Made service offerings easier to understand and gave the team a reliable workflow for publishing updates and handling incoming leads.',
-    scope: ['Frontend', 'Content Workflow', 'Backend Service', 'Deployment'],
-    stack: ['Next.js', 'CSS', 'JavaScript', 'HTML', 'Vercel', 'IDCloudHost'],
+      'Created a clearer service funnel, improved lead submission flow, and gave the team a maintainable workflow for handling content updates and inbound leads.',
+    impact:
+      'Strengthened digital trust and gave the business a more reliable path from visitor discovery to inbound inquiry.',
+    outcomes: [
+      'Clearer service messaging for first-time visitors.',
+      'More structured inbound inquiry flow for the team.',
+      'Faster content updates without repeated developer intervention.',
+    ],
+    signals: [
+      {
+        label: 'Lead Flow',
+        value: 'Higher Clarity',
+        note: 'Inquiry submissions became more structured and easier to follow up.',
+      },
+      {
+        label: 'Content Ops',
+        value: 'Faster Updates',
+        note: 'Service and pricing updates could be published with less dev dependency.',
+      },
+      {
+        label: 'Release Stability',
+        value: 'Production-Ready',
+        note: 'Deployment setup supported consistent release and maintenance flow.',
+      },
+    ],
+    type: 'Service Platform',
+    role: 'Fullstack Developer',
+    focus: ['Lead Capture', 'Content Workflow', 'Deployment'],
+    scope: ['Frontend', 'Lead Capture', 'Content Workflow', 'Deployment'],
+    stack: ['Next.js', 'JavaScript', 'Vercel', 'IDCloudHost'],
     live: 'https://arafah-group.com',
     case: '#',
     bento: 'bento-hero',
@@ -42,15 +69,42 @@ const projects = [
     title: 'AdaWMS',
     cat: 'Warehouse · Fullstack System',
     year: '2024',
-    desc: 'Built a warehouse management product with stock movement workflows, dashboard screens, role-based operations, API services, and production data flows.',
+    desc: 'Built a fullstack warehouse system for stock movement, batch tracking, picking flow, and multi-role operational visibility.',
     problem:
-      'Warehouse and online-channel stock updates were often out of sync, creating reconciliation overhead and delayed operational decisions.',
+      'Warehouse and online-channel stock data were frequently out of sync, creating reconciliation overhead and slower operational decisions.',
     built:
-      'Delivered a fullstack warehouse system with operational dashboard, stock movement workflow, role access controls, backend APIs, and integrated storage services.',
+      'Delivered operational dashboards, inbound-outbound movement flow, role-based controls, backend APIs, and storage integrations for daily warehouse execution.',
     result:
-      'Created synchronized stock visibility across workflows and reduced manual reconciliation effort for day-to-day warehouse operations.',
-    scope: ['Frontend Dashboard', 'Backend API', 'Database', 'Role Access', 'Deployment'],
-    stack: ['NestJS', 'MySQL', 'AWS S3', 'Postman', 'ExpressJS', 'NodeMailer', 'JWT', 'OAuth', 'Git'],
+      'Synchronized stock visibility across workflows and reduced manual reconciliation effort for day-to-day warehouse operations.',
+    impact:
+      'Warehouse, operations, and online-channel teams could work from the same operational data instead of fragmented stock records.',
+    outcomes: [
+      'Unified stock visibility across warehouse and online channels.',
+      'Lower reconciliation overhead in daily operations.',
+      'Faster operational decisions with cleaner warehouse data.',
+    ],
+    signals: [
+      {
+        label: 'Stock Sync',
+        value: 'More Consistent',
+        note: 'Warehouse and channel stock data were aligned across core workflows.',
+      },
+      {
+        label: 'Ops Speed',
+        value: 'Improved',
+        note: 'Operational decisions could be made faster with cleaner dashboard visibility.',
+      },
+      {
+        label: 'Reconciliation Load',
+        value: 'Reduced',
+        note: 'Manual stock-check and adjustment effort was significantly lowered.',
+      },
+    ],
+    type: 'Warehouse Management System',
+    role: 'Fullstack Developer',
+    focus: ['Operations Dashboard', 'Role Access', 'API Services'],
+    scope: ['Dashboard UI', 'Backend API', 'Database', 'Role Access', 'Deployment'],
+    stack: ['NestJS', 'MySQL', 'AWS S3', 'ExpressJS', 'JWT'],
     live: 'http://adawms.com/',
     case: '#',
     bento: 'bento-feature',
@@ -61,15 +115,42 @@ const projects = [
     title: 'Belajar Ngaji',
     cat: 'Education · Fullstack Web App',
     year: '2021',
-    desc: 'Developed an education web app with interactive lesson UI, media playback flow, backend services, relational data model, and production deployment.',
+    desc: 'Built an education web app with guided lesson flows, media playback, backend services, relational data modeling, and production deployment.',
     problem:
-      'Learners needed a simple digital flow to practice Quran reading basics without complicated navigation or fragmented lesson content.',
+      'Learners needed a simple digital flow to practice Quran reading basics without fragmented materials or confusing navigation.',
     built:
-      'Built interactive lesson flows, media playback support, backend data services, relational schema design, and containerized deployment for the platform.',
+      'Implemented lesson hierarchy, media playback support, backend content services, relational schema design, and containerized deployment setup.',
     result:
-      'Improved learning accessibility with a clearer self-study journey and a maintainable technical foundation for future lesson expansion.',
+      'Improved learning accessibility with a clearer self-study journey and a maintainable foundation for future lesson expansion.',
+    impact:
+      'Lowered learning friction for first-time users and made future content growth easier to manage.',
+    outcomes: [
+      'Simpler self-study flow for beginner learners.',
+      'Centralized lesson structure and media delivery.',
+      'Scalable foundation for adding future learning content.',
+    ],
+    signals: [
+      {
+        label: 'Learning Flow',
+        value: 'Clearer Journey',
+        note: 'Users could navigate lessons with less confusion and friction.',
+      },
+      {
+        label: 'Content Scalability',
+        value: 'More Maintainable',
+        note: 'Structured backend content model supported future lesson expansion.',
+      },
+      {
+        label: 'Platform Reliability',
+        value: 'Production-Ready',
+        note: 'Containerized deployment improved repeatability and operational consistency.',
+      },
+    ],
+    type: 'Education Platform',
+    role: 'Fullstack Developer',
+    focus: ['Learning Flow', 'Backend Service', 'Container Deployment'],
     scope: ['Frontend', 'Backend', 'Database', 'Containerization'],
-    stack: ['Next.js', 'TypeScript', 'Golang', 'Tailwind CSS', 'Gorm', 'PostgreSQL', 'Vercel', 'Docker', 'Quran API'],
+    stack: ['Next.js', 'TypeScript', 'Golang', 'PostgreSQL', 'Docker'],
     live: 'https://belajar-ngaji.online/',
     case: '#',
     bento: 'bento-tall',
@@ -80,15 +161,42 @@ const projects = [
     title: 'API Movie Reviews',
     cat: 'Backend API · Platform Core',
     year: '2021',
-    desc: 'Implemented review service APIs, data modeling, media integration, and deployment setup that powered a complete movie-rating product flow.',
+    desc: 'Built backend APIs for review lifecycle, rating flow, media upload integration, and deployment-ready service operations.',
     problem:
-      'The product required a single backend service to handle review lifecycle, ratings, and media assets for application consumption.',
+      'The product needed one reliable backend contract to handle review lifecycle, ratings, and media assets for multiple frontend flows.',
     built:
-      'Designed REST endpoints, structured relational data models, integrated media upload services, and packaged deployment-ready backend infrastructure.',
+      'Designed REST endpoints, structured relational models, integrated media upload services, and packaged deployment-ready backend infrastructure.',
     result:
-      'Provided a reusable API foundation that supported product experimentation and faster frontend integration across review workflows.',
+      'Provided a reusable API foundation that supported product experimentation and faster frontend integration.',
+    impact:
+      'Enabled quicker feature iteration by centralizing core review logic into one reusable backend service.',
+    outcomes: [
+      'Reusable API contract for review and rating features.',
+      'Cleaner integration path for frontend experimentation.',
+      'Deployment-ready backend structure for iterative product work.',
+    ],
+    signals: [
+      {
+        label: 'Integration Speed',
+        value: 'Faster',
+        note: 'Frontend experiments moved faster with stable API contracts.',
+      },
+      {
+        label: 'API Reuse',
+        value: 'Higher',
+        note: 'Core review and rating logic was reused across product scenarios.',
+      },
+      {
+        label: 'Service Stability',
+        value: 'Improved',
+        note: 'Deployment-ready backend foundation reduced iteration risk.',
+      },
+    ],
+    type: 'Backend Platform API',
+    role: 'Backend Developer',
+    focus: ['Review Lifecycle', 'Media Integration', 'API Reliability'],
     scope: ['Backend API', 'Data Model', 'Integration', 'Deployment'],
-    stack: ['ExpressJS', 'PostgreSQL', 'Heroku', 'Postman', 'Git', 'Cloudinary'],
+    stack: ['ExpressJS', 'PostgreSQL', 'Cloudinary', 'Heroku', 'Git'],
     live: 'https://github.com/awahids/API-panas.git',
     case: '#',
     bento: 'bento-wide',
@@ -99,15 +207,42 @@ const projects = [
     title: 'Tokokupon.id',
     cat: 'Marketplace · Fullstack',
     year: '2024',
-    desc: 'Delivered marketplace landing and admin CMS with responsive UI, service APIs, content management workflow, and production deployment setup.',
+    desc: 'Built a marketplace web presence and admin CMS workflow so campaigns and content updates could ship faster without risky release overhead.',
     problem:
-      'The team needed a marketplace-facing presence and admin workflow that could be updated quickly without interrupting production.',
+      'The team needed a marketplace-facing presence and an admin workflow that could be updated quickly without interrupting production.',
     built:
-      'Implemented responsive landing experience, CMS-oriented admin capabilities, supporting API services, and deployment flow for continuous updates.',
+      'Implemented responsive acquisition pages, CMS-oriented admin capabilities, supporting API services, and deployment flow for continuous updates.',
     result:
-      'Enabled faster content rollout and clearer user acquisition flow while keeping backend operations stable for ongoing product growth.',
+      'Enabled faster content rollout and clearer acquisition flow while keeping backend operations stable for ongoing growth.',
+    impact:
+      'Reduced release friction for marketing and operations by making key marketplace content easier to update.',
+    outcomes: [
+      'Faster campaign and content rollout cycles.',
+      'Clearer acquisition path for marketplace visitors.',
+      'More stable release flow for ongoing product updates.',
+    ],
+    signals: [
+      {
+        label: 'Campaign Velocity',
+        value: 'Increased',
+        note: 'Marketing pages and campaign content could be updated more quickly.',
+      },
+      {
+        label: 'CMS Agility',
+        value: 'Improved',
+        note: 'Operational updates became easier without interrupting production.',
+      },
+      {
+        label: 'Release Confidence',
+        value: 'More Stable',
+        note: 'Deployment flow supported safer and more predictable releases.',
+      },
+    ],
+    type: 'Marketplace Platform',
+    role: 'Fullstack Developer',
+    focus: ['Content Workflow', 'Admin Operations', 'Release Stability'],
     scope: ['Frontend', 'Admin CMS', 'Backend API', 'Database', 'Deployment'],
-    stack: ['Next.js', 'NestJS', 'Ant Design', 'MySQL', 'HTML', 'CSS'],
+    stack: ['Next.js', 'NestJS', 'Ant Design', 'MySQL', 'Vercel'],
     live: 'https://tokokupon.com',
     case: '#',
     bento: 'bento-compact',
@@ -118,15 +253,42 @@ const projects = [
     title: 'WMS Rasa Group',
     cat: 'Operations · WMS',
     year: '2025',
-    desc: 'Built an internal warehouse platform from zero covering operational UI, API architecture, PostgreSQL schema, and scalable deployment foundations.',
+    desc: 'Built an internal fullstack WMS for inbound-outbound execution, inventory movement, batch control, and operational reporting.',
     problem:
       'Operations relied on fragmented manual processes, making warehouse execution hard to monitor, audit, and scale reliably.',
     built:
-      'Developed an internal fullstack WMS from scratch with operational interfaces, backend service architecture, PostgreSQL domain modeling, and process controls.',
+      'Developed the platform from scratch with operational dashboards, backend API architecture, PostgreSQL domain modeling, and automation hooks for warehouse controls.',
     result:
-      'Standardized internal warehouse workflows and established a scalable platform foundation for long-term operational expansion.',
-    scope: ['Operational UI', 'Backend API', 'PostgreSQL', 'Business Workflow'],
-    stack: ['NestJS', 'Prisma ORM', 'Vue.js', 'PostgreSQL'],
+      'Standardized internal warehouse workflows and established a scalable foundation for long-term operational expansion.',
+    impact:
+      'Created better execution visibility and auditability, so warehouse decisions could be made faster with centralized operational data.',
+    outcomes: [
+      'Standardized inbound, outbound, and inventory execution flow.',
+      'Improved audit visibility for warehouse movements.',
+      'Scalable backend foundation for future operational expansion.',
+    ],
+    signals: [
+      {
+        label: 'Ops Visibility',
+        value: 'Higher',
+        note: 'Operational dashboards gave clearer execution status across warehouse activities.',
+      },
+      {
+        label: 'Audit Readiness',
+        value: 'Improved',
+        note: 'Movement tracking and data structure supported stronger audit trails.',
+      },
+      {
+        label: 'Process Standardization',
+        value: 'Established',
+        note: 'Core inbound-outbound-inventory workflows became more consistent.',
+      },
+    ],
+    type: 'Internal Warehouse System',
+    role: 'Senior IT Developer',
+    focus: ['Process Standardization', 'API Architecture', 'Operational Reporting'],
+    scope: ['Backend API', 'Dashboard', 'Database Design', 'Automation', 'Integration'],
+    stack: ['NestJS', 'Prisma ORM', 'Vue.js', 'PostgreSQL', 'Docker'],
     live: '#',
     case: '#',
     bento: 'bento-core',
@@ -137,15 +299,42 @@ const projects = [
     title: 'Qala Temu',
     cat: 'Appointment · Platform',
     year: '2025',
-    desc: 'Built a fullstack appointment platform with booking UX, admin dashboard, authentication, API services, relational database modeling, and Docker deployment.',
+    desc: 'Built a fullstack appointment platform for scheduling, service discovery, admin operations, and end-to-end booking flow.',
     problem:
-      'Booking and scheduling workflows needed a streamlined digital flow for both end users and internal operators.',
+      'Booking and scheduling relied on manual coordination, creating friction for end users and operational teams.',
     built:
       'Implemented customer booking experience, admin dashboard, auth and role flows, NestJS API services, relational schema, and Dockerized deployment.',
     result:
-      'Delivered a production-ready appointment platform that improved scheduling flow clarity and reduced operational friction.',
-    scope: ['Frontend Experience', 'Admin Dashboard', 'Auth', 'Backend API', 'Deployment'],
-    stack: ['Docker', 'React', 'NestJS', 'Prisma', 'PostgreSQL'],
+      'Delivered a production-ready appointment platform that improved booking clarity and reduced scheduling friction.',
+    impact:
+      'Gave both customers and operators a clearer scheduling workflow with fewer manual coordination steps.',
+    outcomes: [
+      'Cleaner booking flow from discovery to appointment submission.',
+      'Operational dashboard for managing schedules and services.',
+      'Lower manual coordination across customer and admin workflows.',
+    ],
+    signals: [
+      {
+        label: 'Booking Clarity',
+        value: 'Improved',
+        note: 'Users could complete scheduling with fewer handoff steps.',
+      },
+      {
+        label: 'Admin Throughput',
+        value: 'More Efficient',
+        note: 'Dashboard workflows made schedule and service management more practical.',
+      },
+      {
+        label: 'Scheduling Friction',
+        value: 'Reduced',
+        note: 'Manual back-and-forth coordination decreased across user and operator flow.',
+      },
+    ],
+    type: 'Appointment Platform',
+    role: 'Fullstack Developer',
+    focus: ['Booking Flow', 'Admin Management', 'Production Deployment'],
+    scope: ['Booking UI', 'Admin Dashboard', 'API', 'Database', 'Deployment'],
+    stack: ['React', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker'],
     live: 'https://janji.online',
     case: '#',
     bento: 'bento-accent',
@@ -244,9 +433,9 @@ const Portfolio = () => {
         <motion.h2 className="s-title" variants={sectionItem}>
           Selected <span className="s-outline">Fullstack Projects</span>
         </motion.h2>
-        <motion.p className="port-intro" variants={sectionItem} style={{ color: 'rgba(255,255,255,0.4)', marginTop: '12px', fontSize: '14px', maxWidth: '600px' }}>
-          Selected fullstack projects where I worked across frontend, backend,
-          database, integration, and deployment.
+        <motion.p className="port-intro" variants={sectionItem}>
+          Not just pretty screens and not just lonely APIs. These projects connect
+          UI, business logic, data, and production reality.
         </motion.p>
 
         <motion.div
@@ -271,7 +460,7 @@ const Portfolio = () => {
               <h3 className="port-name">{p.title}</h3>
               <p className="port-desc">{p.desc}</p>
               <div className="port-stack">
-                {p.scope.map(s => (
+                {p.scope.slice(0, 4).map(s => (
                   <span key={s} className="port-tag">{s}</span>
                 ))}
               </div>
@@ -336,8 +525,49 @@ const Portfolio = () => {
                     <div className="m-case-lbl">Result</div>
                     <p className="m-body-text">{selectedProject.result}</p>
                   </article>
+                  <article className="m-case-block">
+                    <div className="m-case-lbl">Business Impact</div>
+                    <p className="m-body-text">{selectedProject.impact}</p>
+                  </article>
+                  <article className="m-case-block">
+                    <div className="m-case-lbl">Key Outcomes</div>
+                    <ul className="m-impact-list">
+                      {selectedProject.outcomes.map((outcome) => (
+                        <li key={outcome}>{outcome}</li>
+                      ))}
+                    </ul>
+                  </article>
                 </div>
                 <div className="modal-sidebar">
+                  <div className="m-sidebar-section">
+                    <div className="m-ss-lbl">Project Snapshot</div>
+                    <div className="m-meta-grid">
+                      <div className="m-meta-item">
+                        <span>Type</span>
+                        <strong>{selectedProject.type}</strong>
+                      </div>
+                      <div className="m-meta-item">
+                        <span>Role</span>
+                        <strong>{selectedProject.role}</strong>
+                      </div>
+                      <div className="m-meta-item">
+                        <span>Focus</span>
+                        <strong>{selectedProject.focus.join(' · ')}</strong>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="m-sidebar-section">
+                    <div className="m-ss-lbl">Impact Signals</div>
+                    <div className="m-signal-grid">
+                      {selectedProject.signals.map((signal) => (
+                        <div key={signal.label} className="m-signal-item">
+                          <span className="m-signal-label">{signal.label}</span>
+                          <strong className="m-signal-value">{signal.value}</strong>
+                          <span className="m-signal-note">{signal.note}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                   <div className="m-sidebar-section">
                     <div className="m-ss-lbl">Fullstack Scope</div>
                     <div className="m-ss-tags">
@@ -355,9 +585,9 @@ const Portfolio = () => {
                     </div>
                   </div>
                   <div className="m-actions">
-                    <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="m-btn ghost">Discuss Similar Project ↗</a>
+                    <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="m-btn prime">Discuss Similar Project ↗</a>
                     {selectedProject.live !== '#' && (
-                      <a href={selectedProject.live} target="_blank" rel="noopener noreferrer" className="m-btn prime">Live Product ↗</a>
+                      <a href={selectedProject.live} target="_blank" rel="noopener noreferrer" className="m-btn ghost">View Live Product ↗</a>
                     )}
                     {selectedProject.case !== '#' && (
                       <a href={selectedProject.case} target="_blank" rel="noopener noreferrer" className="m-btn ghost">Case Study ↗</a>

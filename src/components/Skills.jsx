@@ -61,11 +61,11 @@ const Skills = () => {
             Fullstack Capability <em>by Layer</em>.
           </motion.h2>
           <motion.span className="skills-copy-sub" variants={sectionItem}>
-            Frontend, backend, database, deployment.
+            Frontend, backend, database, deployment, and automation.
           </motion.span>
           <motion.p className="skills-copy-desc" variants={sectionItem}>
-            Structured stack used to ship complete products, from UI experience and API
-            architecture to data modeling and production operations.
+            Connected layers used to ship one working product, from UI experience and API
+            architecture to data modeling, production operations, and automation workflows.
           </motion.p>
         </div>
 

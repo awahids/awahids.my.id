@@ -29,7 +29,6 @@ const PROOF_CHIPS = [
   'PostgreSQL',
   'Docker',
   'Vercel',
-  'API Integration',
 ];
 
 const Hero = () => {
@@ -276,13 +275,12 @@ const Hero = () => {
           >
             <circle cx="4" cy="4" r="4" />
           </svg>
-          Fullstack Developer | Backend-first Strength | Cikarang, Bekasi
+          FULLSTACK DEVELOPER · BACKEND-FIRST · CIKARANG, BEKASI
         </div>
         <h1 className="hero-name">
           <div className="hw">
             <span className="hi hn-sub">
-              Fullstack Developer building modern web apps, reliable APIs, and scalable
-              business systems.
+              Fullstack Developer · Backend-First Engineer
             </span>
           </div>
           <div className="hw">
@@ -296,8 +294,8 @@ const Hero = () => {
           </div>
         </h1>
         <p className="hero-desc hfi">
-          I build end-to-end web applications, from responsive frontend interfaces and
-          frontend flows to backend APIs, database design, integrations, and deployment.
+          I build web apps, dashboards, APIs, and business systems from frontend to deployment.
+          I build the interface users click and the backend that survives what they do next.
         </p>
         <div className="hero-proof hfi">
           {PROOF_CHIPS.map((chip) => (
@@ -314,8 +312,8 @@ const Hero = () => {
           <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
             Download Resume
           </a>
-          <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-            Discuss a Project
+          <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn-inline">
+            Discuss a Project ↗
           </a>
         </div>
       </div>

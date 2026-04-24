@@ -143,17 +143,17 @@ function App() {
                   // BIOGRAPHY
                 </motion.div>
                 <motion.h2 className="s-title" variants={sectionItem}>
-                  Backend-First, <span className="s-outline">Fullstack</span>
+                  Backend-first. <span className="s-outline">Fullstack in practice.</span>
                 </motion.h2>
                 <motion.div className="about-text" variants={sectionItem}>
                   <p>
-                    I&apos;m Wahid, a <strong>fullstack developer with a backend-first mindset</strong>.
-                    I build complete web products from frontend interfaces to API services,
-                    database architecture, integrations, and deployment.
+                    I build complete web products, with the strongest layer behind the screen:
+                    <strong> APIs, database design, business logic, automation, and deployment</strong>.
                   </p>
                   <p style={{ marginTop: '12px' }}>
-                    My strongest area is translating messy business workflows into clean, usable,
-                    and scalable systems, currently applied in production at <strong>Rasa Group</strong>.
+                    Good interfaces matter. But production systems need reliable workflows,
+                    clean data, and backend logic that survives real users. That is the approach
+                    I apply in production at <strong>Rasa Group</strong>.
                   </p>
                 </motion.div>
                 <motion.div className="about-tags" variants={staggerTight}>

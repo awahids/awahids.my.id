@@ -16,10 +16,10 @@ const Navbar = () => {
       <div className="nav-right">
         <ul className="nav-links">
           <li><a href="#about" data-scroll-target="#about"><span>01</span> ABOUT</a></li>
-          <li><a href="#services" data-scroll-target="#services"><span>02</span> BUILD</a></li>
+          <li><a href="#services" data-scroll-target="#services"><span>02</span> SERVICES</a></li>
           <li><a href="#portfolio" data-scroll-target="#portfolio"><span>03</span> PROJECTS</a></li>
-          <li><a href="#skills" data-scroll-target="#skills"><span>04</span> STACK</a></li>
-          <li><a href="#experience" data-scroll-target="#experience"><span>05</span> CAREER</a></li>
+          <li><a href="#skills" data-scroll-target="#skills"><span>04</span> CAPABILITY</a></li>
+          <li><a href="#experience" data-scroll-target="#experience"><span>05</span> JOURNEY</a></li>
           <li><a href="#contact" data-scroll-target="#contact"><span>06</span> CONTACT</a></li>
         </ul>
       </div>

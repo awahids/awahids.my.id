@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 
@@ -31,8 +31,40 @@ const certs = [
 ];
 
 const Certificates = () => {
+  const [isMobile, setIsMobile] = useState(false);
+  const [showAllMobile, setShowAllMobile] = useState(false);
   const { viewport, sectionContainer, sectionItem, staggerGrid } =
     useSectionMotion();
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 720px)');
+
+    const syncViewport = (event) => {
+      setIsMobile(event.matches);
+      if (!event.matches) {
+        setShowAllMobile(true);
+      } else {
+        setShowAllMobile(false);
+      }
+    };
+
+    syncViewport(mediaQuery);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', syncViewport);
+    } else {
+      mediaQuery.addListener(syncViewport);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', syncViewport);
+      } else {
+        mediaQuery.removeListener(syncViewport);
+      }
+    };
+  }, []);
+
+  const visibleCerts = isMobile && !showAllMobile ? certs.slice(0, 3) : certs;
 
   return (
     <section className="s-cert" id="certificates">
@@ -48,16 +80,16 @@ const Certificates = () => {
         <motion.h2 className="s-title" variants={sectionItem}>
           Licenses & <span className="s-outline">Certificates</span>
         </motion.h2>
-        <motion.p className="cert-intro" variants={sectionItem} style={{ color: 'rgba(255,255,255,0.4)', marginTop: '12px', fontSize: '14px', maxWidth: '600px' }}>
-          Evidence of continuous learning and technical validation in backend development, 
-          database architecture, and modern programming standards.
+        <motion.p className="cert-intro" variants={sectionItem}>
+          Supporting credentials across backend development, database systems,
+          JavaScript, and cloud fundamentals.
         </motion.p>
 
         <motion.div
           className="cert-grid"
           variants={staggerGrid}
         >
-          {certs.map((c, i) => (
+          {visibleCerts.map((c, i) => (
             <motion.div
               key={i}
               className="cert-card"
@@ -79,6 +111,17 @@ const Certificates = () => {
             </motion.div>
           ))}
         </motion.div>
+
+        {isMobile && certs.length > 3 && (
+          <motion.button
+            type="button"
+            className="cert-mobile-toggle"
+            onClick={() => setShowAllMobile((prev) => !prev)}
+            variants={sectionItem}
+          >
+            {showAllMobile ? 'Show Less' : `View More (${certs.length - 3})`}
+          </motion.button>
+        )}
       </motion.div>
     </section>
   );

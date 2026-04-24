@@ -26,15 +26,15 @@ const Contact = () => {
               to build<span>?</span>
             </motion.h2>
             <motion.p className="contact-kicker" variants={sectionItem}>
-              Tell me what you&apos;re building, what needs to scale, or what is currently
-              broken. I can help from interface to infrastructure.
+              Tell me what you&apos;re building, what&apos;s breaking, or what needs to scale.
+              I help teams scope, build, and ship reliable fullstack systems.
             </motion.p>
             <motion.div className="contact-top-actions" variants={sectionItem}>
               <a href="#portfolio" data-scroll-target="#portfolio" className="contact-top-link">
                 View Fullstack Work
               </a>
               <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="contact-top-link">
-                Discuss a Project
+                Start a Project Conversation
               </a>
             </motion.div>
           </motion.div>
@@ -64,20 +64,18 @@ const Contact = () => {
 
           <motion.div className="contact-card" variants={sectionItem}>
             <div className="cc-icon">
-              <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l2.12-2.12a5 5 0 0 0-7.07-7.07L11.4 5.53" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M14 11a5 5 0 0 0-7.54-.54L4.34 12.6a5 5 0 0 0 7.07 7.07l1.18-1.18" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M12 7v6l4 2" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
-            <div className="cc-lbl">SOCIALS</div>
-            <div className="cc-soc-list">
-              <a href="https://github.com/awahids" target="_blank" rel="noopener noreferrer" className="cc-soc-link">
-                <strong>GITHUB</strong> <span>@awahids ↗</span>
-              </a>
-              <a href="https://linkedin.com/in/awahid" target="_blank" rel="noopener noreferrer" className="cc-soc-link">
-                <strong>LINKEDIN</strong> <span>/in/awahid ↗</span>
-              </a>
-              <a href="https://blog.awahids.my.id" target="_blank" rel="noopener noreferrer" className="cc-soc-link">
-                <strong>BLOG</strong> <span>awahids.my.id ↗</span>
-              </a>
+            <div className="cc-lbl">AVAILABILITY</div>
+            <div className="cc-loc">Open for build, scale, or modernization work.</div>
+            <div className="cc-bullet-list">
+              <div>Web apps and admin dashboards</div>
+              <div>Backend APIs and system workflows</div>
+              <div>Automation and production deployment</div>
             </div>
+            <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="cc-soc-link">
+              <strong>DISCUSS PROJECT</strong> <span>Book a call ↗</span>
+            </a>
           </motion.div>
 
           <motion.div className="contact-card" variants={sectionItem}>

@@ -5,7 +5,7 @@ import { useSectionMotion } from '../lib/sectionMotion';
 const journeyData = {
   rasa: {
     title: 'Rasa Group',
-    blurb: 'Senior IT Developer — leading backend-first fullstack systems across operations dashboard, API architecture, and PostgreSQL data workflows.',
+    blurb: 'Senior IT Developer — built and maintained warehouse, logistics, and operational systems across dashboard interfaces, backend APIs, database workflows, and internal automation.',
     tag: 'Feb 2025 — Present · Cikarang, Bekasi',
     glyph: '✺'
   },
@@ -49,8 +49,8 @@ const Experience = () => {
         <motion.div className="journey-head" variants={sectionItem}>
           <h2 className="journey-title">
             The <span className="j-badge">journey</span>.<br />
-            Backend-first <span className="j-serif">fullstack</span>.<br />
-            Always <span className="j-stroke">shipping</span>.
+            Backend-first <span className="j-serif">mindset</span>.<br />
+            Fullstack in <span className="j-stroke">practice</span>.
           </h2>
           <div className="journey-meta">
             BASED IN CIKARANG, BEKASI <span className="j-dot">●</span><br />
