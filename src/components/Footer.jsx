@@ -4,6 +4,7 @@ import { useSectionMotion } from '../lib/sectionMotion';
 
 const Footer = () => {
   const { sectionItem } = useSectionMotion();
+  const year = new Date().getFullYear();
 
   return (
     <motion.footer
@@ -11,11 +12,16 @@ const Footer = () => {
       animate="visible"
       variants={sectionItem}
     >
-      <div className="fc">
-        &copy; {new Date().getFullYear()} — CREATED BY <b>A WAHID SAFHADI</b>
+      <div className="footer-top">
+        <div className="fc">
+          &copy; {year} — CREATED BY <b>A WAHID SAFHADI</b>
+        </div>
+        <div className="fc">
+          FULLSTACK DEVELOPER · BACKEND-FIRST DELIVERY
+        </div>
       </div>
-      <div className="fc">
-        FULLSTACK DEVELOPER · BACKEND-FIRST DELIVERY
+      <div className="footer-wordmark-wrap" aria-hidden="true">
+        <div className="footer-wordmark">awahids</div>
       </div>
       <button 
         className="floating-top-btn"

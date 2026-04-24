@@ -27,7 +27,6 @@ const PROOF_CHIPS = [
   'NestJS',
   'PostgreSQL',
   'Docker',
-  'Vercel',
 ];
 
 const Hero = () => {
@@ -44,7 +43,7 @@ const Hero = () => {
     const hasFinePointer = window.matchMedia(
       '(hover: hover) and (pointer: fine)'
     ).matches;
-    
+
     // Safety conditions
     const lightweightMotion = isMobile || !hasFinePointer;
     const allowHoverInteractions = !prefersReducedMotion && hasFinePointer;
@@ -63,7 +62,7 @@ const Hero = () => {
       kineticWords.forEach((word, index) => {
         // Initial setup
         gsap.set(word, { opacity: 0, y: lightweightMotion ? 5 : 10 });
-        
+
         // Sequence the animations so entrance doesn't overwrite floating setup
         const tl = gsap.timeline({
           delay: lightweightMotion ? 0.04 * index : 0.08 * index
@@ -76,14 +75,14 @@ const Hero = () => {
           duration: lightweightMotion ? 0.4 : 0.6,
           ease: 'power3.out',
         })
-        // 2) Floating phase (chained immediately after entrance)
-        .to(word, {
-          y: lightweightMotion ? `-${2 + (index % 3)}` : `-${4 + (index % 3) * 2}`,
-          duration: lightweightMotion ? 3.5 + (index % 2) * 0.4 : 2.5 + (index % 3) * 0.3,
-          ease: 'sine.inOut',
-          repeat: -1,
-          yoyo: true,
-        });
+          // 2) Floating phase (chained immediately after entrance)
+          .to(word, {
+            y: lightweightMotion ? `-${2 + (index % 3)}` : `-${4 + (index % 3) * 2}`,
+            duration: lightweightMotion ? 3.5 + (index % 2) * 0.4 : 2.5 + (index % 3) * 0.3,
+            ease: 'sine.inOut',
+            repeat: -1,
+            yoyo: true,
+          });
 
         // Setup mouse interactions (opacity only)
         if (allowHoverInteractions) {
@@ -96,7 +95,7 @@ const Hero = () => {
               overwrite: 'auto'
             });
           });
-          
+
           word.addEventListener('mouseleave', () => {
             word.classList.remove('is-active');
             gsap.to(word, {
@@ -112,9 +111,9 @@ const Hero = () => {
       // Pulse randomly chosen words with opacity
       const pulseRandomWord = () => {
         if (!kineticWords.length || prefersReducedMotion) return;
-        
+
         const randomWord = kineticWords[Math.floor(Math.random() * kineticWords.length)];
-        
+
         // Skip if user is hovering over this word directly
         if (randomWord.classList.contains('is-active')) {
           pulseTimer = window.setTimeout(pulseRandomWord, 500);
@@ -122,7 +121,7 @@ const Hero = () => {
         }
 
         randomWord.classList.add('is-active');
-        
+
         gsap.to(randomWord, {
           opacity: 0.55,
           duration: 0.45,
@@ -151,11 +150,11 @@ const Hero = () => {
       if (allowHoverInteractions) {
         const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         const headingWords = gsap.utils.toArray('.hn-first, .hn-last, .hn-ghost');
-        
+
         headingWords.forEach((word) => {
           const origText = word.getAttribute('data-text') || word.textContent;
           if (!word.hasAttribute('data-text')) {
-             word.setAttribute('data-text', origText);
+            word.setAttribute('data-text', origText);
           }
 
           let localIv;
@@ -175,14 +174,14 @@ const Hero = () => {
 
             if (localIv) clearInterval(localIv);
             let i = 0;
-            
+
             localIv = setInterval(() => {
               word.textContent = origText.split('').map((c, j) => {
                 if (j < i) return origText[j];
                 if (c === ' ') return ' ';
                 return CHARS[Math.floor(Math.random() * CHARS.length)];
               }).join('');
-              
+
               if (i++ >= origText.length) clearInterval(localIv);
             }, 28);
 
