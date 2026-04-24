@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { BOOKING_URL } from '../lib/links';
 
 const KINETIC_WORDS = [
   { text: 'FOCUS', top: '9%', left: '7%' },
@@ -275,7 +274,7 @@ const Hero = () => {
           >
             <circle cx="4" cy="4" r="4" />
           </svg>
-          FULLSTACK DEVELOPER · BACKEND-FIRST · CIKARANG, BEKASI
+          FULLSTACK DEVELOPER · BACKEND-FIRST ENGINEER
         </div>
         <h1 className="hero-name">
           <div className="hw">
@@ -295,6 +294,11 @@ const Hero = () => {
         </h1>
         <p className="hero-desc hfi">
           I build web apps, dashboards, APIs, and business systems from frontend to deployment.
+        </p>
+        <p className="hero-desc hero-desc-sub hfi">
+          I help teams turn ideas and messy workflows into usable, scalable, production-ready web products.
+        </p>
+        <p className="hero-signature hfi">
           I build the interface users click and the backend that survives what they do next.
         </p>
         <div className="hero-proof hfi">
@@ -311,9 +315,6 @@ const Hero = () => {
           </a>
           <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
             Download Resume
-          </a>
-          <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="btn-inline">
-            Discuss a Project ↗
           </a>
         </div>
       </div>

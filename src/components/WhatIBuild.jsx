@@ -48,7 +48,7 @@ const WhatIBuild = () => {
         </motion.h2>
         <motion.p className="build-intro" variants={sectionItem}>
           I work across the full product layer: interface, backend logic, database,
-          integration, automation, and deployment from scope to production release.
+          integrations, automation, and deployment.
         </motion.p>
 
         <motion.div className="build-grid" variants={staggerGrid}>

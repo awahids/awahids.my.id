@@ -27,14 +27,19 @@ const Contact = () => {
             </motion.h2>
             <motion.p className="contact-kicker" variants={sectionItem}>
               Tell me what you&apos;re building, what&apos;s breaking, or what needs to scale.
-              I help teams scope, build, and ship reliable fullstack systems.
+              I can help with fullstack development, backend architecture, workflow automation, and deployment.
             </motion.p>
             <motion.div className="contact-top-actions" variants={sectionItem}>
-              <a href="#portfolio" data-scroll-target="#portfolio" className="contact-top-link">
-                View Fullstack Work
-              </a>
-              <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="contact-top-link">
+              <a
+                href={BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contact-top-link is-prime"
+              >
                 Start a Project Conversation
+              </a>
+              <a href="#portfolio" data-scroll-target="#portfolio" className="contact-top-link">
+                View Fullstack Projects
               </a>
             </motion.div>
           </motion.div>

@@ -434,8 +434,7 @@ const Portfolio = () => {
           Selected <span className="s-outline">Fullstack Projects</span>
         </motion.h2>
         <motion.p className="port-intro" variants={sectionItem}>
-          Not just pretty screens and not just lonely APIs. These projects connect
-          UI, business logic, data, and production reality.
+          Real projects across web apps, dashboards, backend systems, automation, and deployment.
         </motion.p>
 
         <motion.div
@@ -459,8 +458,9 @@ const Portfolio = () => {
               {p.cat && <div className="port-cat">{p.cat}</div>}
               <h3 className="port-name">{p.title}</h3>
               <p className="port-desc">{p.desc}</p>
+              <div className="port-scope">Scope</div>
               <div className="port-stack">
-                {p.scope.slice(0, 4).map(s => (
+                {p.scope.slice(0, 5).map(s => (
                   <span key={s} className="port-tag">{s}</span>
                 ))}
               </div>

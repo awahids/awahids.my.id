@@ -1,11 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { BOOKING_URL } from '../lib/links';
 
+const navItems = [
+  { id: 'services', label: 'Services', num: '01' },
+  { id: 'portfolio', label: 'Projects', num: '02' },
+  { id: 'experience', label: 'Experience', num: '03' },
+  { id: 'contact', label: 'Contact', num: '04' },
+];
+
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState(navItems[0].id);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+
+      let current = navItems[0].id;
+
+      navItems.forEach((item) => {
+        const section = document.getElementById(item.id);
+        if (!section) return;
+
+        const sectionTop = section.offsetTop - 180;
+        if (window.scrollY >= sectionTop) {
+          current = item.id;
+        }
+      });
+
+      setActiveSection(current);
+    };
+
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -15,12 +41,17 @@ const Navbar = () => {
       <a href="#home" data-scroll-target="#home" className="nav-logo">A<b>.</b>W<b>.</b>S<b>.</b></a>
       <div className="nav-right">
         <ul className="nav-links">
-          <li><a href="#about" data-scroll-target="#about"><span>01</span> ABOUT</a></li>
-          <li><a href="#services" data-scroll-target="#services"><span>02</span> SERVICES</a></li>
-          <li><a href="#portfolio" data-scroll-target="#portfolio"><span>03</span> PROJECTS</a></li>
-          <li><a href="#skills" data-scroll-target="#skills"><span>04</span> CAPABILITY</a></li>
-          <li><a href="#experience" data-scroll-target="#experience"><span>05</span> JOURNEY</a></li>
-          <li><a href="#contact" data-scroll-target="#contact"><span>06</span> CONTACT</a></li>
+          {navItems.map((item) => (
+            <li key={item.id}>
+              <a
+                href={`#${item.id}`}
+                data-scroll-target={`#${item.id}`}
+                className={activeSection === item.id ? 'is-active' : ''}
+              >
+                <span>{item.num}</span> {item.label.toUpperCase()}
+              </a>
+            </li>
+          ))}
         </ul>
       </div>
       <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">Discuss a Project</a>

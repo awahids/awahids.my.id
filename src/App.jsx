@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -13,24 +13,31 @@ import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
-
-const Portfolio = lazy(() => import('./components/Portfolio'));
-const WhatIBuild = lazy(() => import('./components/WhatIBuild'));
-const Skills = lazy(() => import('./components/Skills'));
-const Experience = lazy(() => import('./components/Experience'));
-const Certificates = lazy(() => import('./components/Certificates'));
-const Contact = lazy(() => import('./components/Contact'));
-
-const SectionFallback = () => (
-  <div className="section-fallback" aria-hidden="true">
-    <div className="section-fallback-line"></div>
-  </div>
-);
+import Portfolio from './components/Portfolio';
+import WhatIBuild from './components/WhatIBuild';
+import Skills from './components/Skills';
+import Experience from './components/Experience';
+import Certificates from './components/Certificates';
+import Contact from './components/Contact';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
+const BOT_USER_AGENT_PATTERN =
+  /bot|crawler|spider|crawling|facebookexternalhit|slackbot|twitterbot|linkedinbot|discordbot|whatsapp|google-inspectiontool|lighthouse/i;
+
+const shouldBypassPreloader = () => {
+  if (typeof window === 'undefined') return false;
+
+  const prefersReducedMotion =
+    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  const userAgent = window.navigator?.userAgent || '';
+  const botLikeAgent = BOT_USER_AGENT_PATTERN.test(userAgent);
+
+  return prefersReducedMotion || botLikeAgent;
+};
+
 function App() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !shouldBypassPreloader());
   const {
     viewport: sectionViewport,
     sectionContainer,
@@ -109,112 +116,96 @@ function App() {
   return (
     <div className={`app-container ${loading ? 'is-preloading' : ''}`}>
       {loading && <Preloader onComplete={() => setLoading(false)} />}
-      
-      {!loading && (
-        <>
-          <div className="scroll-progress">
-            <div className="scroll-progress-bar"></div>
-          </div>
-          
-          <CustomCursor />
-          <Navbar />
-          <MobileNav />
-          <SocialRail />
-          
-          <main>
-            <Hero />
-            <Ticker />
 
-            <Suspense fallback={<SectionFallback />}>
-              <WhatIBuild />
-            </Suspense>
-            
-            <motion.section
-              id="about"
-              className="s-about"
-              initial="hidden"
-              whileInView="visible"
-              viewport={sectionViewport}
-              variants={sectionContainer}
-            >
-              <div className="about-bg">A.W.S</div>
-              <motion.div className="about-left" variants={sectionItem}>
-                <motion.div className="s-eyebrow" variants={sectionItem}>
-                  // BIOGRAPHY
-                </motion.div>
-                <motion.h2 className="s-title" variants={sectionItem}>
-                  Backend-first. <span className="s-outline">Fullstack in practice.</span>
-                </motion.h2>
-                <motion.div className="about-text" variants={sectionItem}>
-                  <p>
-                    I build complete web products, with the strongest layer behind the screen:
-                    <strong> APIs, database design, business logic, automation, and deployment</strong>.
-                  </p>
-                  <p style={{ marginTop: '12px' }}>
-                    Good interfaces matter. But production systems need reliable workflows,
-                    clean data, and backend logic that survives real users. That is the approach
-                    I apply in production at <strong>Rasa Group</strong>.
-                  </p>
-                </motion.div>
-                <motion.div className="about-tags" variants={staggerTight}>
-                  <motion.span className="about-tag" variants={sectionItem}>
-                    Frontend to Deployment
-                  </motion.span>
-                  <motion.span className="about-tag" variants={sectionItem}>
-                    Product-Oriented
-                  </motion.span>
-                  <motion.span className="about-tag" variants={sectionItem}>
-                    Backend-First Strength
-                  </motion.span>
-                </motion.div>
-              </motion.div>
-              <motion.div className="about-right" variants={sectionItem}>
-                <motion.div className="stats-2x2" variants={staggerTight}>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">4+</div>
-                    <div className="stat-b-lbl">Years Exp.</div>
-                  </motion.div>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">20+</div>
-                    <div className="stat-b-lbl">Products Built</div>
-                  </motion.div>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">5+</div>
-                    <div className="stat-b-lbl">Core Domains</div>
-                  </motion.div>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">100%</div>
-                    <div className="stat-b-lbl">Project Ownership</div>
-                  </motion.div>
-                </motion.div>
-                <motion.div className="edu-entry" variants={sectionItem}>
-                  <div className="edu-school">Mataram University</div>
-                  <div className="edu-degree">Bachelor in Engineering Informatics</div>
-                  <div className="edu-year">Aug 2014 — Feb 2022</div>
-                </motion.div>
-              </motion.div>
-            </motion.section>
+      <div className="scroll-progress">
+        <div className="scroll-progress-bar"></div>
+      </div>
 
-            <Suspense fallback={<SectionFallback />}>
-              <Portfolio />
-            </Suspense>
-            <Suspense fallback={<SectionFallback />}>
-              <Skills />
-            </Suspense>
-            <Suspense fallback={<SectionFallback />}>
-              <Experience />
-            </Suspense>
-            <Suspense fallback={<SectionFallback />}>
-              <Certificates />
-            </Suspense>
-            <Suspense fallback={<SectionFallback />}>
-              <Contact />
-            </Suspense>
-          </main>
-          
-          <Footer />
-        </>
-      )}
+      <CustomCursor />
+      <Navbar />
+      <MobileNav />
+      <SocialRail />
+
+      <main>
+        <Hero />
+        <Ticker />
+
+        <WhatIBuild />
+
+        <motion.section
+          id="about"
+          className="s-about"
+          initial="hidden"
+          whileInView="visible"
+          viewport={sectionViewport}
+          variants={sectionContainer}
+        >
+          <div className="about-bg">A.W.S</div>
+          <motion.div className="about-left" variants={sectionItem}>
+            <motion.div className="s-eyebrow" variants={sectionItem}>
+              // BIOGRAPHY
+            </motion.div>
+            <motion.h2 className="s-title" variants={sectionItem}>
+              Backend-first. <span className="s-outline">Fullstack when it matters.</span>
+            </motion.h2>
+            <motion.div className="about-text" variants={sectionItem}>
+              <p>
+                I build complete web products, but my strongest layer is the system behind the screen:
+                <strong> APIs, database design, business logic, automation, and deployment</strong>.
+              </p>
+              <p style={{ marginTop: '12px' }}>
+                Good interfaces matter. Business systems still need reliable workflows,
+                clean data, and backend logic that survives real users. That is the approach
+                I apply in production at <strong>Rasa Group</strong>.
+              </p>
+            </motion.div>
+            <motion.div className="about-tags" variants={staggerTight}>
+              <motion.span className="about-tag" variants={sectionItem}>
+                Frontend to Deployment
+              </motion.span>
+              <motion.span className="about-tag" variants={sectionItem}>
+                Product-Oriented
+              </motion.span>
+              <motion.span className="about-tag" variants={sectionItem}>
+                Backend-First Strength
+              </motion.span>
+            </motion.div>
+          </motion.div>
+          <motion.div className="about-right" variants={sectionItem}>
+            <motion.div className="stats-2x2" variants={staggerTight}>
+              <motion.div className="stat-b" variants={sectionItem}>
+                <div className="stat-b-num">4+</div>
+                <div className="stat-b-lbl">Years Exp.</div>
+              </motion.div>
+              <motion.div className="stat-b" variants={sectionItem}>
+                <div className="stat-b-num">20+</div>
+                <div className="stat-b-lbl">Products Built</div>
+              </motion.div>
+              <motion.div className="stat-b" variants={sectionItem}>
+                <div className="stat-b-num">5+</div>
+                <div className="stat-b-lbl">Core Domains</div>
+              </motion.div>
+              <motion.div className="stat-b" variants={sectionItem}>
+                <div className="stat-b-num">100%</div>
+                <div className="stat-b-lbl">Project Ownership</div>
+              </motion.div>
+            </motion.div>
+            <motion.div className="edu-entry" variants={sectionItem}>
+              <div className="edu-school">Mataram University</div>
+              <div className="edu-degree">Bachelor in Engineering Informatics</div>
+              <div className="edu-year">Aug 2014 — Feb 2022</div>
+            </motion.div>
+          </motion.div>
+        </motion.section>
+
+        <Portfolio />
+        <Skills />
+        <Experience />
+        <Certificates />
+        <Contact />
+      </main>
+
+      <Footer />
     </div>
   );
 }
