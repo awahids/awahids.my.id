@@ -367,12 +367,14 @@ const Portfolio = () => {
     const mediaQuery = window.matchMedia('(max-width: 960px)');
 
     const syncViewport = (event) => {
-      setIsMobile(event.matches);
-      if (event.matches) {
-        setShowAllMobileProjects(false);
-      } else {
-        setShowAllMobileProjects(true);
-      }
+      const nextIsMobile = Boolean(event.matches);
+      setIsMobile((prevIsMobile) => {
+        if (prevIsMobile !== nextIsMobile) {
+          setShowAllMobileProjects(!nextIsMobile);
+        }
+
+        return nextIsMobile;
+      });
     };
 
     syncViewport(mediaQuery);
@@ -492,6 +494,7 @@ const Portfolio = () => {
               aria-haspopup="dialog"
               aria-label={`Open project details for ${p.title}`}
               variants={sectionItem}
+              initial={false}
             >
               <div className="port-card-num">{p.num}</div>
               {p.year && <div className="port-year">{p.year}</div>}

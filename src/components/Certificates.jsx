@@ -40,12 +40,14 @@ const Certificates = () => {
     const mediaQuery = window.matchMedia('(max-width: 720px)');
 
     const syncViewport = (event) => {
-      setIsMobile(event.matches);
-      if (!event.matches) {
-        setShowAllMobile(true);
-      } else {
-        setShowAllMobile(false);
-      }
+      const nextIsMobile = Boolean(event.matches);
+      setIsMobile((prevIsMobile) => {
+        if (prevIsMobile !== nextIsMobile) {
+          setShowAllMobile(!nextIsMobile);
+        }
+
+        return nextIsMobile;
+      });
     };
 
     syncViewport(mediaQuery);
@@ -94,6 +96,7 @@ const Certificates = () => {
               key={i}
               className="cert-card"
               variants={sectionItem}
+              initial={false}
             >
               <div className="cert-icon">
                 <svg viewBox="0 0 24 24">
