@@ -1,0 +1,317 @@
+{
+  "name": "Portfolio AI Events Relay (Template)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "portfolio-ai-events",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Portfolio Event Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        0
+      ],
+      "webhookId": "portfolio-ai-events"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const normalizeHeaders = (headers = {}) => {\n  const entries = Object.entries(headers || {});\n  return Object.fromEntries(\n    entries.map(([key, value]) => [String(key || '').toLowerCase(), value])\n  );\n};\n\nreturn items.map((item) => {\n  const root = item.json || {};\n  const body =\n    root.body && typeof root.body === 'object'\n      ? root.body\n      : root;\n  const headers = normalizeHeaders(\n    root.headers && typeof root.headers === 'object' ? root.headers : {}\n  );\n\n  const authHeaderName = String($env.N8N_WEBHOOK_AUTH_HEADER || 'x-api-key')\n    .trim()\n    .toLowerCase();\n\n  const payload =\n    body.payload && typeof body.payload === 'object'\n      ? body.payload\n      : {};\n\n  return {\n    json: {\n      eventType: String(body.eventType || ''),\n      outcome: String(body.outcome || '').toLowerCase(),\n      occurredAt: String(body.occurredAt || new Date().toISOString()),\n      source: String(body.source || ''),\n      request: {\n        route: String(body.request?.route || ''),\n        method: String(body.request?.method || ''),\n        ip: String(body.request?.ip || ''),\n        requestId: String(body.request?.requestId || ''),\n        userAgent: String(body.request?.userAgent || ''),\n        referer: String(body.request?.referer || ''),\n        origin: String(body.request?.origin || '')\n      },\n      payload,\n      authToken: String(headers[authHeaderName] || '')\n    }\n  };\n});"
+      },
+      "id": "2",
+      "name": "Normalize Event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const expectedToken = String($env.N8N_WEBHOOK_AUTH_TOKEN || '').trim();\n\nif (!expectedToken) {\n  return items;\n}\n\nreturn items.filter((item) => {\n  const actualToken = String(item.json.authToken || '').trim();\n  return actualToken === expectedToken;\n});"
+      },
+      "id": "3",
+      "name": "Filter Authorized",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return items.map((item) => {\n  const event = item.json || {};\n  const payload = event.payload || {};\n\n  return {\n    json: {\n      eventType: event.eventType,\n      outcome: event.outcome,\n      occurredAt: event.occurredAt,\n      source: event.source,\n      route: event.request?.route || '',\n      requestId: event.request?.requestId || '',\n      requestIp: event.request?.ip || '',\n      languageHint: String(payload.languageHint || ''),\n      model: String(payload.model || ''),\n      provider: String(payload.provider || ''),\n      latencyMs: Number(payload.latencyMs || 0),\n      errorCode: String(payload.errorCode || ''),\n      errorMessage: String(payload.errorMessage || ''),\n      rawEvent: event\n    }\n  };\n});"
+      },
+      "id": "4",
+      "name": "Prepare Log Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const logUrl = String($env.N8N_EVENT_LOG_URL || '').trim();\nif (!logUrl) return [];\nreturn items;"
+      },
+      "id": "5",
+      "name": "Has Log Sink",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.N8N_EVENT_LOG_URL}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Send To Log Sink",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -20,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return items.filter((item) => String(item.json.outcome || '') === 'error');"
+      },
+      "id": "7",
+      "name": "Filter Failed Events",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "return items.map((item) => {\n  const event = item.json || {};\n\n  const lines = [\n    '🚨 Portfolio AI Event Failed',\n    `Type: ${event.eventType || '-'}`,\n    `Route: ${event.route || '-'}`,\n    `Request ID: ${event.requestId || '-'}`,\n    `Code: ${event.errorCode || '-'}`,\n    `Message: ${event.errorMessage || '-'}`,\n    `Latency: ${event.latencyMs || 0}ms`,\n    `At: ${event.occurredAt || '-'}`,\n  ];\n\n  return {\n    json: {\n      ...event,\n      alertText: lines.join('\\n'),\n    }\n  };\n});"
+      },
+      "id": "8",
+      "name": "Build Alert Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -260,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const token = String($env.TELEGRAM_BOT_TOKEN || '').trim();\nconst chatId = String($env.TELEGRAM_CHAT_ID || '').trim();\nif (!token || !chatId) return [];\nreturn items;"
+      },
+      "id": "9",
+      "name": "Has Telegram Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{`https://api.telegram.org/bot${$env.TELEGRAM_BOT_TOKEN}/sendMessage`}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { chat_id: $env.TELEGRAM_CHAT_ID, text: $json.alertText, disable_web_page_preview: true } }}",
+        "options": {}
+      },
+      "id": "10",
+      "name": "Telegram Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const apiKey = String($env.RESEND_API_KEY || '').trim();\nconst mailFrom = String($env.ALERT_EMAIL_FROM || '').trim();\nconst mailTo = String($env.ALERT_EMAIL_TO || '').trim();\nif (!apiKey || !mailFrom || !mailTo) return [];\nreturn items;"
+      },
+      "id": "11",
+      "name": "Has Resend Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -20,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "={{`Bearer ${$env.RESEND_API_KEY}`}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { from: $env.ALERT_EMAIL_FROM, to: [$env.ALERT_EMAIL_TO], subject: `Portfolio AI failed event: ${$json.eventType || 'unknown'}`, text: $json.alertText } }}",
+        "options": {}
+      },
+      "id": "12",
+      "name": "Email Alert (Resend)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Portfolio Event Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Event": {
+      "main": [
+        [
+          {
+            "node": "Filter Authorized",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Authorized": {
+      "main": [
+        [
+          {
+            "node": "Prepare Log Payload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter Failed Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Log Payload": {
+      "main": [
+        [
+          {
+            "node": "Has Log Sink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Log Sink": {
+      "main": [
+        [
+          {
+            "node": "Send To Log Sink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Failed Events": {
+      "main": [
+        [
+          {
+            "node": "Build Alert Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Alert Message": {
+      "main": [
+        [
+          {
+            "node": "Has Telegram Config",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Resend Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Telegram Config": {
+      "main": [
+        [
+          {
+            "node": "Telegram Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Resend Config": {
+      "main": [
+        [
+          {
+            "node": "Email Alert (Resend)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "active": false
+}

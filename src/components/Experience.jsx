@@ -54,7 +54,6 @@ const Experience = () => {
           </h2>
           <div className="journey-meta">
             BASED IN CIKARANG, BEKASI <span className="j-dot">●</span><br />
-            SOURCE: CV PDF (/ASSETS/CV/MY-CV.PDF)
           </div>
         </motion.div>
 

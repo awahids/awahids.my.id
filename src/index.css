@@ -1347,6 +1347,25 @@ nav.scrolled { background:rgba(10,10,10,.94); backdrop-filter:blur(14px); border
   transition: all 0.3s var(--ease-standard);
 }
 .port-card:hover .port-link { background:var(--lime); color:var(--dark); border-color:var(--lime); }
+.port-mobile-toggle {
+  margin-top:18px;
+  border:1px solid rgba(200,255,0,.45);
+  background:rgba(200,255,0,.08);
+  color:var(--lime);
+  padding:10px 14px;
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  font-weight:700;
+  transition:background var(--tr-fast), color var(--tr-fast), border-color var(--tr-fast);
+}
+.port-mobile-toggle:hover,
+.port-mobile-toggle:focus-visible {
+  background:var(--lime);
+  border-color:var(--lime);
+  color:var(--dark);
+}
 
 /* MODAL */
 .modal-overlay {
@@ -2065,6 +2084,14 @@ footer {
     letter-spacing:.1em;
   }
   .hero { grid-template-columns:1fr; padding:0 24px; min-height:auto; }
+  .hero-kinetic-bg,
+  .hero-glow,
+  .about-bg {
+    display:none;
+  }
+  .scroll-hint {
+    display:none;
+  }
   .hero-left { padding:100px 0 22px; text-align:center; display:flex; flex-direction:column; align-items:center; }
   .hero-eyebrow { margin-bottom:20px; }
   .hero-eyebrow::before { display:none; }
@@ -2113,6 +2140,7 @@ footer {
   .port-intro { text-align:center; margin:12px auto 0 !important; }
   .port-grid { gap:16px; margin-top:40px; grid-auto-rows:80px; }
   .port-card { padding:28px 22px; }
+  .port-card::after { display:none; }
   .port-card-num, .port-year { top:22px; }
   .port-card-num { left:24px; }
   .port-year { right:24px; }
@@ -2122,14 +2150,18 @@ footer {
   .port-card.bento-compact .port-name { font-size:clamp(20px, 6.4vw, 22px); }
   .port-desc {
     font-size:15px;
-    line-height:1.62;
+    line-height:1.66;
     display:-webkit-box;
     -webkit-line-clamp:3;
     line-clamp:3;
     -webkit-box-orient:vertical;
     overflow:hidden;
   }
-  .port-tag { font-size:11px; }
+  .port-stack { gap:6px; }
+  .port-tag { font-size:11px; padding:5px 9px; }
+  .port-mobile-toggle {
+    width:100%;
+  }
   .build-grid { margin-top:34px; }
   .build-card { grid-column:span 12; min-height:auto; padding:24px 20px; }
   .build-card-title { font-size:23px; }
@@ -2142,6 +2174,7 @@ footer {
   .journey-console { min-height:420px; }
   .journey-body { min-height:360px; padding:24px 20px; }
   .cert-grid { grid-template-columns:1fr 1fr; gap:16px; margin-top:34px; }
+  .s-cert::before { content:none; }
   .s-about { grid-template-columns:1fr; gap:40px; text-align:center; }
   .about-bg { font-size:80px; top:10px; opacity:0.05; }
   .about-text { font-size:15px; }
@@ -2166,7 +2199,7 @@ footer {
   .m-impact-list li { font-size:14.5px; line-height:1.6; }
   .m-signal-value { font-size:15px; }
   .m-signal-note { font-size:12px; line-height:1.45; }
-  .floating-top-btn { width:44px; height:44px; }
+  .floating-top-btn { width:44px; height:44px; display:none !important; }
 }
 
 @media (max-width:520px) {
@@ -2319,15 +2352,16 @@ footer {
 }
 @media (max-width:800px) {
   .port-grid { grid-template-columns:1fr; grid-auto-rows:auto; gap:14px; }
-  .port-card { grid-column:auto; grid-row:auto; min-height:260px; padding:32px 24px; }
-  .port-card-num { left:32px; }
-  .port-year { right:32px; }
+  .port-card { grid-column:auto; grid-row:auto; min-height:240px; padding:28px 20px; }
+  .port-card-num { left:20px; }
+  .port-year { right:20px; }
   .port-name,
   .port-card.bento-hero .port-name,
   .port-card.bento-feature .port-name,
   .port-card.bento-compact .port-name { font-size:22px; }
   .port-desc {
-    font-size:14.5px;
+    font-size:15px;
+    line-height:1.65;
     display:-webkit-box;
     -webkit-line-clamp:3;
     line-clamp:3;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -15,7 +15,6 @@ import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
 import Portfolio from './components/Portfolio';
 import WhatIBuild from './components/WhatIBuild';
-import AILab from './components/AILab';
 import Skills from './components/Skills';
 import Experience from './components/Experience';
 import Certificates from './components/Certificates';
@@ -23,6 +22,7 @@ import Contact from './components/Contact';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 const AI_LAB_PATH = '/ai-lab';
+const AILab = lazy(() => import('./components/AILab'));
 
 const BOT_USER_AGENT_PATTERN =
   /bot|crawler|spider|crawling|facebookexternalhit|slackbot|twitterbot|linkedinbot|discordbot|whatsapp|google-inspectiontool|lighthouse/i;
@@ -151,7 +151,9 @@ function App() {
                 </div>
               </div>
             </section>
-            <AILab />
+            <Suspense fallback={<section className="s-ai-lab" id="ai-lab" />}>
+              <AILab />
+            </Suspense>
           </>
         ) : (
           <>

@@ -342,8 +342,13 @@ const projects = [
   }
 ];
 
+const MOBILE_PROJECT_LIMIT = 5;
+const MOBILE_SCOPE_LIMIT = 4;
+
 const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [showAllMobileProjects, setShowAllMobileProjects] = useState(false);
   const modalRef = useRef(null);
   const closeButtonRef = useRef(null);
   const previousFocusedRef = useRef(null);
@@ -356,6 +361,34 @@ const Portfolio = () => {
 
   const closeModal = useCallback(() => {
     setSelectedProject(null);
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 960px)');
+
+    const syncViewport = (event) => {
+      setIsMobile(event.matches);
+      if (event.matches) {
+        setShowAllMobileProjects(false);
+      } else {
+        setShowAllMobileProjects(true);
+      }
+    };
+
+    syncViewport(mediaQuery);
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', syncViewport);
+    } else {
+      mediaQuery.addListener(syncViewport);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', syncViewport);
+      } else {
+        mediaQuery.removeListener(syncViewport);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -419,6 +452,13 @@ const Portfolio = () => {
     }
   };
 
+  const visibleProjects =
+    isMobile && !showAllMobileProjects
+      ? projects.slice(0, MOBILE_PROJECT_LIMIT)
+      : projects;
+
+  const visibleScopeLimit = isMobile ? MOBILE_SCOPE_LIMIT : 5;
+
   return (
     <section className="s-portfolio" id="portfolio">
       <motion.div
@@ -431,7 +471,7 @@ const Portfolio = () => {
           // SELECTED_WORK
         </motion.div>
         <motion.h2 className="s-title" variants={sectionItem}>
-          Selected <span className="s-outline">Fullstack Projects</span>
+          Selected <span className="s-outline">Projects</span>
         </motion.h2>
         <motion.p className="port-intro" variants={sectionItem}>
           Real projects across web apps, dashboards, backend systems, automation, and deployment.
@@ -441,7 +481,7 @@ const Portfolio = () => {
           className="port-grid"
           variants={staggerGrid}
         >
-          {projects.map((p) => (
+          {visibleProjects.map((p) => (
             <motion.div
               key={p.id}
               className={`port-card ${p.bento}`}
@@ -460,7 +500,7 @@ const Portfolio = () => {
               <p className="port-desc">{p.desc}</p>
               <div className="port-scope">Scope</div>
               <div className="port-stack">
-                {p.scope.slice(0, 5).map(s => (
+                {p.scope.slice(0, visibleScopeLimit).map(s => (
                   <span key={s} className="port-tag">{s}</span>
                 ))}
               </div>
@@ -468,6 +508,18 @@ const Portfolio = () => {
             </motion.div>
           ))}
         </motion.div>
+        {isMobile && projects.length > MOBILE_PROJECT_LIMIT && (
+          <motion.button
+            type="button"
+            className="port-mobile-toggle"
+            onClick={() => setShowAllMobileProjects((prev) => !prev)}
+            variants={sectionItem}
+          >
+            {showAllMobileProjects
+              ? 'Show Less'
+              : `View More Projects (${projects.length - MOBILE_PROJECT_LIMIT})`}
+          </motion.button>
+        )}
       </motion.div>
 
       <AnimatePresence>

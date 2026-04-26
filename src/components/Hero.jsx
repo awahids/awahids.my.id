@@ -44,6 +44,10 @@ const Hero = () => {
       '(hover: hover) and (pointer: fine)'
     ).matches;
 
+    if (isMobile) {
+      return undefined;
+    }
+
     // Safety conditions
     const lightweightMotion = isMobile || !hasFinePointer;
     const allowHoverInteractions = !prefersReducedMotion && hasFinePointer;
