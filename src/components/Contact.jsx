@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { BOOKING_URL } from '../lib/links';
+import { Waves } from './Waves';
 
 const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
 
@@ -10,9 +11,16 @@ const Contact = () => {
     useSectionMotion();
 
   return (
-    <section className="s-contact" id="contact">
+    <section className="s-contact" id="contact" style={{ position: 'relative', overflow: 'hidden' }}>
+      <Waves 
+        className="contact-waves-bg"
+        strokeColor="rgba(200, 255, 0, 0.12)"
+        backgroundColor="transparent"
+        pointerSize={0}
+      />
       <motion.div
         className="contact-inner"
+        style={{ position: 'relative', zIndex: 10 }}
         initial="hidden"
         whileInView="visible"
         viewport={viewport}

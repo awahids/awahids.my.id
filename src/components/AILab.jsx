@@ -18,7 +18,7 @@ const STARTER_FAQ_MESSAGE = {
   role: 'assistant',
   source: 'local',
   text:
-    'Ask me about services, stack, n8n automation, AI integration, and delivery approach. I can answer instantly from this portfolio context.',
+    "Hi there! I'm an AI trained on Wahid's portfolio and workflow. Ask me about his tech stack, automation experience, or how he delivers fullstack projects.",
 };
 
 const DEFAULT_STACK = ['React', 'Node.js', 'NestJS', 'PostgreSQL', 'Docker'];
@@ -705,23 +705,12 @@ const AILab = () => {
         viewport={viewport}
         variants={sectionContainer}
       >
-        <motion.div className="s-eyebrow" variants={sectionItem}>
-          // AI_AUTOMATION_LAB
-        </motion.div>
-        <motion.h2 className="s-title" variants={sectionItem}>
-          AI-Powered Delivery <span className="s-outline">for Real Projects</span>
-        </motion.h2>
-        <motion.p className="ai-lab-intro" variants={sectionItem}>
-          Two practical modules ready to connect with n8n and AI endpoints: an automatic
-          project brief analyzer and an interactive FAQ assistant.
-        </motion.p>
-
         <motion.div className="ai-lab-grid" variants={staggerGrid}>
           <motion.article className="ai-card" variants={sectionItem}>
             <div className="ai-card-head">
               <div>
-                <div className="ai-card-kicker">Module 01</div>
-                <h3 className="ai-card-title">AI Project Brief Analyzer</h3>
+                <div className="ai-card-kicker">Automation 01</div>
+                <h3 className="ai-card-title">Architecture Brief Generator</h3>
               </div>
               <span className={`ai-mode-pill ${briefSource === 'webhook' ? 'is-live' : ''}`}>
                 {briefSource === 'webhook' ? 'Webhook Mode' : 'Local Mode'}
@@ -755,7 +744,7 @@ const AILab = () => {
                 </div>
 
                 <div className="ai-field">
-                  <label htmlFor="timeline">Desired Timeline</label>
+                  <label htmlFor="timeline">Expected Timeline</label>
                   <input
                     id="timeline"
                     name="timeline"
@@ -767,13 +756,13 @@ const AILab = () => {
               </div>
 
               <div className="ai-field">
-                <label htmlFor="coreGoals">Core Goals</label>
+                <label htmlFor="coreGoals">Core Business Goals</label>
                 <textarea
                   id="coreGoals"
                   name="coreGoals"
                   value={briefForm.coreGoals}
                   onChange={onBriefFieldChange}
-                  placeholder="Describe current pain points and what outcome you want"
+                  placeholder="Describe your current pain points and the target outcome"
                   required
                 />
               </div>
@@ -791,7 +780,7 @@ const AILab = () => {
                 </div>
 
                 <div className="ai-field">
-                  <label htmlFor="successMetric">Success Metric</label>
+                  <label htmlFor="successMetric">Key Success Metric</label>
                   <input
                     id="successMetric"
                     name="successMetric"
@@ -803,7 +792,7 @@ const AILab = () => {
               </div>
 
               <div className="ai-field">
-                <label htmlFor="constraints">Constraints or Notes</label>
+                <label htmlFor="constraints">Technical Constraints</label>
                 <textarea
                   id="constraints"
                   name="constraints"
@@ -815,7 +804,7 @@ const AILab = () => {
 
               <div className="ai-actions">
                 <button className="ai-submit" type="submit" disabled={briefLoading}>
-                  {briefLoading ? 'Analyzing...' : 'Analyze Brief'}
+                  {briefLoading ? 'Generating Analysis...' : 'Generate Technical Analysis'}
                 </button>
             <p className="ai-status" aria-live="polite">{briefStatus}</p>
               </div>
@@ -880,8 +869,8 @@ const AILab = () => {
           <motion.article className="ai-card" variants={sectionItem}>
             <div className="ai-card-head">
               <div>
-                <div className="ai-card-kicker">Module 02</div>
-                <h3 className="ai-card-title">AI FAQ Assistant</h3>
+                <div className="ai-card-kicker">Automation 02</div>
+                <h3 className="ai-card-title">Contextual AI Assistant</h3>
               </div>
               <span className={`ai-mode-pill ${FAQ_WEBHOOK_URL ? 'is-live' : ''}`}>
                 {FAQ_WEBHOOK_URL ? 'Webhook Ready' : 'Local Ready'}
@@ -889,7 +878,7 @@ const AILab = () => {
             </div>
 
             <p className="ai-faq-intro">
-              Ask about services, architecture, timeline, AI integration, or automation scope.
+              Query my expertise, tech stack, and delivery workflow. The AI answers based on my actual portfolio data.
             </p>
 
             <div className="ai-quick-list">
@@ -953,7 +942,7 @@ const AILab = () => {
               rel="noopener noreferrer"
               className="ai-consult-link"
             >
-              Prefer direct discussion? Book a project call ↗
+              Prefer a direct discussion? Book a project call ↗
             </a>
           </motion.article>
         </motion.div>

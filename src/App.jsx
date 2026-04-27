@@ -21,6 +21,7 @@ import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+import { AnomalousMatterHero } from './components/AnomalousHero';
 const AI_LAB_PATH = '/ai-lab';
 const AILab = lazy(() => import('./components/AILab'));
 
@@ -141,16 +142,7 @@ function App() {
       <main className={aiLabPage ? 'main-ai-lab-page' : ''}>
         {aiLabPage ? (
           <>
-            <section className="ai-page-head" id="home">
-              <div className="ai-page-head-inner">
-                <a href="/" className="ai-page-back-link">
-                  ← Back to Portfolio
-                </a>
-                <div className="ai-page-head-note">
-                  Experimental tools for brief analysis and portfolio Q&A.
-                </div>
-              </div>
-            </section>
+            <AnomalousMatterHero />
             <Suspense fallback={<section className="s-ai-lab" id="ai-lab" />}>
               <AILab />
             </Suspense>

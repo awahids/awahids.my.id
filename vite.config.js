@@ -129,5 +129,23 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react(), devApiMiddleware()],
+    build: {
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('three')) {
+                return 'vendor-three';
+              }
+              if (id.includes('react') || id.includes('react-dom') || id.includes('framer-motion')) {
+                return 'vendor-react';
+              }
+              return 'vendor';
+            }
+          }
+        }
+      }
+    }
   }
 })
