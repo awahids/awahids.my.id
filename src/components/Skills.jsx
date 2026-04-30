@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
+import { loadAnimeModule } from '../lib/animeLoader';
 
 const skillsData = [
   {
@@ -42,12 +43,124 @@ const skillsData = [
 ];
 
 const Skills = () => {
+  const rootRef = useRef(null);
   const { viewport, sectionContainer, sectionItem, staggerGrid } =
     useSectionMotion();
+
+  useEffect(() => {
+    const root = rootRef.current;
+
+    if (!root || typeof window === 'undefined') return undefined;
+
+    const prefersReducedMotion = window.matchMedia(
+      '(prefers-reduced-motion: reduce)'
+    ).matches;
+    const hasFinePointer = window.matchMedia(
+      '(hover: hover) and (pointer: fine)'
+    ).matches;
+
+    if (prefersReducedMotion || !hasFinePointer) return undefined;
+
+    let disposed = false;
+    let animeApi = null;
+    const runningAnimations = new Map();
+    const cardDrawables = new Map();
+    const cards = Array.from(root.querySelectorAll('.skill-card'));
+
+    loadAnimeModule()
+      .then(({ animate, stagger, svg }) => {
+        if (!disposed) {
+          animeApi = { animate, stagger };
+
+          cards.forEach((card) => {
+            const drawableLines = Array.from(
+              card.querySelectorAll(
+                '.skill-card-icon path, .skill-card-icon polyline, .skill-card-icon line, .skill-card-icon rect'
+              )
+            )
+              .flatMap((line) => svg?.createDrawable(line) || [])
+              .filter(Boolean);
+
+            drawableLines.forEach((drawable) => {
+              drawable.draw = '0 1';
+            });
+
+            cardDrawables.set(card, drawableLines);
+          });
+        }
+      })
+      .catch((error) => {
+        if (import.meta.env.DEV) {
+          console.warn('Anime.js failed to load from CDN.', error);
+        }
+      });
+
+    const stopCardAnimations = (card) => {
+      const animations = runningAnimations.get(card);
+      if (!animations) return;
+
+      animations.forEach((animation) => animation.revert?.());
+      runningAnimations.delete(card);
+    };
+
+    const animateCardChips = (event) => {
+      if (!animeApi) return;
+
+      const card = event.currentTarget;
+      const chips = card.querySelectorAll('.skill-chip');
+      const drawables = cardDrawables.get(card) || [];
+
+      if (!chips.length && !drawables.length) return;
+
+      stopCardAnimations(card);
+
+      const animations = [];
+
+      if (chips.length) {
+        animations.push(
+          animeApi.animate(chips, {
+            y: { from: 8, to: 0 },
+            opacity: { from: 0.38, to: 1 },
+            scale: { from: 0.96, to: 1 },
+            duration: 420,
+            delay: animeApi.stagger(32),
+            ease: 'out(3)',
+          })
+        );
+      }
+
+      if (drawables.length) {
+        animations.push(
+          animeApi.animate(drawables, {
+            draw: ['0 0', '0 1'],
+            duration: 900,
+            delay: animeApi.stagger(60),
+            ease: 'inOutQuad',
+          })
+        );
+      }
+
+      runningAnimations.set(card, animations);
+    };
+
+    cards.forEach((card) => {
+      card.addEventListener('pointerenter', animateCardChips);
+    });
+
+    return () => {
+      disposed = true;
+      cards.forEach((card) => {
+        card.removeEventListener('pointerenter', animateCardChips);
+        stopCardAnimations(card);
+      });
+      cardDrawables.clear();
+    };
+  }, []);
 
   return (
     <section className="s-skills" id="skills">
       <motion.div
+        ref={rootRef}
         initial="hidden"
         whileInView="visible"
         viewport={viewport}
