@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const FAQ_WEBHOOK_URL = import.meta.env.VITE_AI_FAQ_ENDPOINT || '/api/ai-faq';
+const AI_ASSISTANT_URL = import.meta.env.VITE_AI_ASSISTANT_ENDPOINT || '/api/ai-assistant';
 
 const STARTER_FAQ_MESSAGE = {
   id: 'faq-start-float',
@@ -188,6 +189,7 @@ const FloatingFAQ = () => {
   const [loading, setLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [unreadCount, setUnreadCount] = useState(1);
+  const [useHermes, setUseHermes] = useState(false);
   const originalTitle = useRef(typeof document !== 'undefined' ? document.title : '');
   const chatViewportRef = useRef(null);
   const isOpenRef = useRef(false);
@@ -281,7 +283,7 @@ const FloatingFAQ = () => {
     return () => clearTimeout(timer);
   }, [messages, loading]);
 
-  const askFaq = async (questionText) => {
+  const askFaq = async (questionText, forceHermes = false) => {
     const cleanedQuestion = questionText.trim();
     if (!cleanedQuestion || loading) return;
     const faqLanguage = detectInputLanguage(cleanedQuestion);
@@ -294,9 +296,26 @@ const FloatingFAQ = () => {
 
     let answerText;
     let mode;
+    const shouldUseHermes = forceHermes || useHermes;
 
-    if (FAQ_WEBHOOK_URL) {
+    if (shouldUseHermes && AI_ASSISTANT_URL) {
       try {
+        const historyPayload = messages
+          .filter(m => m.id !== 'faq-start-float')
+          .slice(-6)
+          .map(m => ({ role: m.role, text: m.text }));
+
+        const responseData = await postJsonWithTimeout(AI_ASSISTANT_URL, {
+          question: cleanedQuestion,
+          history: historyPayload,
+          languageHint: faqLanguage,
+          source: 'portfolio-floating-faq',
+          submittedAt: new Date().toISOString(),
+        }, 45000);
+        answerText = normalizeFaqAnswer(responseData);
+        if (!answerText) throw new Error('Empty answer');
+        mode = 'hermes';
+      } catch {
         const historyPayload = messages
           .filter(m => m.id !== 'faq-start-float')
           .slice(-6)
@@ -306,19 +325,39 @@ const FloatingFAQ = () => {
           question: cleanedQuestion,
           history: historyPayload,
           languageHint: faqLanguage,
-          source: 'portfolio-floating-faq',
+          source: 'portfolio-floating-faq-fallback',
           submittedAt: new Date().toISOString(),
         });
         answerText = normalizeFaqAnswer(responseData);
         if (!answerText) throw new Error('Empty answer');
-        mode = 'webhook';
-      } catch {
+        mode = 'webhook-fallback';
+      }
+    } else {
+      if (FAQ_WEBHOOK_URL) {
+        try {
+          const historyPayload = messages
+            .filter(m => m.id !== 'faq-start-float')
+            .slice(-6)
+            .map(m => ({ role: m.role, text: m.text }));
+
+          const responseData = await postJsonWithTimeout(FAQ_WEBHOOK_URL, {
+            question: cleanedQuestion,
+            history: historyPayload,
+            languageHint: faqLanguage,
+            source: 'portfolio-floating-faq',
+            submittedAt: new Date().toISOString(),
+          });
+          answerText = normalizeFaqAnswer(responseData);
+          if (!answerText) throw new Error('Empty answer');
+          mode = 'webhook';
+        } catch {
+          answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
+          mode = 'local';
+        }
+      } else {
         answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
         mode = 'local';
       }
-    } else {
-      answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
-      mode = 'local';
     }
 
     const assistantMessage = createMessage('assistant', answerText, mode);
@@ -374,8 +413,23 @@ const FloatingFAQ = () => {
             <div className="floating-faq-header">
               <div className="ffh-info">
                 <span className="ffh-title">AI Assistant</span>
-                <span className="ffh-status">Online</span>
+                <span className="ffh-status">{useHermes ? '🤖 Hermes' : 'Online'}</span>
               </div>
+              <button 
+                className="ffh-toggle-hermes" 
+                onClick={() => setUseHermes(!useHermes)}
+                title={useHermes ? 'Switch to standard AI' : 'Switch to Hermes AI'}
+                style={{ 
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '4px',
+                  opacity: 0.8
+                }}
+              >
+                {useHermes ? '🤖' : '💬'}
+              </button>
               <button className="ffh-close" onClick={closeChat}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>

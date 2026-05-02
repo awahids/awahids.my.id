@@ -1,0 +1,133 @@
+{
+  "name": "Hermes Portfolio Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hermes-assistant",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-1",
+      "name": "Hermes Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        0
+      ],
+      "webhookId": "hermes-assistant"
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalizeHeaders = (headers = {}) => {\n  const entries = Object.entries(headers || {});\n  return Object.fromEntries(\n    entries.map(([key, value]) => [String(key || '').toLowerCase(), value])\n  );\n};\n\nreturn items.map((item) => {\n  const root = item.json || {};\n  const body = root.body && typeof root.body === 'object' ? root.body : root;\n  const headers = normalizeHeaders(root.headers || {});\n  \n  const message = body.message || body.question || '';\n  const sessionId = body.session_id || body.sessionId || `sess_${Date.now()}`;\n  const context = body.context || {};\n  const history = body.history || [];\n  \n  return {\n    json: {\n      message,\n      sessionId,\n      context,\n      history,\n      source: context.source || 'unknown',\n      language: context.language || 'auto',\n      headers\n    }\n  };\n});"
+      },
+      "id": "code-1",
+      "name": "Parse Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.HERMES_GATEWAY_URL || 'http://localhost:8765/chat' }}",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ { message: $json.message, session_id: $json.sessionId, context: $json.context } }}",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "http-1",
+      "name": "Call Hermes Gateway",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map((item) => {\n  const response = item.json || {};\n  \n  return {\n    json: {\n      success: true,\n      response: response.response || response.answer || response.message || 'No response',\n      session_id: response.session_id || response.sessionId,\n      timestamp: new Date().toISOString(),\n      model_used: response.meta?.model || response.model || 'hermes',\n      latency_ms: response.meta?.latencyMs || 0\n    }\n  };\n});"
+      },
+      "id": "code-2",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "json": "={{ $json }}"
+      },
+      "id": "respond-1",
+      "name": "Return Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Hermes Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Request": {
+      "main": [
+        [
+          {
+            "node": "Call Hermes Gateway",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Hermes Gateway": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Return Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "active": false
+}
