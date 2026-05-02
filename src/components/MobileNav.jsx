@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
 
 const navItems = [
   { id: 'services', label: 'Services', icon: (
@@ -48,19 +47,6 @@ const MobileNav = () => {
 
   return (
     <>
-      <motion.div
-        className="mobile-quick-cta"
-        initial={{ y: 100, x: '-50%' }}
-        animate={{ y: 0, x: '-50%' }}
-        transition={{ type: 'spring', damping: 20, stiffness: 100, delay: 0.04 }}
-      >
-        <a href="#contact" data-scroll-target="#contact" className="mobile-quick-link">
-          Contact
-        </a>
-        <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="mobile-quick-link is-outline">
-          Resume
-        </a>
-      </motion.div>
       <motion.div 
         className="mobile-tab-bar"
         initial={{ y: 100, x: '-50%' }}

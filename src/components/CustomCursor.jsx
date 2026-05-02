@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 const INTERACTIVE_SELECTOR =
-  'a, button, [role="button"], input:not([type="hidden"]), textarea, select, label[for], .port-card, .port-link, .cf-submit, .floating-top-btn';
+  'a, button, [role="button"], input:not([type="hidden"]), textarea, select, label[for], .port-card, .port-link, .cf-submit, .floating-top-btn, .floating-faq-toggle, .floating-faq-notification, .ff-suggestion-btn';
 
 const CustomCursor = () => {
   const dotRef = useRef(null);

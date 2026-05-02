@@ -2,15 +2,29 @@ export const CV_FAQ_CONTEXT = `
 Identity:
 - Name: A Wahid Safhadi
 - Role: Fullstack Developer (backend-first engineer)
-- Experience: 4+ years
+- Experience: 4+ years total in software engineering (primarily as a Backend Developer, with some experience as a Fullstack Developer)
 - Current company: Rasa Group
 - Location: Cikarang, Bekasi, Jawa Barat
 - Availability: Open for fullstack projects, modernization work, and remote collaboration
 
-Contact:
+Contact & Links:
 - Email: awahid.safhadi@gmail.com
 - Booking link: https://janji.online/book/awahids
+- GitHub: https://github.com/awahids
+- LinkedIn: https://www.linkedin.com/in/awahids
 - Resume PDF path on site: /cv/my-cv.pdf
+
+Timezone & Working Hours:
+- Timezone: WIB (GMT+7)
+- Working Hours: Flexible and remote-friendly. Available for meetings outside standard hours if agreed upon.
+
+Personal Touch & Soft Skills:
+- Communication: Direct, practical, and solution-oriented.
+- Hobbies/Interests: Enjoys optimizing server performance, exploring new backend architectures, and automating repetitive tasks. (Feel free to chat casually about tech!).
+
+Workflow & Methodology:
+- Process: Requirement gathering -> DB Architecture & API Design -> Development -> UAT -> Deployment
+- Methodology: Agile/Scrum, CI/CD pipeline, Git Flow
 
 Core services:
 - Web applications and admin dashboards

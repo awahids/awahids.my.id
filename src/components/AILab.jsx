@@ -1,25 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
-import { BOOKING_URL } from '../lib/links';
 
 const BRIEF_WEBHOOK_URL = import.meta.env.VITE_AI_BRIEF_ENDPOINT || '/api/ai-brief';
-const FAQ_WEBHOOK_URL = import.meta.env.VITE_AI_FAQ_ENDPOINT || '/api/ai-faq';
-
-const QUICK_QUESTIONS = [
-  'Can you build n8n automation for lead capture?',
-  'What stack do you recommend for admin dashboard + API?',
-  'How do you integrate AI into existing backend?',
-  'Can you help with deployment and CI/CD too?',
-];
-
-const STARTER_FAQ_MESSAGE = {
-  id: 'faq-start',
-  role: 'assistant',
-  source: 'local',
-  text:
-    "Hi there! I'm an AI trained on Wahid's portfolio and workflow. Ask me about his tech stack, automation experience, or how he delivers fullstack projects.",
-};
 
 const DEFAULT_STACK = ['React', 'Node.js', 'NestJS', 'PostgreSQL', 'Docker'];
 
@@ -60,87 +43,7 @@ const detectInputLanguage = (text = '') => {
   return 'en';
 };
 
-const pickByLanguage = (lang, copy) => (lang === 'id' ? copy.id : copy.en);
 
-const FAQ_RULES = [
-  {
-    keywords: ['n8n', 'workflow', 'automation', 'webhook', 'otomasi'],
-    answer: {
-      id: 'Bisa. Di pekerjaan saya, automation memang salah satu fokus utama, termasuk n8n webhook flow dan integrasi ke layanan lain supaya proses manual tim bisa berkurang.',
-      en: 'Yes, I can. In my recent work, automation is one of my core focuses, including n8n webhook flows and third-party integrations to reduce manual work.',
-    },
-  },
-  {
-    keywords: ['ai', 'openai', 'llm', 'assistant', 'chatbot'],
-    answer: {
-      id: 'Saya bisa bantu integrasi AI ke alur backend yang sudah ada. Biasanya saya mulai dari use case yang sempit dulu, lalu dibikin aman lewat validasi, logging, dan fallback sebelum di-scale.',
-      en: 'I can help integrate AI into your existing backend workflows. I usually start with a narrow use case first, then harden it with validation, logging, and fallback before scaling.',
-    },
-  },
-  {
-    keywords: ['stack', 'tech', 'technology', 'architecture', 'backend', 'api'],
-    answer: {
-      id: 'Kalau dari stack yang saya pakai di CV: frontend biasanya React/Next.js/Vue.js, backend Node.js/NestJS/Express, databasenya PostgreSQL atau MySQL, lalu deployment lewat Docker + Vercel/VPS/Nginx/Cloudflare.',
-      en: 'From my CV stack: I usually use React/Next.js/Vue.js for frontend, Node.js/NestJS/Express for backend, PostgreSQL or MySQL for data, and Docker plus Vercel/VPS/Nginx/Cloudflare for deployment.',
-    },
-  },
-  {
-    keywords: ['timeline', 'berapa lama', 'deadline', 'estimasi', 'delivery'],
-    answer: {
-      id: 'Timeline paling tergantung scope dan jumlah integrasi. Dari pengalaman saya, delivery bertahap biasanya paling aman: fitur inti dulu, setelah stabil baru lanjut ke pengembangan berikutnya.',
-      en: 'Timeline mostly depends on scope and integration count. In my experience, phased delivery is usually safer: ship the core first, then expand once things are stable.',
-    },
-  },
-  {
-    keywords: ['harga', 'price', 'cost', 'budget', 'rate'],
-    answer: {
-      id: 'Untuk biaya, biasanya saya hitung berdasarkan scope, risiko, dan model delivery. Langkah terbaiknya short discovery call dulu supaya requirement bisa dipetakan ke milestone dan effort yang realistis.',
-      en: 'Pricing depends on scope, risk, and delivery model. The best next step is a short discovery call so I can map your requirements into realistic milestones and effort.',
-    },
-  },
-  {
-    keywords: ['deploy', 'deployment', 'ci', 'cd', 'devops', 'vercel', 'docker', 'nginx'],
-    answer: {
-      id: 'Ya, deployment juga area yang sering saya handle. Di CV saya ada Docker, Vercel, VPS, Nginx, dan Cloudflare, biasanya sekalian saya rapikan flow release-nya supaya lebih maintainable.',
-      en: 'Yes, deployment is also an area I handle often. In my CV you can see Docker, Vercel, VPS, Nginx, and Cloudflare, and I usually improve the release flow as well for maintainability.',
-    },
-  },
-  {
-    keywords: ['fullstack', 'service', 'what do you build', 'layanan', 'jasa'],
-    answer: {
-      id: 'Yang biasa saya kerjakan itu end-to-end: web app, admin dashboard, backend API, automation/integration, arsitektur, sampai deployment. Jadi tetap fullstack, tapi dengan kekuatan utama di backend.',
-      en: 'I usually handle projects end-to-end: web apps, admin dashboards, backend APIs, automation/integration, architecture, and deployment. So it is fullstack delivery, with backend as my strongest layer.',
-    },
-  },
-  {
-    keywords: ['pengalaman', 'experience', 'career', 'rasa group', 'ethis'],
-    answer: {
-      id: 'Saya punya pengalaman 4+ tahun. Saat ini saya di Rasa Group sebagai Senior IT Developer (sejak Feb 2025), sebelumnya Backend Developer di PT Ethis Fintech Indonesia, dan juga sempat menangani proyek di Tokokupon.com serta adala.id.',
-      en: 'I have 4+ years of experience. I am currently a Senior IT Developer at Rasa Group (since Feb 2025), previously a Backend Developer at PT Ethis Fintech Indonesia, and I also worked on projects at Tokokupon.com and adala.id.',
-    },
-  },
-  {
-    keywords: ['lokasi', 'location', 'where are you based'],
-    answer: {
-      id: 'Saya berbasis di Cikarang, Bekasi, Jawa Barat. Untuk kerja remote juga terbuka.',
-      en: 'I am based in Cikarang, Bekasi, West Java, and I am open to remote collaboration as well.',
-    },
-  },
-  {
-    keywords: ['contact', 'kontak', 'email', 'hubungi'],
-    answer: {
-      id: 'Paling cepat lewat email di awahid.safhadi@gmail.com. Kalau mau langsung bahas proyek, bisa booking juga di https://janji.online/book/awahids.',
-      en: 'The fastest way is email at awahid.safhadi@gmail.com. If you want to discuss a project directly, you can book a call at https://janji.online/book/awahids.',
-    },
-  },
-  {
-    keywords: ['project', 'portfolio', 'adawms', 'tokokupon', 'qala temu', 'arafah'],
-    answer: {
-      id: 'Beberapa project yang ada di portfolio saya misalnya Arafah Group, AdaWMS, Belajar Ngaji, Tokokupon.id, WMS Rasa Group, dan Qala Temu. Mayoritas fokusnya di backend API, operasional sistem, dan integrasi.',
-      en: 'Some projects in my portfolio include Arafah Group, AdaWMS, Belajar Ngaji, Tokokupon.id, WMS Rasa Group, and Qala Temu. Most of them focus on backend APIs, operational systems, and integrations.',
-    },
-  },
-];
 
 const toArray = (value) => {
   if (Array.isArray(value)) {
@@ -484,29 +387,7 @@ const normalizeBriefAnalysis = (rawPayload) => {
   };
 };
 
-const normalizeFaqAnswer = (rawPayload) => {
-  const raw = rawPayload?.data || rawPayload;
-  if (!raw) return '';
 
-  const answerCandidate =
-    raw.answer || raw.message || raw.output || raw.text || raw.response || '';
-
-  return String(answerCandidate || '').trim();
-};
-
-const buildLocalFaqAnswer = (question, language = detectInputLanguage(question)) => {
-  const normalized = question.toLowerCase();
-
-  for (const rule of FAQ_RULES) {
-    if (rule.keywords.some((keyword) => normalized.includes(keyword))) {
-      return pickByLanguage(language, rule.answer);
-    }
-  }
-
-  return language === 'id'
-    ? 'Bisa. Ceritakan dulu stack dan targetmu, nanti saya bantu arahkan opsi implementasi yang paling realistis berdasarkan pengalaman saya di fullstack, backend API, automation, dan deployment.'
-    : 'Absolutely. Share your current stack and target, and I can suggest the most practical implementation path based on my fullstack, backend API, automation, and deployment experience.';
-};
 
 const postJsonWithTimeout = async (url, payload, timeoutMs = 14000) => {
   const controller = new AbortController();
@@ -540,12 +421,7 @@ const postJsonWithTimeout = async (url, payload, timeoutMs = 14000) => {
   }
 };
 
-const createMessage = (role, text, source) => ({
-  id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-  role,
-  text,
-  source,
-});
+
 
 const AILab = () => {
   const { viewport, sectionContainer, sectionItem, staggerGrid } =
@@ -566,17 +442,7 @@ const AILab = () => {
   const [briefStatus, setBriefStatus] = useState('');
   const [briefSource, setBriefSource] = useState('local');
 
-  const [faqMessages, setFaqMessages] = useState([STARTER_FAQ_MESSAGE]);
-  const [faqInput, setFaqInput] = useState('');
-  const [faqLoading, setFaqLoading] = useState(false);
-  const [faqStatus, setFaqStatus] = useState('');
-  const chatViewportRef = useRef(null);
 
-  useEffect(() => {
-    const viewportNode = chatViewportRef.current;
-    if (!viewportNode) return;
-    viewportNode.scrollTop = viewportNode.scrollHeight;
-  }, [faqMessages, faqLoading]);
 
   const onBriefFieldChange = (event) => {
     const { name, value } = event.target;
@@ -637,65 +503,7 @@ const AILab = () => {
     setBriefLoading(false);
   };
 
-  const askFaq = async (questionText) => {
-    const cleanedQuestion = questionText.trim();
-    if (!cleanedQuestion || faqLoading) return;
-    const faqLanguage = detectInputLanguage(cleanedQuestion);
 
-    setFaqLoading(true);
-    setFaqStatus(faqLanguage === 'id' ? 'Sedang diproses...' : 'Thinking...');
-    setFaqInput('');
-
-    const userMessage = createMessage('user', cleanedQuestion, 'local');
-    setFaqMessages((prev) => [...prev, userMessage]);
-
-    let answerText;
-    let mode;
-    let statusMessage;
-
-    if (FAQ_WEBHOOK_URL) {
-      try {
-        const responseData = await postJsonWithTimeout(FAQ_WEBHOOK_URL, {
-          question: cleanedQuestion,
-          languageHint: faqLanguage,
-          source: 'portfolio-ai-faq',
-          submittedAt: new Date().toISOString(),
-        });
-        answerText = normalizeFaqAnswer(responseData);
-        if (!answerText) throw new Error('Empty answer from webhook');
-        mode = 'webhook';
-        statusMessage = faqLanguage === 'id'
-          ? 'Jawaban dihasilkan dari endpoint AI berbasis CV.'
-          : 'Answer generated from CV-grounded AI endpoint.';
-      } catch {
-        answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
-        mode = 'local';
-        statusMessage = faqLanguage === 'id'
-          ? 'Endpoint tidak tersedia. Menampilkan jawaban lokal berbasis CV.'
-          : 'Endpoint unavailable. Showing local CV-based answer.';
-      }
-    } else {
-      answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
-      mode = 'local';
-      statusMessage = faqLanguage === 'id'
-        ? 'Mode FAQ lokal berbasis CV aktif. Konfigurasikan endpoint API bila diperlukan.'
-        : 'Local CV-based FAQ mode active. Configure API endpoint when needed.';
-    }
-
-    const assistantMessage = createMessage('assistant', answerText, mode);
-    setFaqMessages((prev) => [...prev, assistantMessage]);
-    setFaqStatus(statusMessage);
-    setFaqLoading(false);
-  };
-
-  const onFaqSubmit = (event) => {
-    event.preventDefault();
-    void askFaq(faqInput);
-  };
-
-  const onQuickQuestion = (question) => {
-    void askFaq(question);
-  };
 
   return (
     <section className="s-ai-lab" id="ai-lab">
@@ -706,7 +514,7 @@ const AILab = () => {
         variants={sectionContainer}
       >
         <motion.div className="ai-lab-grid" variants={staggerGrid}>
-          <motion.article className="ai-card" variants={sectionItem}>
+          <motion.article className="ai-card" style={{ gridColumn: 'span 12', maxWidth: '840px', margin: '0 auto' }} variants={sectionItem}>
             <div className="ai-card-head">
               <div>
                 <div className="ai-card-kicker">Automation 01</div>
@@ -866,85 +674,7 @@ const AILab = () => {
             )}
           </motion.article>
 
-          <motion.article className="ai-card" variants={sectionItem}>
-            <div className="ai-card-head">
-              <div>
-                <div className="ai-card-kicker">Automation 02</div>
-                <h3 className="ai-card-title">Contextual AI Assistant</h3>
-              </div>
-              <span className={`ai-mode-pill ${FAQ_WEBHOOK_URL ? 'is-live' : ''}`}>
-                {FAQ_WEBHOOK_URL ? 'Webhook Ready' : 'Local Ready'}
-              </span>
-            </div>
 
-            <p className="ai-faq-intro">
-              Query my expertise, tech stack, and delivery workflow. The AI answers based on my actual portfolio data.
-            </p>
-
-            <div className="ai-quick-list">
-              {QUICK_QUESTIONS.map((question) => (
-                <button
-                  type="button"
-                  key={question}
-                  className="ai-quick-btn"
-                  onClick={() => onQuickQuestion(question)}
-                  disabled={faqLoading}
-                >
-                  {question}
-                </button>
-              ))}
-            </div>
-
-            <div className="ai-chat" ref={chatViewportRef}>
-              {faqMessages.map((message) => (
-                <article
-                  key={message.id}
-                  className={`ai-msg ${message.role === 'user' ? 'is-user' : 'is-assistant'}`}
-                >
-                  <div className="ai-msg-meta">
-                    <span>{message.role === 'user' ? 'You' : 'Assistant'}</span>
-                    <span>{message.source === 'webhook' ? 'AI' : 'Local'}</span>
-                  </div>
-                  <p>{message.text}</p>
-                </article>
-              ))}
-
-              {faqLoading && (
-                <article className="ai-msg is-assistant is-pending" aria-live="polite">
-                  <div className="ai-msg-meta">
-                    <span>Assistant</span>
-                    <span>Thinking</span>
-                  </div>
-                  <p>Analyzing your question...</p>
-                </article>
-              )}
-            </div>
-
-            <form className="ai-chat-form" onSubmit={onFaqSubmit}>
-              <label className="sr-only" htmlFor="faq-question-input">
-                Ask a question
-              </label>
-              <input
-                id="faq-question-input"
-                value={faqInput}
-                onChange={(event) => setFaqInput(event.target.value)}
-                placeholder="Ask about stack, automation, or project delivery"
-              />
-              <button type="submit" className="ai-send" disabled={faqLoading || !faqInput.trim()}>
-                {faqLoading ? '...' : 'Send'}
-              </button>
-            </form>
-
-            <p className="ai-status" aria-live="polite">{faqStatus}</p>
-            <a
-              href={BOOKING_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ai-consult-link"
-            >
-              Prefer a direct discussion? Book a project call ↗
-            </a>
-          </motion.article>
         </motion.div>
       </motion.div>
     </section>

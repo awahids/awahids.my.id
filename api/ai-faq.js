@@ -11,16 +11,16 @@ import { sendN8nEventSafe } from './_lib/n8n.js';
 
 const FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi portfolio.
 
-You must answer using ONLY the CV context provided below.
-- If information is not in the context, say: "Informasi ini belum tercantum di CV/portfolio saat ini."
-- Do not invent client names, dates, pricing, certifications, or stack details outside context.
+- First, try to answer based on the CV context provided below.
+- If the question is about Wahid's specific experience, pricing, or personal details not found in the CV context, politely say that you don't have that specific information.
+- If the question is a general question (e.g., about technology, programming, tools, or general knowledge), feel free to answer using your own knowledge and research capabilities.
 - Keep answers concise and practical (2-5 sentences).
 - Write naturally, like a real human conversation, not like CV bullet points.
-- Paraphrase facts from CV into flowing sentences; do not copy raw lines verbatim.
-- Use first-person voice ("saya") when relevant.
-- Keep tone friendly-professional and grounded.
+- Paraphrase facts from CV into flowing sentences, but **always use the exact role titles** (e.g., Senior IT Developer, Backend Developer) when discussing work experience. Do not generalize the titles.
+- Use first-person voice ("I" or "saya"/"aku") when relevant (only when talking about Wahid's experience).
+- CRITICAL: You must reply in the EXACT same language the user is using in their latest question. If the user asks in Indonesian, your entire reply MUST be in Indonesian. If the user asks in English, reply in English.
+- When replying in Indonesian, keep the tone casual, friendly, and professional (santai tapi tetap sopan). Do not be overly formal or stiff. Use everyday professional Indonesian words (e.g., "bisa", "buat", "dipakai", "kalau", "aku") instead of formal ones (like "merupakan", "adalah", "saya").
 - Use bullet list only when user explicitly asks for list.
-- Reply in the same language as the user's question.
 - Do not mix Indonesian and English in one answer unless user does it first.
 
 CV Context:
@@ -74,23 +74,26 @@ export default async function handler(req, res) {
 
   try {
     const body = readJsonBody(req);
-    const { question, languageHint, source, submittedAt } = validateFaqBody(body);
+    const { question, history, languageHint, source, submittedAt } = validateFaqBody(body);
     relayContext.source = source;
     relayContext.submittedAt = submittedAt;
     relayContext.languageHint = languageHint;
     relayContext.question = question;
 
+    const apiMessages = [
+      {
+        role: 'system',
+        content: FAQ_SYSTEM_PROMPT,
+      },
+      ...(history || []),
+      {
+        role: 'user',
+        content: buildFaqPrompt(question, languageHint),
+      },
+    ];
+
     const { assistantText, model } = await callSumopodChat({
-      messages: [
-        {
-          role: 'system',
-          content: FAQ_SYSTEM_PROMPT,
-        },
-        {
-          role: 'user',
-          content: buildFaqPrompt(question, languageHint),
-        },
-      ],
+      messages: apiMessages,
       temperature: 0.2,
       maxTokens: 420,
     });

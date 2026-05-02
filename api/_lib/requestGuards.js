@@ -163,6 +163,19 @@ export const validateFaqBody = (body) => {
     throw new RequestError(400, 'INVALID_INPUT', 'Request body is required');
   }
 
+  let parsedHistory = [];
+  if (Array.isArray(body.history)) {
+    parsedHistory = body.history.map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: parseLimitedString({
+        value: msg.text || msg.content,
+        field: 'history.content',
+        required: true,
+        maxLength: 1000,
+      }),
+    })).slice(-6);
+  }
+
   return {
     question: parseLimitedString({
       value: body.question,
@@ -170,6 +183,7 @@ export const validateFaqBody = (body) => {
       required: true,
       maxLength: 500,
     }),
+    history: parsedHistory,
     languageHint: sanitizeLanguageHint(body.languageHint),
     source: parseLimitedString({
       value: body.source,

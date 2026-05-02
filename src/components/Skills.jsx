@@ -58,11 +58,14 @@ const Skills = () => {
     const hasFinePointer = window.matchMedia(
       '(hover: hover) and (pointer: fine)'
     ).matches;
+    const isMobileDisplay = window.matchMedia('(max-width: 768px)').matches;
+    const shouldAnimateOnViewport = isMobileDisplay || !hasFinePointer;
 
-    if (prefersReducedMotion || !hasFinePointer) return undefined;
+    if (prefersReducedMotion) return undefined;
 
     let disposed = false;
     let animeApi = null;
+    let mobileObserver = null;
     const runningAnimations = new Map();
     const cardDrawables = new Map();
     const cards = Array.from(root.querySelectorAll('.skill-card'));
@@ -75,18 +78,41 @@ const Skills = () => {
           cards.forEach((card) => {
             const drawableLines = Array.from(
               card.querySelectorAll(
-                '.skill-card-icon path, .skill-card-icon polyline, .skill-card-icon line, .skill-card-icon rect'
+                '.skill-card-icon path, .skill-card-icon polyline, .skill-card-icon line, .skill-card-icon rect, .skill-card-icon circle, .skill-card-icon ellipse'
               )
             )
               .flatMap((line) => svg?.createDrawable(line) || [])
               .filter(Boolean);
 
             drawableLines.forEach((drawable) => {
-              drawable.draw = '0 1';
+              drawable.draw = shouldAnimateOnViewport ? '0 0' : '0 1';
             });
 
             cardDrawables.set(card, drawableLines);
           });
+
+          if (shouldAnimateOnViewport && 'IntersectionObserver' in window) {
+            mobileObserver = new IntersectionObserver(
+              (entries, observer) => {
+                entries.forEach((entry) => {
+                  if (!entry.isIntersecting) return;
+
+                  animateCard(entry.target);
+                  observer.unobserve(entry.target);
+                });
+              },
+              {
+                rootMargin: '0px 0px -10% 0px',
+                threshold: 0.18,
+              }
+            );
+
+            cards.forEach((card) => mobileObserver.observe(card));
+          } else if (shouldAnimateOnViewport) {
+            cards.forEach((card, index) => {
+              window.setTimeout(() => animateCard(card), 120 + index * 120);
+            });
+          }
         }
       })
       .catch((error) => {
@@ -103,10 +129,9 @@ const Skills = () => {
       runningAnimations.delete(card);
     };
 
-    const animateCardChips = (event) => {
+    const animateCard = (card) => {
       if (!animeApi) return;
 
-      const card = event.currentTarget;
       const chips = card.querySelectorAll('.skill-chip');
       const drawables = cardDrawables.get(card) || [];
 
@@ -143,14 +168,19 @@ const Skills = () => {
       runningAnimations.set(card, animations);
     };
 
-    cards.forEach((card) => {
-      card.addEventListener('pointerenter', animateCardChips);
-    });
+    const animateCardOnPointer = (event) => animateCard(event.currentTarget);
+
+    if (hasFinePointer && !isMobileDisplay) {
+      cards.forEach((card) => {
+        card.addEventListener('pointerenter', animateCardOnPointer);
+      });
+    }
 
     return () => {
       disposed = true;
+      mobileObserver?.disconnect();
       cards.forEach((card) => {
-        card.removeEventListener('pointerenter', animateCardChips);
+        card.removeEventListener('pointerenter', animateCardOnPointer);
         stopCardAnimations(card);
       });
       cardDrawables.clear();

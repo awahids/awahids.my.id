@@ -19,6 +19,7 @@ import Skills from './components/Skills';
 import Experience from './components/Experience';
 import Certificates from './components/Certificates';
 import Contact from './components/Contact';
+import FloatingFAQ from './components/FloatingFAQ';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 import { AnomalousMatterHero } from './components/AnomalousHero';
@@ -230,6 +231,7 @@ function App() {
       </main>
 
       <Footer isAiLabPage={aiLabPage} />
+      <FloatingFAQ />
     </div>
   );
 }
