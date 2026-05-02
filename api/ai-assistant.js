@@ -17,10 +17,29 @@ import {
 } from './_lib/requestGuards.js';
 import { sendN8nEventSafe } from './_lib/n8n.js';
 
-// Configuration
-const HERMES_WEBHOOK_URL = process.env.HERMES_WEBHOOK_URL || '';
-const HERMES_WEBHOOK_ENABLED = process.env.HERMES_WEBHOOK_ENABLED === 'true';
-const HERMES_TIMEOUT_MS = parseInt(process.env.HERMES_TIMEOUT_MS || '30000', 10);
+const getHermesConfig = () => {
+  const timeoutMs = parseInt(process.env.HERMES_TIMEOUT_MS || '30000', 10);
+
+  return {
+    enabled: process.env.HERMES_WEBHOOK_ENABLED !== 'false',
+    webhookUrl: process.env.HERMES_WEBHOOK_URL || '',
+    timeoutMs: Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : 30000,
+    allowSumopodFallback: process.env.AI_ASSISTANT_ALLOW_SUMOPOD_FALLBACK === 'true',
+  };
+};
+
+const createAssistantError = ({
+  status = 500,
+  code = 'AI_ASSISTANT_ERROR',
+  message,
+  publicMessage,
+  cause,
+}) =>
+  Object.assign(new Error(message, cause ? { cause } : undefined), {
+    status,
+    code,
+    publicMessage: publicMessage || message,
+  });
 
 // System prompt for Hermes
 const HERMES_SYSTEM_PROMPT = `Kamu adalah AI Assistant untuk portfolio website A Wahid Safhadi (awahids.my.id).
@@ -48,7 +67,9 @@ const limitAssistantRequests = createRateLimiter({
 
 // Helper: Send request to Hermes via n8n webhook
 async function callHermesWebhook({ message, history = [], context = {} }) {
-  if (!HERMES_WEBHOOK_URL) {
+  const { webhookUrl, timeoutMs } = getHermesConfig();
+
+  if (!webhookUrl) {
     throw new Error('HERMES_WEBHOOK_URL not configured');
   }
 
@@ -64,10 +85,10 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
   };
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), HERMES_TIMEOUT_MS);
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(HERMES_WEBHOOK_URL, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -83,16 +104,48 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
       throw new Error(`Hermes webhook failed: ${response.status} - ${errorText}`);
     }
 
-    const data = await response.json();
+    const rawBody = await response.text();
+    if (!rawBody.trim()) {
+      throw createAssistantError({
+        status: 502,
+        code: 'HERMES_EMPTY_RESPONSE',
+        message: 'Hermes webhook returned an empty response',
+        publicMessage: 'Hermes returned an empty response.',
+      });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(rawBody);
+    } catch (error) {
+      throw createAssistantError({
+        status: 502,
+        code: 'HERMES_BAD_RESPONSE',
+        message: 'Hermes webhook returned non-JSON response',
+        publicMessage: 'Hermes returned an invalid response.',
+        cause: error,
+      });
+    }
+
+    const assistantText = data.response || data.answer || data.message;
+    if (!assistantText) {
+      throw createAssistantError({
+        status: 502,
+        code: 'HERMES_EMPTY_ANSWER',
+        message: 'Hermes webhook response did not include response, answer, or message',
+        publicMessage: 'Hermes returned an empty answer.',
+      });
+    }
+
     return {
-      response: data.response || data.answer || data.message || 'No response received',
-      model: data.model || 'hermes',
+      response: assistantText,
+      model: data.model || data.model_used || 'hermes',
       metadata: data.metadata || {},
     };
   } catch (error) {
     clearTimeout(timeout);
     if (error.name === 'AbortError') {
-      throw new Error(`Hermes request timed out after ${HERMES_TIMEOUT_MS}ms`);
+      throw new Error(`Hermes request timed out after ${timeoutMs}ms`, { cause: error });
     }
     throw error;
   }
@@ -136,7 +189,6 @@ export default async function handler(req, res) {
 
   const startedAt = Date.now();
   let usedProvider = 'unknown';
-  let success = false;
 
   try {
     const body = readJsonBody(req);
@@ -150,35 +202,44 @@ export default async function handler(req, res) {
     };
 
     let result;
+    const hermesConfig = getHermesConfig();
 
-    // Try Hermes first if enabled
-    if (HERMES_WEBHOOK_ENABLED && HERMES_WEBHOOK_URL) {
-      try {
-        result = await callHermesWebhook({
-          message: question,
-          history: history || [],
-          context,
-        });
-        usedProvider = 'hermes';
-        success = true;
-      } catch (hermesError) {
-        console.error('Hermes error, falling back to SumoPod:', hermesError.message);
-        // Fallback to SumoPod
-        result = await callSumopodWithContext({
-          message: question,
-          history: history || [],
-        });
-        usedProvider = 'sumopod-fallback';
-        success = true;
+    if (!hermesConfig.enabled) {
+      throw createAssistantError({
+        status: 503,
+        code: 'HERMES_DISABLED',
+        message: 'Hermes assistant is disabled by HERMES_WEBHOOK_ENABLED=false',
+        publicMessage: 'Hermes assistant is disabled.',
+      });
+    }
+
+    if (!hermesConfig.webhookUrl) {
+      throw createAssistantError({
+        status: 500,
+        code: 'HERMES_CONFIG_MISSING',
+        message: 'HERMES_WEBHOOK_URL is missing',
+        publicMessage: 'Hermes assistant is not configured.',
+      });
+    }
+
+    try {
+      result = await callHermesWebhook({
+        message: question,
+        history: history || [],
+        context,
+      });
+      usedProvider = 'hermes';
+    } catch (hermesError) {
+      if (!hermesConfig.allowSumopodFallback) {
+        throw hermesError;
       }
-    } else {
-      // Use SumoPod directly if Hermes not configured
+
+      console.error('Hermes error, falling back to SumoPod:', hermesError.message);
       result = await callSumopodWithContext({
         message: question,
         history: history || [],
       });
-      usedProvider = 'sumopod';
-      success = true;
+      usedProvider = 'sumopod-fallback';
     }
 
     const latencyMs = Date.now() - startedAt;
@@ -233,5 +294,3 @@ export default async function handler(req, res) {
     return res.status(safeError.status).json(safeError.body);
   }
 }
-EOF
-'

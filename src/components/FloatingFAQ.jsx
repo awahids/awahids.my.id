@@ -143,6 +143,11 @@ const buildLocalFaqAnswer = (question, language = detectInputLanguage(question))
     : 'Absolutely. Share your current stack and target, and I can suggest the most practical implementation path based on my fullstack, backend API, automation, and deployment experience.';
 };
 
+const buildHermesUnavailableAnswer = (language) =>
+  language === 'id'
+    ? 'Hermes sedang tidak mengembalikan jawaban dari workflow. Silakan coba lagi setelah service Hermes atau workflow n8n diperbaiki.'
+    : 'Hermes is not returning an answer from the workflow right now. Please try again after the Hermes service or n8n workflow is fixed.';
+
 const normalizeFaqAnswer = (rawPayload) => {
   const raw = rawPayload?.data || rawPayload;
   if (!raw) return '';
@@ -189,7 +194,7 @@ const FloatingFAQ = () => {
   const [loading, setLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [unreadCount, setUnreadCount] = useState(1);
-  const [useHermes, setUseHermes] = useState(false);
+  const [useHermes, setUseHermes] = useState(true);
   const originalTitle = useRef(typeof document !== 'undefined' ? document.title : '');
   const chatViewportRef = useRef(null);
   const isOpenRef = useRef(false);
@@ -316,21 +321,8 @@ const FloatingFAQ = () => {
         if (!answerText) throw new Error('Empty answer');
         mode = 'hermes';
       } catch {
-        const historyPayload = messages
-          .filter(m => m.id !== 'faq-start-float')
-          .slice(-6)
-          .map(m => ({ role: m.role, text: m.text }));
-
-        const responseData = await postJsonWithTimeout(FAQ_WEBHOOK_URL, {
-          question: cleanedQuestion,
-          history: historyPayload,
-          languageHint: faqLanguage,
-          source: 'portfolio-floating-faq-fallback',
-          submittedAt: new Date().toISOString(),
-        });
-        answerText = normalizeFaqAnswer(responseData);
-        if (!answerText) throw new Error('Empty answer');
-        mode = 'webhook-fallback';
+        answerText = buildHermesUnavailableAnswer(faqLanguage);
+        mode = 'hermes-error';
       }
     } else {
       if (FAQ_WEBHOOK_URL) {

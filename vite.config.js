@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import aiFaqHandler from './api/ai-faq.js'
 import aiBriefHandler from './api/ai-brief.js'
+import aiAssistantHandler from './api/ai-assistant.js'
 
 const MAX_DEV_BODY_BYTES = 1_000_000
 
@@ -75,6 +76,7 @@ const devApiMiddleware = () => ({
     const handlers = new Map([
       ['/api/ai-faq', aiFaqHandler],
       ['/api/ai-brief', aiBriefHandler],
+      ['/api/ai-assistant', aiAssistantHandler],
     ])
 
     server.middlewares.use(async (req, res, next) => {
