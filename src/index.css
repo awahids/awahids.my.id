@@ -2537,6 +2537,7 @@ footer {
 
 .floating-faq-body {
   flex: 1;
+  min-height: 0;
   padding: 16px;
   overflow-y: auto;
   display: flex;
@@ -2571,8 +2572,10 @@ footer {
 
 .floating-faq-suggestions {
   display: flex;
+  flex-shrink: 0;
   gap: 8px;
   padding: 0 16px 14px;
+  max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -2606,6 +2609,7 @@ footer {
 }
 
 .floating-faq-footer {
+  flex-shrink: 0;
   padding: 12px;
   background: var(--dark);
   border-top: 1px solid var(--border);
