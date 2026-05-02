@@ -30,7 +30,11 @@
   --tr-slow: .55s;
   --blue: #0076FF;
 }
-html { overflow-x: hidden; }
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 body {
   background: var(--dark);
   color: var(--white);
@@ -2700,7 +2704,16 @@ footer {
   }
 
   .floating-faq-footer input {
-    font-size: 12px;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+}
+
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
   }
 }
 

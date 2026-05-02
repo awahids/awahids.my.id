@@ -366,9 +366,9 @@ const FloatingFAQ = () => {
         {isOpen && (
           <motion.div
             className="floating-faq-window"
-            initial={{ opacity: 0, y: 30, scale: 0.8, transformOrigin: 'bottom right' }}
-            animate={{ opacity: 1, y: 0, scale: 1, transformOrigin: 'bottom right' }}
-            exit={{ opacity: 0, y: 30, scale: 0.8, transformOrigin: 'bottom right' }}
+            initial={{ opacity: 0, y: 24, transformOrigin: 'bottom right' }}
+            animate={{ opacity: 1, y: 0, transformOrigin: 'bottom right' }}
+            exit={{ opacity: 0, y: 24, transformOrigin: 'bottom right' }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
           >
             <div className="floating-faq-header">
