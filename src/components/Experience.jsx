@@ -1,39 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DEFAULT_EXPERIENCES, normalizeExperience } from '../lib/experienceData';
 import { useSectionMotion } from '../lib/sectionMotion';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
-const journeyData = {
-  rasa: {
-    title: 'Rasa Group',
-    blurb: 'Senior IT Developer — built and maintained warehouse, logistics, and operational systems across dashboard interfaces, backend APIs, database workflows, and internal automation.',
-    tag: 'Feb 2025 — Present · Cikarang, Bekasi',
-    glyph: '✺'
-  },
-  ethis: {
-    title: 'PT. Ethis Fintech Indonesia',
-    blurb: 'Backend Developer — designed and deployed scalable API services and contributed to end-to-end product delivery with NestJS, MySQL, and TypeORM.',
-    tag: 'Aug 2022 — Feb 2025 · West Jakarta',
-    glyph: '◍'
-  },
-  tokokupon: {
-    title: 'Tokokupon.com',
-    blurb: 'Fullstack Engineer — built top-up product across frontend flow, service API, and operational backend using Next.js, NestJS, and MySQL.',
-    tag: 'Jul — Sep 2024 · Remote',
-    glyph: '❍'
-  },
-  adala: {
-    title: 'adala.id',
-    blurb: 'Backend Developer — developed scalable inventory APIs and helped shape warehouse product workflows with NestJS and MySQL.',
-    tag: 'Jan 2022 — Aug 2022 · Remote',
-    glyph: '✦'
-  }
-};
+const EXPERIENCE_SELECT = 'id,title,role,blurb,tag,glyph,sort_order,is_published';
 
 const Experience = () => {
-  const [activeId, setActiveId] = useState('rasa');
+  const [experiences, setExperiences] = useState(DEFAULT_EXPERIENCES);
+  const [activeId, setActiveId] = useState(DEFAULT_EXPERIENCES[0]?.id || '');
   const { viewport, sectionContainer, sectionItem, staggerTight } =
     useSectionMotion();
-  const d = journeyData[activeId];
+  const activeExperience = useMemo(
+    () =>
+      experiences.find((experience) => experience.id === activeId) ||
+      experiences[0],
+    [activeId, experiences]
+  );
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadExperiences = async () => {
+      const { data, error } = await supabase
+        .from('experiences')
+        .select(EXPERIENCE_SELECT)
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (!mounted || error || !data?.length) return;
+
+      const nextExperiences = data.map(normalizeExperience);
+      setExperiences(nextExperiences);
+      setActiveId((currentId) =>
+        nextExperiences.some((experience) => experience.id === currentId)
+          ? currentId
+          : nextExperiences[0].id
+      );
+    };
+
+    loadExperiences();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!activeExperience) return null;
 
   return (
     <section className="s-exp" id="experience">
@@ -59,19 +75,19 @@ const Experience = () => {
 
         <motion.div className="journey-layout" variants={sectionItem}>
           <motion.div className="journey-nav" variants={staggerTight}>
-            {Object.keys(journeyData).map((id, index) => (
+            {experiences.map((experience, index) => (
               <motion.button
-                key={id}
+                key={experience.id}
                 type="button"
-                className={`journey-item ${activeId === id ? 'active' : ''}`}
-                onMouseEnter={() => setActiveId(id)}
-                onFocus={() => setActiveId(id)}
-                onClick={() => setActiveId(id)}
+                className={`journey-item ${activeId === experience.id ? 'active' : ''}`}
+                onMouseEnter={() => setActiveId(experience.id)}
+                onFocus={() => setActiveId(experience.id)}
+                onClick={() => setActiveId(experience.id)}
                 variants={sectionItem}
               >
                 <div className="journey-item-left">
                   <span className="journey-item-num">0{index + 1}</span>
-                  <span className="journey-item-title">{journeyData[id].title}</span>
+                  <span className="journey-item-title">{experience.title}</span>
                 </div>
                 <span className="journey-item-arrow">↗</span>
               </motion.button>
@@ -96,15 +112,15 @@ const Experience = () => {
                   transition={{ duration: 0.3 }}
                   style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}
                 >
-                  <div className="journey-glyph">{d.glyph}</div>
+                  <div className="journey-glyph">{activeExperience.glyph}</div>
                   <div>
                     <div className="journey-role">// role</div>
-                    <h3 className="journey-company">{d.title}</h3>
+                    <h3 className="journey-company">{activeExperience.title}</h3>
                   </div>
                   <div>
-                    <p className="journey-quote">"{d.blurb}"</p>
+                    <p className="journey-quote">"{activeExperience.blurb}"</p>
                     <div className="journey-tag-wrap">
-                      <span className="journey-tag">{d.tag}</span>
+                      <span className="journey-tag">{activeExperience.tag}</span>
                     </div>
                     <div className="journey-command"><b>$</b> cat ./{activeId}.md<span className="journey-cursor">▌</span></div>
                   </div>

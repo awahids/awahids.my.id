@@ -1,6 +1,13 @@
 const DEFAULT_BASE_URL = 'https://ai.sumopod.com/v1';
 const DEFAULT_MODEL = 'gpt-4o-mini';
 const DEFAULT_TIMEOUT_MS = 12_000;
+const CMS_AI_SETTINGS_ID = 'api-settings-sumopod';
+const CMS_AI_SETTINGS_CACHE_MS = 30_000;
+
+let cmsAiSettingsCache = {
+  expiresAt: 0,
+  payload: null,
+};
 
 const ensureNoTrailingSlash = (value) => value.replace(/\/$/, '');
 
@@ -30,6 +37,70 @@ const parseModelList = (value) => {
 };
 
 const pickRandomModel = (models) => models[Math.floor(Math.random() * models.length)];
+
+const toPositiveInt = (value, fallback) => {
+  const parsed = Number(value);
+  if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
+  return fallback;
+};
+
+const getSupabaseRestConfig = () => {
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+  const anonKey =
+    process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+
+  return {
+    url: ensureNoTrailingSlash(url),
+    anonKey,
+  };
+};
+
+const readCmsAiSettings = async () => {
+  if (process.env.CMS_AI_SETTINGS_ENABLED === 'false') return null;
+
+  const now = Date.now();
+  if (cmsAiSettingsCache.payload && cmsAiSettingsCache.expiresAt > now) {
+    return cmsAiSettingsCache.payload;
+  }
+
+  const { url, anonKey } = getSupabaseRestConfig();
+  if (!url || !anonKey) return null;
+
+  try {
+    const query = new URLSearchParams({
+      select: 'payload,is_published',
+      id: `eq.${CMS_AI_SETTINGS_ID}`,
+      collection: 'eq.api-settings',
+      is_published: 'eq.true',
+      limit: '1',
+    });
+
+    const response = await fetch(`${url}/rest/v1/cms_items?${query.toString()}`, {
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${anonKey}`,
+      },
+    });
+
+    if (!response.ok) return null;
+
+    const rows = await response.json();
+    const payload = rows?.[0]?.payload;
+
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+      return null;
+    }
+
+    cmsAiSettingsCache = {
+      expiresAt: now + CMS_AI_SETTINGS_CACHE_MS,
+      payload,
+    };
+
+    return payload;
+  } catch {
+    return null;
+  }
+};
 
 const createServiceError = ({
   status = 500,
@@ -90,24 +161,32 @@ export const parseJsonLenient = (text) => {
   }
 };
 
-export const getSumopodConfig = () => {
+export const getSumopodConfig = async () => {
+  const cmsSettings = await readCmsAiSettings();
   const apiKey = process.env.SUMOPOD_API_KEY;
-  const baseURL = ensureNoTrailingSlash(process.env.SUMOPOD_BASE_URL || DEFAULT_BASE_URL);
-  const models = parseModelList(process.env.SUMOPOD_MODEL || DEFAULT_MODEL);
+  const baseURL = ensureNoTrailingSlash(
+    cmsSettings?.base_url || process.env.SUMOPOD_BASE_URL || DEFAULT_BASE_URL
+  );
+  const models = parseModelList(
+    cmsSettings?.models || cmsSettings?.model || process.env.SUMOPOD_MODEL || DEFAULT_MODEL
+  );
   const model = pickRandomModel(models);
-  const timeoutMs = Number(process.env.SUMOPOD_TIMEOUT_MS || DEFAULT_TIMEOUT_MS);
+  const timeoutMs = toPositiveInt(
+    cmsSettings?.timeout_ms || process.env.SUMOPOD_TIMEOUT_MS,
+    DEFAULT_TIMEOUT_MS
+  );
 
   return {
     apiKey,
     baseURL,
     model,
     models,
-    timeoutMs: Number.isFinite(timeoutMs) && timeoutMs > 0 ? timeoutMs : DEFAULT_TIMEOUT_MS,
+    timeoutMs,
   };
 };
 
 export const callSumopodChat = async ({ messages, temperature = 0.2, maxTokens = 800 }) => {
-  const { apiKey, baseURL, model, timeoutMs } = getSumopodConfig();
+  const { apiKey, baseURL, model, timeoutMs } = await getSumopodConfig();
 
   if (!apiKey) {
     throw createServiceError({

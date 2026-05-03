@@ -56,7 +56,7 @@ const Navbar = ({ isAiLabPage = false }) => {
   }, [isAiLabPage]);
 
   return (
-    <nav className={scrolled ? 'scrolled' : ''}>
+    <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`.trim()}>
       <a href="#home" data-scroll-target="#home" className="nav-logo">A<b>.</b>W<b>.</b>S<b>.</b></a>
       <div className="nav-right">
         <ul className="nav-links">

@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { loadAnimeModule } from '../lib/animeLoader';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
 const skillsData = [
   {
@@ -42,10 +43,56 @@ const skillsData = [
   }
 ];
 
+const fallbackSkillIcon = (
+  <svg viewBox="0 0 24 24">
+    <path d="M12 2 2 7l10 5 10-5-10-5z" />
+    <path d="M2 17l10 5 10-5" />
+    <path d="M2 12l10 5 10-5" />
+  </svg>
+);
+
+const skillFromCmsItem = (item, index) => {
+  const payload = item.payload || {};
+
+  return {
+    name: item.title,
+    prof: item.subtitle,
+    num: String(payload.num || String(index + 1).padStart(2, '0')),
+    chips: Array.isArray(payload.chips) ? payload.chips : [],
+    icon: fallbackSkillIcon,
+  };
+};
+
 const Skills = () => {
   const rootRef = useRef(null);
+  const [skillItems, setSkillItems] = useState(skillsData);
   const { viewport, sectionContainer, sectionItem, staggerGrid } =
     useSectionMotion();
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadSkills = async () => {
+      const { data, error } = await supabase
+        .from('cms_items')
+        .select('id,title,subtitle,payload,sort_order,is_published')
+        .eq('collection', 'skills')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (!mounted || error || !data?.length) return;
+      setSkillItems(data.map(skillFromCmsItem));
+    };
+
+    loadSkills();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -185,7 +232,7 @@ const Skills = () => {
       });
       cardDrawables.clear();
     };
-  }, []);
+  }, [skillItems.length]);
 
   return (
     <section className="s-skills" id="skills">
@@ -216,7 +263,7 @@ const Skills = () => {
           className="skills-grid"
           variants={staggerGrid}
         >
-          {skillsData.map((skill, index) => (
+          {skillItems.map((skill, index) => (
             <motion.div
               key={index}
               className="skill-card"

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { BOOKING_URL } from '../lib/links';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -345,7 +346,35 @@ const projects = [
 const MOBILE_PROJECT_LIMIT = 5;
 const MOBILE_SCOPE_LIMIT = 4;
 
+const projectFromCmsItem = (item, index) => {
+  const payload = item.payload || {};
+
+  return {
+    id: item.id,
+    title: item.title,
+    cat: item.subtitle,
+    year: String(payload.year || ''),
+    desc: item.summary,
+    problem: String(payload.problem || ''),
+    built: String(payload.built || ''),
+    result: String(payload.result || ''),
+    impact: String(payload.impact || ''),
+    outcomes: Array.isArray(payload.outcomes) ? payload.outcomes : [],
+    signals: Array.isArray(payload.signals) ? payload.signals : [],
+    type: String(payload.type || ''),
+    role: String(payload.role || ''),
+    focus: Array.isArray(payload.focus) ? payload.focus : [],
+    scope: Array.isArray(payload.scope) ? payload.scope : [],
+    stack: Array.isArray(payload.stack) ? payload.stack : [],
+    live: String(payload.live || '#'),
+    case: String(payload.case || '#'),
+    bento: String(payload.bento || 'bento-compact'),
+    num: String(payload.num || String(index + 1).padStart(2, '0')),
+  };
+};
+
 const Portfolio = () => {
+  const [projectItems, setProjectItems] = useState(projects);
   const [selectedProject, setSelectedProject] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showAllMobileProjects, setShowAllMobileProjects] = useState(false);
@@ -354,6 +383,31 @@ const Portfolio = () => {
   const previousFocusedRef = useRef(null);
   const { viewport, sectionContainer, sectionItem, staggerGrid, ease, reduceMotion } =
     useSectionMotion();
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadProjects = async () => {
+      const { data, error } = await supabase
+        .from('cms_items')
+        .select('id,title,subtitle,summary,payload,sort_order,is_published')
+        .eq('collection', 'projects')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (!mounted || error || !data?.length) return;
+      setProjectItems(data.map(projectFromCmsItem));
+    };
+
+    loadProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const openModal = useCallback((project) => {
     setSelectedProject(project);
@@ -456,8 +510,8 @@ const Portfolio = () => {
 
   const visibleProjects =
     isMobile && !showAllMobileProjects
-      ? projects.slice(0, MOBILE_PROJECT_LIMIT)
-      : projects;
+      ? projectItems.slice(0, MOBILE_PROJECT_LIMIT)
+      : projectItems;
 
   const visibleScopeLimit = isMobile ? MOBILE_SCOPE_LIMIT : 5;
 
@@ -511,7 +565,7 @@ const Portfolio = () => {
             </motion.div>
           ))}
         </motion.div>
-        {isMobile && projects.length > MOBILE_PROJECT_LIMIT && (
+        {isMobile && projectItems.length > MOBILE_PROJECT_LIMIT && (
           <motion.button
             type="button"
             className="port-mobile-toggle"
@@ -520,7 +574,7 @@ const Portfolio = () => {
           >
             {showAllMobileProjects
               ? 'Show Less'
-              : `View More Projects (${projects.length - MOBILE_PROJECT_LIMIT})`}
+              : `View More Projects (${projectItems.length - MOBILE_PROJECT_LIMIT})`}
           </motion.button>
         )}
       </motion.div>

@@ -20,10 +20,12 @@ import Experience from './components/Experience';
 import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 import FloatingFAQ from './components/FloatingFAQ';
+import AdminExperience from './components/AdminExperience';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 import { AnomalousMatterHero } from './components/AnomalousHero';
 const AI_LAB_PATH = '/ai-lab';
+const ADMIN_PATH_PREFIX = '/admin';
 const AILab = lazy(() => import('./components/AILab'));
 
 const BOT_USER_AGENT_PATTERN =
@@ -48,10 +50,21 @@ const normalizePathname = (pathname = '') => {
 const isAiLabRoute = (pathname = '') =>
   normalizePathname(pathname) === AI_LAB_PATH;
 
+const isAdminRoute = (pathname = '') => {
+  const normalized = normalizePathname(pathname);
+  return normalized === ADMIN_PATH_PREFIX || normalized.startsWith(`${ADMIN_PATH_PREFIX}/`);
+};
+
 function App() {
-  const aiLabPage =
-    typeof window !== 'undefined' && isAiLabRoute(window.location.pathname);
-  const [loading, setLoading] = useState(() => !shouldBypassPreloader());
+  const [currentPathname, setCurrentPathname] = useState(() =>
+    typeof window !== 'undefined' ? window.location.pathname : ''
+  );
+  const aiLabPage = isAiLabRoute(currentPathname);
+  const adminPage = isAdminRoute(currentPathname);
+  const [loading, setLoading] = useState(
+    () => !isAdminRoute(currentPathname) && !shouldBypassPreloader()
+  );
+  const effectiveLoading = adminPage ? false : loading;
   const {
     viewport: sectionViewport,
     sectionContainer,
@@ -60,12 +73,35 @@ function App() {
   } = useSectionMotion();
 
   useEffect(() => {
-    document.body.classList.toggle('is-preloading', loading);
-    return () => document.body.classList.remove('is-preloading');
-  }, [loading]);
+    if (typeof window === 'undefined') return undefined;
+
+    const syncPathname = () => {
+      setCurrentPathname(window.location.pathname);
+    };
+
+    window.addEventListener('popstate', syncPathname);
+    return () => window.removeEventListener('popstate', syncPathname);
+  }, []);
+
+  const navigateAdmin = (path) => {
+    if (typeof window === 'undefined') return;
+
+    const nextPath = path || '/admin/experience';
+    if (window.location.pathname !== nextPath) {
+      window.history.pushState(null, '', nextPath);
+    }
+
+    setCurrentPathname(nextPath);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    if (loading) return undefined;
+    document.body.classList.toggle('is-preloading', effectiveLoading);
+    return () => document.body.classList.remove('is-preloading');
+  }, [effectiveLoading]);
+
+  useEffect(() => {
+    if (effectiveLoading || adminPage) return undefined;
 
     const progressTween = gsap.to('.scroll-progress-bar', {
       scaleX: 1,
@@ -125,23 +161,25 @@ function App() {
       progressTween.scrollTrigger?.kill();
       progressTween.kill();
     };
-  }, [loading]);
+  }, [adminPage, effectiveLoading]);
 
   return (
-    <div className={`app-container ${loading ? 'is-preloading' : ''}`}>
-      {loading && <Preloader onComplete={() => setLoading(false)} />}
+    <div className={`app-container ${effectiveLoading ? 'is-preloading' : ''}`}>
+      {effectiveLoading && <Preloader onComplete={() => setLoading(false)} />}
 
       <div className="scroll-progress">
         <div className="scroll-progress-bar"></div>
       </div>
 
       <CustomCursor />
-      <Navbar isAiLabPage={aiLabPage} />
-      {!aiLabPage && <MobileNav />}
-      {!aiLabPage && <SocialRail />}
+      {!adminPage && <Navbar isAiLabPage={aiLabPage} />}
+      {!aiLabPage && !adminPage && <MobileNav />}
+      {!aiLabPage && !adminPage && <SocialRail />}
 
       <main className={aiLabPage ? 'main-ai-lab-page' : ''}>
-        {aiLabPage ? (
+        {adminPage ? (
+          <AdminExperience routePath={currentPathname} onNavigate={navigateAdmin} />
+        ) : aiLabPage ? (
           <>
             <AnomalousMatterHero />
             <Suspense fallback={<section className="s-ai-lab" id="ai-lab" />}>
@@ -230,8 +268,8 @@ function App() {
         )}
       </main>
 
-      <Footer isAiLabPage={aiLabPage} />
-      <FloatingFAQ />
+      {!adminPage && <Footer isAiLabPage={aiLabPage} />}
+      {!adminPage && <FloatingFAQ />}
     </div>
   );
 }
