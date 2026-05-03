@@ -143,17 +143,27 @@ const buildLocalFaqAnswer = (question, language = detectInputLanguage(question))
     : 'Absolutely. Share your current stack and target, and I can suggest the most practical implementation path based on my fullstack, backend API, automation, and deployment experience.';
 };
 
-const buildHermesUnavailableAnswer = (language) =>
-  language === 'id'
-    ? 'Hermes sedang tidak mengembalikan jawaban dari workflow. Silakan coba lagi setelah service Hermes atau workflow n8n diperbaiki.'
-    : 'Hermes is not returning an answer from the workflow right now. Please try again after the Hermes service or n8n workflow is fixed.';
-
 const normalizeFaqAnswer = (rawPayload) => {
   const raw = rawPayload?.data || rawPayload;
   if (!raw) return '';
   const answerCandidate =
     raw.answer || raw.message || raw.output || raw.text || raw.response || '';
   return String(answerCandidate || '').trim();
+};
+
+const createChatRequestError = (message, details = {}) =>
+  Object.assign(new Error(message), {
+    name: 'ChatRequestError',
+    details,
+  });
+
+const parseResponsePayload = (text) => {
+  if (!text.trim()) return {};
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { answer: text };
+  }
 };
 
 const postJsonWithTimeout = async (url, payload, timeoutMs = 14000) => {
@@ -167,25 +177,57 @@ const postJsonWithTimeout = async (url, payload, timeoutMs = 14000) => {
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
-    if (!response.ok) throw new Error(`Status ${response.status}`);
     const text = await response.text();
-    if (!text.trim()) return {};
-    try {
-      return JSON.parse(text);
-    } catch {
-      return { answer: text };
+
+    if (!response.ok) {
+      const errorPayload = parseResponsePayload(text);
+      throw createChatRequestError(
+        errorPayload.error || errorPayload.message || errorPayload.answer || `Request failed with status ${response.status}`,
+        {
+          status: response.status,
+          code: errorPayload.code || 'AI_REQUEST_FAILED',
+          provider: errorPayload.meta?.provider,
+          model: errorPayload.meta?.model,
+        }
+      );
     }
+
+    return parseResponsePayload(text);
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw createChatRequestError('Request timed out. Please try again.', {
+        code: 'REQUEST_TIMEOUT',
+      });
+    }
+    throw error;
   } finally {
     window.clearTimeout(timeout);
   }
 };
 
-const createMessage = (role, text, source) => ({
+const createMessage = (role, text, source, meta = {}) => ({
   id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
   role,
   text,
   source,
+  ...meta,
 });
+
+const buildErrorAnswer = (error, language) => {
+  const details = error?.details || {};
+  const parts = [
+    details.code ? `Code: ${details.code}` : '',
+    details.model ? `Model: ${details.model}` : '',
+    details.provider ? `Provider: ${details.provider}` : '',
+  ].filter(Boolean);
+
+  const suffix = parts.length > 0 ? `\n${parts.join(' | ')}` : '';
+  const message = error?.message || 'AI request failed.';
+
+  return language === 'id'
+    ? `AI sedang error: ${message}${suffix}`
+    : `AI error: ${message}${suffix}`;
+};
 
 const FloatingFAQ = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -194,10 +236,16 @@ const FloatingFAQ = () => {
   const [loading, setLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [unreadCount, setUnreadCount] = useState(1);
-  const [useHermes, setUseHermes] = useState(true);
+  const [useHermes] = useState(false);
   const originalTitle = useRef(typeof document !== 'undefined' ? document.title : '');
   const chatViewportRef = useRef(null);
   const isOpenRef = useRef(false);
+
+  const buildHistoryPayload = (sourceMessages) =>
+    sourceMessages
+      .filter(m => m.id !== 'faq-start-float' && m.source !== 'error')
+      .slice(-6)
+      .map(m => ({ role: m.role, text: m.text }));
 
   const markAssistantMessageUnread = () => {
     if (!isOpenRef.current || document.hidden) {
@@ -262,13 +310,13 @@ const FloatingFAQ = () => {
 
   useEffect(() => {
     if (messages.length === 0 || loading) return;
-    
+
     const lastMessage = messages[messages.length - 1];
     if (lastMessage.role !== 'assistant') return;
 
     const followUpIdText = 'Masih ada yang ingin ditanyakan?';
     const followUpEnText = 'Do you still have any questions?';
-    
+
     if (lastMessage.text.includes(followUpIdText) || lastMessage.text.includes(followUpEnText)) {
       return;
     }
@@ -276,11 +324,11 @@ const FloatingFAQ = () => {
     const timer = setTimeout(() => {
       const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
       const lang = lastUserMsg ? detectInputLanguage(lastUserMsg.text) : 'en';
-      
-      const followUpText = lang === 'id' 
-        ? "Halo! Masih ada yang ingin ditanyakan? 😊" 
+
+      const followUpText = lang === 'id'
+        ? "Halo! Masih ada yang ingin ditanyakan? 😊"
         : "Hi! Do you still have any questions? 😊";
-      
+
       setMessages(prev => [...prev, createMessage('assistant', followUpText, 'local')]);
       markAssistantMessageUnread();
     }, 60000); // 1 minute follow-up
@@ -288,7 +336,8 @@ const FloatingFAQ = () => {
     return () => clearTimeout(timer);
   }, [messages, loading]);
 
-  const askFaq = async (questionText, forceHermes = false) => {
+  const askFaq = async (questionText, options = {}) => {
+    const { forceHermes = false, appendUser = true } = options;
     const cleanedQuestion = questionText.trim();
     if (!cleanedQuestion || loading) return;
     const faqLanguage = detectInputLanguage(cleanedQuestion);
@@ -296,19 +345,19 @@ const FloatingFAQ = () => {
     setLoading(true);
     setInput('');
 
-    const userMessage = createMessage('user', cleanedQuestion, 'local');
-    setMessages((prev) => [...prev, userMessage]);
+    if (appendUser) {
+      const userMessage = createMessage('user', cleanedQuestion, 'local');
+      setMessages((prev) => [...prev, userMessage]);
+    }
 
     let answerText;
     let mode;
+    let errorDetails;
     const shouldUseHermes = forceHermes || useHermes;
 
     if (shouldUseHermes && AI_ASSISTANT_URL) {
       try {
-        const historyPayload = messages
-          .filter(m => m.id !== 'faq-start-float')
-          .slice(-6)
-          .map(m => ({ role: m.role, text: m.text }));
+        const historyPayload = buildHistoryPayload(messages);
 
         const responseData = await postJsonWithTimeout(AI_ASSISTANT_URL, {
           question: cleanedQuestion,
@@ -320,17 +369,15 @@ const FloatingFAQ = () => {
         answerText = normalizeFaqAnswer(responseData);
         if (!answerText) throw new Error('Empty answer');
         mode = 'hermes';
-      } catch {
-        answerText = buildHermesUnavailableAnswer(faqLanguage);
-        mode = 'hermes-error';
+      } catch (error) {
+        answerText = buildErrorAnswer(error, faqLanguage);
+        errorDetails = error?.details || {};
+        mode = 'error';
       }
     } else {
       if (FAQ_WEBHOOK_URL) {
         try {
-          const historyPayload = messages
-            .filter(m => m.id !== 'faq-start-float')
-            .slice(-6)
-            .map(m => ({ role: m.role, text: m.text }));
+          const historyPayload = buildHistoryPayload(messages);
 
           const responseData = await postJsonWithTimeout(FAQ_WEBHOOK_URL, {
             question: cleanedQuestion,
@@ -342,9 +389,10 @@ const FloatingFAQ = () => {
           answerText = normalizeFaqAnswer(responseData);
           if (!answerText) throw new Error('Empty answer');
           mode = 'webhook';
-        } catch {
-          answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
-          mode = 'local';
+        } catch (error) {
+          answerText = buildErrorAnswer(error, faqLanguage);
+          errorDetails = error?.details || {};
+          mode = 'error';
         }
       } else {
         answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
@@ -352,10 +400,25 @@ const FloatingFAQ = () => {
       }
     }
 
-    const assistantMessage = createMessage('assistant', answerText, mode);
+    const assistantMessage = createMessage('assistant', answerText, mode, {
+      retryQuestion: mode === 'error' ? cleanedQuestion : '',
+      retryForceHermes: mode === 'error' ? shouldUseHermes : false,
+      errorDetails,
+    });
     setMessages((prev) => [...prev, assistantMessage]);
     markAssistantMessageUnread();
     setLoading(false);
+  };
+
+  const retryMessage = (message) => {
+    if (!message.retryQuestion || loading) return;
+    setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
+    window.setTimeout(() => {
+      void askFaq(message.retryQuestion, {
+        forceHermes: message.retryForceHermes,
+        appendUser: false,
+      });
+    }, 0);
   };
 
   const handleSubmit = (e) => {
@@ -377,8 +440,8 @@ const FloatingFAQ = () => {
             <div className="ff-notification-text">
               {messages[0]?.text || "Need help? Ask the AI here! 🤖"}
             </div>
-            <button 
-              className="ff-notification-close" 
+            <button
+              className="ff-notification-close"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowNotification(false);
@@ -407,11 +470,11 @@ const FloatingFAQ = () => {
                 <span className="ffh-title">AI Assistant</span>
                 <span className="ffh-status">{useHermes ? '🤖 Hermes' : 'Online'}</span>
               </div>
-              <button 
-                className="ffh-toggle-hermes" 
+              {/* <button
+                className="ffh-toggle-hermes"
                 onClick={() => setUseHermes(!useHermes)}
-                title={useHermes ? 'Switch to standard AI' : 'Switch to Hermes AI'}
-                style={{ 
+                title={useHermes ? 'Switch to SumoPod AI' : 'Switch to Hermes AI'}
+                style={{
                   background: 'transparent',
                   border: 'none',
                   cursor: 'pointer',
@@ -421,7 +484,7 @@ const FloatingFAQ = () => {
                 }}
               >
                 {useHermes ? '🤖' : '💬'}
-              </button>
+              </button> */}
               <button className="ffh-close" onClick={closeChat}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -429,18 +492,28 @@ const FloatingFAQ = () => {
                 </svg>
               </button>
             </div>
-            
+
             <div className="floating-faq-body" ref={chatViewportRef}>
               <AnimatePresence>
                 {messages.map((msg) => (
                   <motion.div
                     key={msg.id}
-                    className={`ff-msg ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}
+                    className={`ff-msg ${msg.role === 'user' ? 'is-user' : 'is-assistant'} ${msg.source === 'error' ? 'is-error' : ''}`}
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.2 }}
                   >
                     <div className="ff-msg-content">{msg.text}</div>
+                    {msg.source === 'error' && msg.retryQuestion && (
+                      <button
+                        type="button"
+                        className="ff-retry-btn"
+                        onClick={() => retryMessage(msg)}
+                        disabled={loading}
+                      >
+                        Retry
+                      </button>
+                    )}
                   </motion.div>
                 ))}
                 {loading && (
@@ -457,9 +530,9 @@ const FloatingFAQ = () => {
                 )}
               </AnimatePresence>
             </div>
-            
+
             {!loading && messages.length <= 1 && (
-              <motion.div 
+              <motion.div
                 className="floating-faq-suggestions"
                 initial="hidden"
                 animate="visible"
@@ -468,8 +541,8 @@ const FloatingFAQ = () => {
                 }}
               >
                 {QUICK_QUESTIONS.map((q) => (
-                  <motion.button 
-                    key={q} 
+                  <motion.button
+                    key={q}
                     className="ff-suggestion-btn"
                     onClick={() => askFaq(q)}
                     variants={{
@@ -501,13 +574,13 @@ const FloatingFAQ = () => {
         )}
       </AnimatePresence>
 
-      <button 
-        className={`floating-faq-toggle ${isOpen ? 'is-active' : ''}`} 
+      <button
+        className={`floating-faq-toggle ${isOpen ? 'is-active' : ''}`}
         onClick={toggleChat}
       >
         <AnimatePresence>
           {unreadCount > 0 && !isOpen && (
-            <motion.div 
+            <motion.div
               className="ff-unread-badge"
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -520,7 +593,7 @@ const FloatingFAQ = () => {
 
         <AnimatePresence mode="wait">
           {isOpen ? (
-            <motion.svg 
+            <motion.svg
               key="close"
               initial={{ rotate: -90, opacity: 0 }}
               animate={{ rotate: 0, opacity: 1 }}
@@ -532,7 +605,7 @@ const FloatingFAQ = () => {
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </motion.svg>
           ) : (
-            <motion.svg 
+            <motion.svg
               key="open"
               initial={{ rotate: 90, opacity: 0 }}
               animate={{ rotate: 0, opacity: 1 }}

@@ -66,7 +66,7 @@ Tambahkan ke `.env.local` (untuk local dev) dan Vercel Environment Variables:
 # Existing SumoPod config (keep as is)
 SUMOPOD_API_KEY=your_sumopod_key
 SUMOPOD_BASE_URL=https://ai.sumopod.com/v1
-SUMOPOD_MODEL=gpt-4o-mini
+SUMOPOD_MODEL=["gpt-4o-mini","gpt-4.1-mini"]
 
 # Hermes Integration (NEW)
 HERMES_WEBHOOK_ENABLED=true

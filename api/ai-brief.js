@@ -76,6 +76,7 @@ export default async function handler(req, res) {
     productType: '',
     targetUsers: '',
     coreGoals: '',
+    model: '',
   };
 
   try {
@@ -114,8 +115,16 @@ export default async function handler(req, res) {
       temperature: 0.3,
       maxTokens: 1100,
     });
+    relayContext.model = model;
 
-    const analysis = parseJsonLenient(assistantText);
+    let analysis;
+    try {
+      analysis = parseJsonLenient(assistantText);
+    } catch (error) {
+      error.provider = 'sumopod';
+      error.model = model;
+      throw error;
+    }
 
     await sendN8nEventSafe({
       req,
@@ -163,6 +172,8 @@ export default async function handler(req, res) {
         coreGoalsPreview: truncate(relayContext.coreGoals, BRIEF_EVENT_TEXT_PREVIEW_LENGTH),
         errorCode: safeError.body.code,
         errorMessage: safeError.body.error,
+        provider: safeError.body.meta?.provider,
+        model: safeError.body.meta?.model || relayContext.model,
         status: safeError.status,
         latencyMs: Date.now() - startedAt,
       },

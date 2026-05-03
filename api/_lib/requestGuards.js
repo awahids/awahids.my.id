@@ -255,12 +255,20 @@ export const validateBriefBody = (body) => {
 };
 
 export const toSafeErrorResponse = (error) => {
+  const provider = typeof error?.provider === 'string' ? error.provider : '';
+  const model = typeof error?.model === 'string' ? error.model : '';
+  const meta = {
+    ...(provider ? { provider } : {}),
+    ...(model ? { model } : {}),
+  };
+
   if (error && typeof error === 'object' && error.name === 'RequestError') {
     return {
       status: error.status || 400,
       body: {
         error: error.message,
         code: error.code || 'INVALID_REQUEST',
+        ...(Object.keys(meta).length > 0 ? { meta } : {}),
       },
     };
   }
@@ -275,6 +283,7 @@ export const toSafeErrorResponse = (error) => {
     body: {
       error: exposedMessage || fallbackMessage,
       code,
+      ...(Object.keys(meta).length > 0 ? { meta } : {}),
     },
   };
 };

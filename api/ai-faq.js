@@ -138,6 +138,8 @@ export default async function handler(req, res) {
         questionLength: relayContext.question.length,
         errorCode: safeError.body.code,
         errorMessage: safeError.body.error,
+        provider: safeError.body.meta?.provider,
+        model: safeError.body.meta?.model,
         status: safeError.status,
         latencyMs: Date.now() - startedAt,
       },

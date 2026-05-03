@@ -33,12 +33,16 @@ const createAssistantError = ({
   code = 'AI_ASSISTANT_ERROR',
   message,
   publicMessage,
+  provider,
+  model,
   cause,
 }) =>
   Object.assign(new Error(message, cause ? { cause } : undefined), {
     status,
     code,
     publicMessage: publicMessage || message,
+    provider,
+    model,
   });
 
 // System prompt for Hermes
@@ -70,7 +74,14 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
   const { webhookUrl, timeoutMs } = getHermesConfig();
 
   if (!webhookUrl) {
-    throw new Error('HERMES_WEBHOOK_URL not configured');
+    throw createAssistantError({
+      status: 500,
+      code: 'HERMES_CONFIG_MISSING',
+      message: 'HERMES_WEBHOOK_URL not configured',
+      publicMessage: 'Hermes assistant is not configured.',
+      provider: 'hermes',
+      model: 'hermes',
+    });
   }
 
   const payload = {
@@ -101,7 +112,14 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Hermes webhook failed: ${response.status} - ${errorText}`);
+      throw createAssistantError({
+        status: 502,
+        code: 'HERMES_UPSTREAM_ERROR',
+        message: `Hermes webhook failed: ${response.status} - ${errorText}`,
+        publicMessage: 'Hermes assistant is unavailable right now.',
+        provider: 'hermes',
+        model: 'hermes',
+      });
     }
 
     const rawBody = await response.text();
@@ -111,6 +129,8 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
         code: 'HERMES_EMPTY_RESPONSE',
         message: 'Hermes webhook returned an empty response',
         publicMessage: 'Hermes returned an empty response.',
+        provider: 'hermes',
+        model: 'hermes',
       });
     }
 
@@ -123,6 +143,8 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
         code: 'HERMES_BAD_RESPONSE',
         message: 'Hermes webhook returned non-JSON response',
         publicMessage: 'Hermes returned an invalid response.',
+        provider: 'hermes',
+        model: 'hermes',
         cause: error,
       });
     }
@@ -134,6 +156,8 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
         code: 'HERMES_EMPTY_ANSWER',
         message: 'Hermes webhook response did not include response, answer, or message',
         publicMessage: 'Hermes returned an empty answer.',
+        provider: 'hermes',
+        model: 'hermes',
       });
     }
 
@@ -145,7 +169,15 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
   } catch (error) {
     clearTimeout(timeout);
     if (error.name === 'AbortError') {
-      throw new Error(`Hermes request timed out after ${timeoutMs}ms`, { cause: error });
+      throw createAssistantError({
+        status: 504,
+        code: 'HERMES_TIMEOUT',
+        message: `Hermes request timed out after ${timeoutMs}ms`,
+        publicMessage: 'Hermes assistant timed out. Please try again.',
+        provider: 'hermes',
+        model: 'hermes',
+        cause: error,
+      });
     }
     throw error;
   }
@@ -210,6 +242,7 @@ export default async function handler(req, res) {
         code: 'HERMES_DISABLED',
         message: 'Hermes assistant is disabled by HERMES_WEBHOOK_ENABLED=false',
         publicMessage: 'Hermes assistant is disabled.',
+        provider: 'hermes',
       });
     }
 
@@ -219,6 +252,7 @@ export default async function handler(req, res) {
         code: 'HERMES_CONFIG_MISSING',
         message: 'HERMES_WEBHOOK_URL is missing',
         publicMessage: 'Hermes assistant is not configured.',
+        provider: 'hermes',
       });
     }
 
@@ -231,6 +265,8 @@ export default async function handler(req, res) {
       usedProvider = 'hermes';
     } catch (hermesError) {
       if (!hermesConfig.allowSumopodFallback) {
+        hermesError.provider = hermesError.provider || 'hermes';
+        hermesError.model = hermesError.model || 'hermes';
         throw hermesError;
       }
 
@@ -284,7 +320,8 @@ export default async function handler(req, res) {
       outcome: 'error',
       payload: {
         source: req.body?.source || 'unknown',
-        provider: usedProvider,
+        provider: safeError.body.meta?.provider || usedProvider,
+        model: safeError.body.meta?.model,
         errorCode: safeError.body.code,
         errorMessage: safeError.body.error,
         latencyMs,
