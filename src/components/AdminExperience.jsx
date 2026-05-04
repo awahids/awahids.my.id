@@ -291,6 +291,9 @@ const attachProjectChildren = async (projectItems) => {
     supabase.from('project_outcomes').select('project_id,body,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
     supabase.from('project_signals').select('project_id,label,value,note,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
   ]);
+  const failedChildQuery = [focusResult, scopeResult, stackResult, outcomesResult, signalsResult]
+    .find((result) => result.error);
+  if (failedChildQuery?.error) throw failedChildQuery.error;
 
   const groupLabels = (rows = [], valueField = 'label') =>
     rows.reduce((acc, row) => {
@@ -463,39 +466,78 @@ const AdminExperience = ({ routePath = '/admin/experience', onNavigate }) => {
     setDraft(createEmptyExperience());
   }, []);
 
-  const loadCmsItems = useCallback(async (menu) => {
-    const tableName = getContentTableName(menu);
+  const loadProjectItems = useCallback(async () => {
+    if (!supabase) return;
+
+    setIsBusy(true);
+    setError('');
+
+    const { data, error: loadError } = await supabase
+      .from('projects')
+      .select(PROJECT_SELECT)
+      .order('sort_order', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (loadError) {
+      setIsBusy(false);
+      setError(
+        `Tidak bisa membuka data projects. Pastikan tabel projects dan tabel detail project sudah dijalankan. Detail: ${getErrorMessage(loadError)}`
+      );
+      return;
+    }
+
+    let nextItems;
+    try {
+      nextItems = await attachProjectChildren(data || []);
+    } catch (childLoadError) {
+      setIsBusy(false);
+      setError(
+        `Tidak bisa membuka detail project. Pastikan project_focus, project_scope, project_stack, project_outcomes, dan project_signals sudah dijalankan. Detail: ${getErrorMessage(childLoadError)}`
+      );
+      return;
+    }
+
+    setIsBusy(false);
+    setCmsItems(nextItems);
+
+    if (nextItems.length > 0) {
+      const firstItem = nextItems[0];
+      setCmsSelectedId(firstItem.id);
+      setCmsDraft(firstItem);
+      setCmsPayloadText('{}');
+      return;
+    }
+
+    const emptyItem = createEmptyProjectItem();
+    setCmsSelectedId('');
+    setCmsDraft(emptyItem);
+    setCmsPayloadText('{}');
+  }, []);
+
+  const loadGenericCmsItems = useCallback(async (menu) => {
     const collection = menu.collection || menu.id || '';
     if (!supabase || !collection) return;
 
     setIsBusy(true);
     setError('');
 
-    let query = supabase
-      .from(tableName)
-      .select(getContentSelect(tableName))
+    const { data, error: loadError } = await supabase
+      .from('cms_items')
+      .select(CMS_ITEM_SELECT)
+      .eq('collection', collection)
       .order('sort_order', { ascending: true })
       .order('created_at', { ascending: true });
-
-    if (tableName === 'cms_items') {
-      query = query.eq('collection', collection);
-    }
-
-    const { data, error: loadError } = await query;
 
     setIsBusy(false);
 
     if (loadError) {
       setError(
-        `Tidak bisa membuka data ${collection}. Pastikan SQL ${tableName} sudah dijalankan. Detail: ${getErrorMessage(loadError)}`
+        `Tidak bisa membuka data ${collection}. Pastikan SQL cms_items sudah dijalankan. Detail: ${getErrorMessage(loadError)}`
       );
       return;
     }
 
-    const nextItems =
-      tableName === 'projects'
-        ? await attachProjectChildren(data || [])
-        : (data || []).map((item) => normalizeCmsItem(item, collection));
+    const nextItems = (data || []).map((item) => normalizeCmsItem(item, collection));
     setCmsItems(nextItems);
 
     if (nextItems.length > 0) {
@@ -548,8 +590,10 @@ const AdminExperience = ({ routePath = '/admin/experience', onNavigate }) => {
       setError('');
       if (activeMenu.id === 'experience') {
         loadExperiences();
+      } else if (activeContentTable === 'projects') {
+        loadProjectItems();
       } else {
-        loadCmsItems(activeMenu);
+        loadGenericCmsItems(activeMenu);
       }
     };
 
@@ -569,7 +613,7 @@ const AdminExperience = ({ routePath = '/admin/experience', onNavigate }) => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [activeMenu, activeMenu.id, loadCmsItems, loadExperiences]);
+  }, [activeContentTable, activeMenu, activeMenu.id, loadExperiences, loadGenericCmsItems, loadProjectItems]);
 
   const handleGoogleLogin = async () => {
     if (!supabase) return;
