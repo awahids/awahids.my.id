@@ -80,9 +80,9 @@ const ADMIN_MENU = [
   {
     id: 'ai-faq',
     path: '/admin/ai-faq',
-    label: 'AI FAQ',
-    title: 'AI FAQ context',
-    summary: 'FAQ context and curated answers used by the portfolio assistant.',
+    label: 'AI Knowledge',
+    title: 'AI knowledge',
+    summary: 'Knowledge, FAQ context, and curated answers used by the portfolio assistant.',
     fields: ['Question', 'Answer', 'Topic', 'Visibility', 'Order'],
     collection: 'ai-faq',
     status: 'CRUD',
@@ -90,8 +90,8 @@ const ADMIN_MENU = [
   {
     id: 'api-settings',
     path: '/admin/api-settings',
-    label: 'API',
-    title: 'API settings',
+    label: 'AI Settings',
+    title: 'AI settings',
     summary: 'AI provider runtime settings such as provider, base URL, model list, timeout, and feature toggles.',
     fields: ['Provider', 'Base URL', 'Models', 'Timeout', 'Temperature', 'Max tokens'],
     collection: 'api-settings',

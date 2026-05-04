@@ -66,8 +66,8 @@ Menu berikut memakai tabel umum `cms_items`:
 /admin/profile
 /admin/about
 /admin/contact
-/admin/ai-faq
-/admin/api-settings
+/admin/ai-faq        # AI Knowledge
+/admin/api-settings  # AI Settings
 /admin/settings
 ```
 
@@ -125,7 +125,7 @@ Certificates:
 }
 ```
 
-API Settings:
+AI Settings:
 
 ```json
 {
