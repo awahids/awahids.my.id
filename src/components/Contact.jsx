@@ -1,14 +1,107 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { BOOKING_URL } from '../lib/links';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { Waves } from './Waves';
 
 const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
 
+const DEFAULT_CONTACT = {
+  title: 'Have a web app, dashboard, or backend system to build?',
+  eyebrow: 'Contact',
+  summary:
+    'Tell me what you are building, what is breaking, or what needs to scale. I can help with fullstack development, backend architecture, workflow automation, and deployment.',
+  email: 'awahid.safhadi@gmail.com',
+  bookingUrl: BOOKING_URL,
+  location: 'Cikarang, Bekasi, Jawa Barat',
+  availability: 'Open for build, scale, or modernization work.',
+  availabilityPoints: [
+    'Web apps and admin dashboards',
+    'Backend APIs and system workflows',
+    'Automation and production deployment',
+  ],
+  remoteStatus: 'OPEN TO REMOTE',
+  cvUrl: CV_URL,
+  ctaPrimaryLabel: 'Start a Project Conversation',
+  ctaSecondaryLabel: 'View Fullstack Projects',
+};
+
+const asStringArray = (value, fallback) => {
+  if (!Array.isArray(value)) return fallback;
+
+  const items = value.map((item) => String(item || '').trim()).filter(Boolean);
+  return items.length ? items : fallback;
+};
+
+const normalizeContactItem = (item = {}) => {
+  const payload =
+    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
+      ? item.payload
+      : {};
+
+  return {
+    title: String(item.title || DEFAULT_CONTACT.title).trim(),
+    eyebrow: String(item.subtitle || DEFAULT_CONTACT.eyebrow).trim(),
+    summary: String(item.summary || DEFAULT_CONTACT.summary).trim(),
+    email: String(payload.email || DEFAULT_CONTACT.email).trim(),
+    bookingUrl: String(payload.booking_url || DEFAULT_CONTACT.bookingUrl).trim(),
+    location: String(payload.location || DEFAULT_CONTACT.location).trim(),
+    availability: String(payload.availability || DEFAULT_CONTACT.availability).trim(),
+    availabilityPoints: asStringArray(payload.availability_points, DEFAULT_CONTACT.availabilityPoints),
+    remoteStatus: String(payload.remote_status || DEFAULT_CONTACT.remoteStatus).trim(),
+    cvUrl: String(payload.cv_url || DEFAULT_CONTACT.cvUrl).trim(),
+    ctaPrimaryLabel: String(payload.cta_primary_label || DEFAULT_CONTACT.ctaPrimaryLabel).trim(),
+    ctaSecondaryLabel: String(payload.cta_secondary_label || DEFAULT_CONTACT.ctaSecondaryLabel).trim(),
+  };
+};
+
+const renderContactTitle = (title) => {
+  const text = String(title || DEFAULT_CONTACT.title).trim();
+  const highlighted = 'backend system';
+  const index = text.toLowerCase().indexOf(highlighted);
+
+  if (index < 0) return text;
+
+  return (
+    <>
+      {text.slice(0, index)}
+      <em>{text.slice(index, index + highlighted.length)}</em>
+      {text.slice(index + highlighted.length)}
+    </>
+  );
+};
+
 const Contact = () => {
+  const [contact, setContact] = useState(DEFAULT_CONTACT);
   const { viewport, sectionContainer, sectionItem, staggerGrid } =
     useSectionMotion();
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadContact = async () => {
+      const { data, error } = await supabase
+        .from('cms_items')
+        .select('id,title,subtitle,summary,payload,sort_order,is_published')
+        .eq('collection', 'contact')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true })
+        .limit(1);
+
+      if (!mounted || error || !data?.length) return;
+      setContact(normalizeContactItem(data[0]));
+    };
+
+    loadContact();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <section className="s-contact" id="contact" style={{ position: 'relative', overflow: 'hidden' }}>
@@ -29,25 +122,22 @@ const Contact = () => {
         <motion.div className="contact-top" variants={sectionItem}>
           <motion.div variants={sectionItem}>
             <motion.h2 className="contact-headline" variants={sectionItem}>
-              Have a web app,<br />
-              dashboard, or <em>backend system</em><br />
-              to build<span>?</span>
+              {renderContactTitle(contact.title)}
             </motion.h2>
             <motion.p className="contact-kicker" variants={sectionItem}>
-              Tell me what you&apos;re building, what&apos;s breaking, or what needs to scale.
-              I can help with fullstack development, backend architecture, workflow automation, and deployment.
+              {contact.summary}
             </motion.p>
             <motion.div className="contact-top-actions" variants={sectionItem}>
               <a
-                href={BOOKING_URL}
+                href={contact.bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-top-link is-prime"
               >
-                Start a Project Conversation
+                {contact.ctaPrimaryLabel}
               </a>
               <a href="#portfolio" data-scroll-target="#portfolio" className="contact-top-link">
-                View Fullstack Projects
+                {contact.ctaSecondaryLabel}
               </a>
             </motion.div>
           </motion.div>
@@ -59,7 +149,7 @@ const Contact = () => {
               <span className="contact-badge-name">Curriculum Vitae</span>
               <span className="contact-badge-role">PDF Resume</span>
             </div>
-            <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="contact-badge-link">Download Resume ↗</a>
+            <a href={contact.cvUrl} target="_blank" rel="noopener noreferrer" className="contact-badge-link">Download Resume ↗</a>
           </motion.div>
         </motion.div>
 
@@ -69,7 +159,7 @@ const Contact = () => {
               <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m3 7 12 6 9-6" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
             <div className="cc-lbl">EMAIL</div>
-            <a href="mailto:awahid.safhadi@gmail.com" className="cc-val">awahid.safhadi@gmail.com</a>
+            <a href={`mailto:${contact.email}`} className="cc-val">{contact.email}</a>
             <div className="cc-remote">
               <div className="status-pulse"></div> AVAILABLE FOR FULLSTACK PROJECTS
             </div>
@@ -80,13 +170,13 @@ const Contact = () => {
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M12 7v6l4 2" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
             <div className="cc-lbl">AVAILABILITY</div>
-            <div className="cc-loc">Open for build, scale, or modernization work.</div>
+            <div className="cc-loc">{contact.availability}</div>
             <div className="cc-bullet-list">
-              <div>Web apps and admin dashboards</div>
-              <div>Backend APIs and system workflows</div>
-              <div>Automation and production deployment</div>
+              {contact.availabilityPoints.map((point) => (
+                <div key={point}>{point}</div>
+              ))}
             </div>
-            <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="cc-soc-link">
+            <a href={contact.bookingUrl} target="_blank" rel="noopener noreferrer" className="cc-soc-link">
               <strong>DISCUSS PROJECT</strong> <span>Book a call ↗</span>
             </a>
           </motion.div>
@@ -96,9 +186,9 @@ const Contact = () => {
               <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
             <div className="cc-lbl">LOCATION</div>
-            <div className="cc-loc">Cikarang, Bekasi,<br />Jawa Barat</div>
+            <div className="cc-loc">{contact.location}</div>
             <div className="cc-remote">
-              <div className="status-pulse"></div> OPEN TO REMOTE
+              <div className="status-pulse"></div> {contact.remoteStatus}
             </div>
           </motion.div>
         </motion.div>

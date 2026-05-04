@@ -1,5 +1,5 @@
 import { callSumopodChat, readJsonBody } from './_lib/sumopod.js';
-import { CV_FAQ_CONTEXT } from './_lib/cvFaqContext.js';
+import { buildPortfolioAssistantContext } from './_lib/cmsFaqContext.js';
 import {
   createRateLimiter,
   ensureMethod,
@@ -9,7 +9,7 @@ import {
 } from './_lib/requestGuards.js';
 import { sendN8nEventSafe } from './_lib/n8n.js';
 
-const FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi portfolio.
+const BASE_FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi portfolio.
 
 - First, try to answer based on the CV context provided below.
 - If the question is about Wahid's specific experience, pricing, or personal details not found in the CV context, politely say that you don't have that specific information.
@@ -22,9 +22,12 @@ const FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi port
 - When replying in Indonesian, keep the tone casual, friendly, and professional (santai tapi tetap sopan). Do not be overly formal or stiff. Use everyday professional Indonesian words (e.g., "bisa", "buat", "dipakai", "kalau", "aku") instead of formal ones (like "merupakan", "adalah", "saya").
 - Use bullet list only when user explicitly asks for list.
 - Do not mix Indonesian and English in one answer unless user does it first.
+`;
 
-CV Context:
-${CV_FAQ_CONTEXT}`;
+const buildFaqSystemPrompt = async () => {
+  const resolvedContext = await buildPortfolioAssistantContext();
+  return `${BASE_FAQ_SYSTEM_PROMPT}\n\n${resolvedContext}`;
+};
 
 const buildFaqPrompt = (question, languageHint = '') => {
   const resolvedLanguageHint =
@@ -80,10 +83,11 @@ export default async function handler(req, res) {
     relayContext.languageHint = languageHint;
     relayContext.question = question;
 
+    const faqSystemPrompt = await buildFaqSystemPrompt();
     const apiMessages = [
       {
         role: 'system',
-        content: FAQ_SYSTEM_PROMPT,
+        content: faqSystemPrompt,
       },
       ...(history || []),
       {

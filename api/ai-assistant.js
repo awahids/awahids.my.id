@@ -7,7 +7,7 @@
  */
 
 import { callSumopodChat, readJsonBody } from './_lib/sumopod.js';
-import { CV_FAQ_CONTEXT } from './_lib/cvFaqContext.js';
+import { buildPortfolioAssistantContext } from './_lib/cmsFaqContext.js';
 import {
   createRateLimiter,
   ensureMethod,
@@ -46,7 +46,7 @@ const createAssistantError = ({
   });
 
 // System prompt for Hermes
-const HERMES_SYSTEM_PROMPT = `Kamu adalah AI Assistant untuk portfolio website A Wahid Safhadi (awahids.my.id).
+const HERMES_BASE_SYSTEM_PROMPT = `Kamu adalah AI Assistant untuk portfolio website A Wahid Safhadi (awahids.my.id).
 Kamu membantu menjawab pertanyaan tentang background, pengalaman, dan skills Wahid.
 
 ## INSTRUKSI PENTING:
@@ -55,9 +55,12 @@ Kamu membantu menjawab pertanyaan tentang background, pengalaman, dan skills Wah
 3. Gunakan bahasa sesuai pertanyaan user (Indonesia/English)
 4. Tone: professional, helpful, friendly
 5. Jawaban singkat dan to the point (2-5 kalimat)
+`;
 
-## DATA PROFIL:
-${CV_FAQ_CONTEXT}`;
+const buildHermesSystemPrompt = async () => {
+  const context = await buildPortfolioAssistantContext();
+  return `${HERMES_BASE_SYSTEM_PROMPT}\n\n## DATA PROFIL:\n${context}`;
+};
 
 // Rate limiter
 const ASSISTANT_RATE_WINDOW_MS = parseInt(process.env.AI_ASSISTANT_RATE_WINDOW_MS || '60000', 10);
@@ -70,7 +73,7 @@ const limitAssistantRequests = createRateLimiter({
 });
 
 // Helper: Send request to Hermes via n8n webhook
-async function callHermesWebhook({ message, history = [], context = {} }) {
+async function callHermesWebhook({ message, history = [], context = {}, systemPrompt }) {
   const { webhookUrl, timeoutMs } = getHermesConfig();
 
   if (!webhookUrl) {
@@ -92,7 +95,7 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
       source: 'portfolio-ai-assistant',
       timestamp: new Date().toISOString(),
     },
-    systemPrompt: HERMES_SYSTEM_PROMPT,
+    systemPrompt,
   };
 
   const controller = new AbortController();
@@ -184,11 +187,11 @@ async function callHermesWebhook({ message, history = [], context = {} }) {
 }
 
 // Helper: Fallback to SumoPod
-async function callSumopodWithContext({ message, history = [] }) {
+async function callSumopodWithContext({ message, history = [], systemPrompt }) {
   const messages = [
     {
       role: 'system',
-      content: HERMES_SYSTEM_PROMPT,
+      content: systemPrompt,
     },
     ...history.map(h => ({
       role: h.role,
@@ -225,6 +228,7 @@ export default async function handler(req, res) {
   try {
     const body = readJsonBody(req);
     const { question, history, languageHint, source, submittedAt } = validateFaqBody(body);
+    const systemPrompt = await buildHermesSystemPrompt();
 
     // Build context for Hermes
     const context = {
@@ -261,6 +265,7 @@ export default async function handler(req, res) {
         message: question,
         history: history || [],
         context,
+        systemPrompt,
       });
       usedProvider = 'hermes';
     } catch (hermesError) {
@@ -274,6 +279,7 @@ export default async function handler(req, res) {
       result = await callSumopodWithContext({
         message: question,
         history: history || [],
+        systemPrompt,
       });
       usedProvider = 'sumopod-fallback';
     }

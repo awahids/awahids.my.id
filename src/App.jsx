@@ -13,6 +13,7 @@ import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
+import { isSupabaseConfigured, supabase } from './lib/supabaseClient';
 import Portfolio from './components/Portfolio';
 import WhatIBuild from './components/WhatIBuild';
 import Skills from './components/Skills';
@@ -55,6 +56,137 @@ const isAdminRoute = (pathname = '') => {
   return normalized === ADMIN_PATH_PREFIX || normalized.startsWith(`${ADMIN_PATH_PREFIX}/`);
 };
 
+const DEFAULT_ABOUT = {
+  eyebrow: 'BIOGRAPHY',
+  title: 'Backend-first. Fullstack when it matters.',
+  paragraphs: [
+    'I build complete web products, but my strongest layer is the system behind the screen: APIs, database design, business logic, automation, and deployment.',
+    'Good interfaces matter. Business systems still need reliable workflows, clean data, and backend logic that survives real users. That is the approach I apply in production at Rasa Group.',
+  ],
+  tags: ['Frontend to Deployment', 'Product-Oriented', 'Backend-First Strength'],
+  stats: [
+    { value: '4+', label: 'Years Exp.' },
+    { value: '20+', label: 'Products Built' },
+    { value: '5+', label: 'Core Domains' },
+    { value: '100%', label: 'Project Ownership' },
+  ],
+  education: {
+    school: 'Mataram University',
+    degree: 'Bachelor in Engineering Informatics',
+    period: 'Aug 2014 — Feb 2022',
+  },
+};
+
+const asStringArray = (value, fallback) => {
+  if (!Array.isArray(value)) return fallback;
+
+  const items = value.map((item) => String(item || '').trim()).filter(Boolean);
+  return items.length ? items : fallback;
+};
+
+const normalizeAboutItem = (item = {}) => {
+  const payload =
+    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
+      ? item.payload
+      : {};
+  const stats = Array.isArray(payload.stats)
+    ? payload.stats
+        .map((stat) => ({
+          value: String(stat?.value || '').trim(),
+          label: String(stat?.label || '').trim(),
+        }))
+        .filter((stat) => stat.value && stat.label)
+    : DEFAULT_ABOUT.stats;
+  const education =
+    payload.education && typeof payload.education === 'object' && !Array.isArray(payload.education)
+      ? {
+          school: String(payload.education.school || '').trim(),
+          degree: String(payload.education.degree || '').trim(),
+          period: String(payload.education.period || '').trim(),
+        }
+      : DEFAULT_ABOUT.education;
+
+  return {
+    eyebrow: String(item.subtitle || DEFAULT_ABOUT.eyebrow).trim(),
+    title: String(item.title || DEFAULT_ABOUT.title).trim(),
+    paragraphs: asStringArray(payload.paragraphs, item.summary ? [item.summary] : DEFAULT_ABOUT.paragraphs),
+    tags: asStringArray(payload.tags, DEFAULT_ABOUT.tags),
+    stats: stats.length ? stats : DEFAULT_ABOUT.stats,
+    education: education.school || education.degree || education.period ? education : DEFAULT_ABOUT.education,
+  };
+};
+
+const getAboutTitleParts = (title = '') => {
+  const [lead, ...rest] = String(title || '').split('. ');
+  const outline = rest.join('. ');
+
+  return {
+    lead: outline ? `${lead}.` : lead,
+    outline,
+  };
+};
+
+const DEFAULT_SITE_SETTINGS = {
+  siteTitle: 'A Wahid Safhadi — Fullstack Developer with Backend-First Strength',
+  seoDescription:
+    'Fullstack developer building web apps, dashboards, APIs, automation, and scalable business systems from frontend to deployment.',
+  ogImage: '/img/aw-pixel.png',
+};
+
+const normalizeSettingsItem = (item = {}) => {
+  const payload =
+    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
+      ? item.payload
+      : {};
+
+  return {
+    siteTitle: String(payload.site_title || item.title || DEFAULT_SITE_SETTINGS.siteTitle).trim(),
+    seoDescription: String(payload.seo_description || item.summary || DEFAULT_SITE_SETTINGS.seoDescription).trim(),
+    ogImage: String(payload.og_image || DEFAULT_SITE_SETTINGS.ogImage).trim(),
+  };
+};
+
+const getAbsoluteUrl = (value) => {
+  if (typeof window === 'undefined') return value;
+
+  try {
+    return new URL(value, window.location.origin).toString();
+  } catch {
+    return value;
+  }
+};
+
+const setMetaContent = ({ selector, attribute, value }) => {
+  if (typeof document === 'undefined' || !value) return;
+
+  const element = document.head.querySelector(selector);
+  element?.setAttribute(attribute, value);
+};
+
+const applySiteSettings = (settings) => {
+  if (typeof document === 'undefined') return;
+
+  const title = settings.siteTitle || DEFAULT_SITE_SETTINGS.siteTitle;
+  const description = settings.seoDescription || DEFAULT_SITE_SETTINGS.seoDescription;
+  const ogImage = getAbsoluteUrl(settings.ogImage || DEFAULT_SITE_SETTINGS.ogImage);
+
+  document.title = title;
+
+  [
+    ['meta[name="title"]', 'content', title],
+    ['meta[name="description"]', 'content', description],
+    ['meta[property="og:site_name"]', 'content', title],
+    ['meta[property="og:title"]', 'content', title],
+    ['meta[property="og:description"]', 'content', description],
+    ['meta[property="og:image"]', 'content', ogImage],
+    ['meta[name="twitter:title"]', 'content', title],
+    ['meta[name="twitter:description"]', 'content', description],
+    ['meta[name="twitter:image"]', 'content', ogImage],
+  ].forEach(([selector, attribute, value]) => {
+    setMetaContent({ selector, attribute, value });
+  });
+};
+
 function App() {
   const [currentPathname, setCurrentPathname] = useState(() =>
     typeof window !== 'undefined' ? window.location.pathname : ''
@@ -71,6 +203,62 @@ function App() {
     sectionItem,
     staggerTight,
   } = useSectionMotion();
+  const [about, setAbout] = useState(DEFAULT_ABOUT);
+  const aboutTitle = getAboutTitleParts(about.title);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadAbout = async () => {
+      const { data, error } = await supabase
+        .from('cms_items')
+        .select('id,title,subtitle,summary,payload,sort_order,is_published')
+        .eq('collection', 'about')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true })
+        .limit(1);
+
+      if (!mounted || error || !data?.length) return;
+      setAbout(normalizeAboutItem(data[0]));
+    };
+
+    loadAbout();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    applySiteSettings(DEFAULT_SITE_SETTINGS);
+
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadSettings = async () => {
+      const { data, error } = await supabase
+        .from('cms_items')
+        .select('id,title,summary,payload,sort_order,is_published')
+        .eq('collection', 'settings')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true })
+        .limit(1);
+
+      if (!mounted || error || !data?.length) return;
+      applySiteSettings(normalizeSettingsItem(data[0]));
+    };
+
+    loadSettings();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -204,57 +392,40 @@ function App() {
               <div className="about-bg">A.W.S</div>
               <motion.div className="about-left" variants={sectionItem}>
                 <motion.div className="s-eyebrow" variants={sectionItem}>
-                  // BIOGRAPHY
+                  // {about.eyebrow.toUpperCase()}
                 </motion.div>
                 <motion.h2 className="s-title" variants={sectionItem}>
-                  Backend-first. <span className="s-outline">Fullstack when it matters.</span>
+                  {aboutTitle.lead}{' '}
+                  {aboutTitle.outline && <span className="s-outline">{aboutTitle.outline}</span>}
                 </motion.h2>
                 <motion.div className="about-text" variants={sectionItem}>
-                  <p>
-                    I build complete web products, but my strongest layer is the system behind the screen:
-                    <strong> APIs, database design, business logic, automation, and deployment</strong>.
-                  </p>
-                  <p style={{ marginTop: '12px' }}>
-                    Good interfaces matter. Business systems still need reliable workflows,
-                    clean data, and backend logic that survives real users. That is the approach
-                    I apply in production at <strong>Rasa Group</strong>.
-                  </p>
+                  {about.paragraphs.map((paragraph, index) => (
+                    <p key={`${index}-${paragraph}`} style={index > 0 ? { marginTop: '12px' } : undefined}>
+                      {paragraph}
+                    </p>
+                  ))}
                 </motion.div>
                 <motion.div className="about-tags" variants={staggerTight}>
-                  <motion.span className="about-tag" variants={sectionItem}>
-                    Frontend to Deployment
-                  </motion.span>
-                  <motion.span className="about-tag" variants={sectionItem}>
-                    Product-Oriented
-                  </motion.span>
-                  <motion.span className="about-tag" variants={sectionItem}>
-                    Backend-First Strength
-                  </motion.span>
+                  {about.tags.map((tag) => (
+                    <motion.span key={tag} className="about-tag" variants={sectionItem}>
+                      {tag}
+                    </motion.span>
+                  ))}
                 </motion.div>
               </motion.div>
               <motion.div className="about-right" variants={sectionItem}>
                 <motion.div className="stats-2x2" variants={staggerTight}>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">4+</div>
-                    <div className="stat-b-lbl">Years Exp.</div>
-                  </motion.div>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">20+</div>
-                    <div className="stat-b-lbl">Products Built</div>
-                  </motion.div>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">5+</div>
-                    <div className="stat-b-lbl">Core Domains</div>
-                  </motion.div>
-                  <motion.div className="stat-b" variants={sectionItem}>
-                    <div className="stat-b-num">100%</div>
-                    <div className="stat-b-lbl">Project Ownership</div>
-                  </motion.div>
+                  {about.stats.map((stat) => (
+                    <motion.div key={`${stat.value}-${stat.label}`} className="stat-b" variants={sectionItem}>
+                      <div className="stat-b-num">{stat.value}</div>
+                      <div className="stat-b-lbl">{stat.label}</div>
+                    </motion.div>
+                  ))}
                 </motion.div>
                 <motion.div className="edu-entry" variants={sectionItem}>
-                  <div className="edu-school">Mataram University</div>
-                  <div className="edu-degree">Bachelor in Engineering Informatics</div>
-                  <div className="edu-year">Aug 2014 — Feb 2022</div>
+                  <div className="edu-school">{about.education.school}</div>
+                  <div className="edu-degree">{about.education.degree}</div>
+                  <div className="edu-year">{about.education.period}</div>
                 </motion.div>
               </motion.div>
             </motion.section>

@@ -23,7 +23,9 @@ Project ref bisa dilihat dari Supabase project URL.
 
 ```text
 http://localhost:5173/admin/experience
+http://localhost:5173/admin/**
 https://your-domain.com/admin/experience
+https://your-domain.com/admin/**
 ```
 
 6. Jalankan SQL schema di `supabase/experience-cms.sql` lewat Supabase SQL Editor.
@@ -56,12 +58,13 @@ CMS ini memakai Supabase Auth dan Row Level Security:
 ## Admin Menus
 
 `/admin/experience` memakai tabel khusus `experiences`.
+`/admin/projects` memakai tabel khusus `projects`.
 
 Menu berikut memakai tabel umum `cms_items`:
 
 ```text
-/admin/projects
 /admin/skills
+/admin/services
 /admin/certificates
 /admin/profile
 /admin/about
@@ -71,8 +74,28 @@ Menu berikut memakai tabel umum `cms_items`:
 /admin/settings
 ```
 
-Untuk Projects, Skills, dan Certificates, landing page sudah membaca data published
-dari `cms_items` dan otomatis fallback ke data hardcoded kalau tabel masih kosong.
+Landing page dan runtime API membaca data published dari `cms_items`:
+
+- `profile` untuk Hero
+- `services` untuk What I Build
+- `skills` untuk Tech Stack by Layer
+- `certificates` untuk Certificates
+- `about` untuk Biography
+- `contact` untuk Contact
+- `settings` untuk title/meta SEO client-side
+- `ai-faq` untuk context `/api/ai-faq` dan `/api/ai-assistant`
+- `api-settings` untuk runtime AI provider settings
+
+Portfolio membaca data published dari tabel `projects` dan tabel detail:
+
+- `project_focus`
+- `project_scope`
+- `project_stack`
+- `project_outcomes`
+- `project_signals`
+
+Setiap integrasi otomatis fallback ke data hardcoded/default kalau Supabase belum
+configured atau tabel/collection masih kosong.
 
 Data awal untuk semua menu sudah tersedia di:
 
@@ -83,29 +106,34 @@ supabase/cms-seed.sql
 File seed ini memakai `on conflict do update`, jadi aman dijalankan ulang saat ingin
 reset/sinkronisasi data awal.
 
-Payload JSON yang disarankan:
+Struktur data yang dipakai:
 
-Projects:
+Projects (`projects`):
 
 ```json
 {
   "year": "2025",
-  "type": "Appointment Platform",
+  "project_type": "Appointment Platform",
   "role": "Fullstack Developer",
-  "focus": ["Booking Flow", "Admin Management"],
-  "scope": ["Frontend", "Backend", "Database"],
-  "stack": ["React", "NestJS", "PostgreSQL"],
-  "live": "https://example.com",
-  "case": "#",
+  "live_url": "https://example.com",
+  "case_url": "#",
   "bento": "bento-compact",
   "num": "01",
   "problem": "...",
   "built": "...",
   "result": "...",
-  "impact": "...",
-  "outcomes": ["..."],
-  "signals": [{"label": "Impact", "value": "High", "note": "..."}]
+  "impact": "..."
 }
+```
+
+Project list/detail memakai child tables:
+
+```text
+project_focus     label
+project_scope     label
+project_stack     label
+project_outcomes  body
+project_signals   label, value, note
 ```
 
 Skills:
@@ -116,6 +144,14 @@ Skills:
   "chips": ["React", "Next.js", "TypeScript"]
 }
 ```
+
+Services:
+
+```json
+{}
+```
+
+Gunakan `title` sebagai nama service dan `summary` sebagai deskripsi kartu.
 
 Certificates:
 

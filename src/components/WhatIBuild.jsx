@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
-const offerings = [
+const DEFAULT_OFFERINGS = [
   {
     title: 'Web Applications',
     desc: 'Responsive web apps with clean UI, structured user flows, and maintainable frontend architecture.',
@@ -29,8 +30,46 @@ const offerings = [
   },
 ];
 
+const serviceFromCmsItem = (item) => ({
+  title: String(item.title || '').trim(),
+  desc: String(item.summary || '').trim(),
+});
+
 const WhatIBuild = () => {
+  const [offerings, setOfferings] = useState(DEFAULT_OFFERINGS);
   const { viewport, sectionContainer, sectionItem, staggerGrid } = useSectionMotion();
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadServices = async () => {
+      const { data, error } = await supabase
+        .from('cms_items')
+        .select('id,title,summary,sort_order,is_published')
+        .eq('collection', 'services')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+
+      if (!mounted || error || !data?.length) return;
+
+      const nextOfferings = data
+        .map(serviceFromCmsItem)
+        .filter((item) => item.title && item.desc);
+
+      if (nextOfferings.length) {
+        setOfferings(nextOfferings);
+      }
+    };
+
+    loadServices();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
     <section className="s-build" id="services">

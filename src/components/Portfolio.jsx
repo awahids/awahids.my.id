@@ -346,30 +346,52 @@ const projects = [
 const MOBILE_PROJECT_LIMIT = 5;
 const MOBILE_SCOPE_LIMIT = 4;
 
-const projectFromCmsItem = (item, index) => {
-  const payload = item.payload || {};
+const groupProjectChildren = (rows = [], valueKey = 'label') =>
+  rows.reduce((acc, row) => {
+    const projectId = row.project_id;
+    if (!projectId) return acc;
 
+    if (!acc[projectId]) acc[projectId] = [];
+    acc[projectId].push(row[valueKey]);
+    return acc;
+  }, {});
+
+const groupProjectSignals = (rows = []) =>
+  rows.reduce((acc, row) => {
+    const projectId = row.project_id;
+    if (!projectId) return acc;
+
+    if (!acc[projectId]) acc[projectId] = [];
+    acc[projectId].push({
+      label: row.label,
+      value: row.value,
+      note: row.note,
+    });
+    return acc;
+  }, {});
+
+const projectFromCmsItem = (item, index, children = {}) => {
   return {
     id: item.id,
     title: item.title,
     cat: item.subtitle,
-    year: String(payload.year || ''),
+    year: String(item.year || ''),
     desc: item.summary,
-    problem: String(payload.problem || ''),
-    built: String(payload.built || ''),
-    result: String(payload.result || ''),
-    impact: String(payload.impact || ''),
-    outcomes: Array.isArray(payload.outcomes) ? payload.outcomes : [],
-    signals: Array.isArray(payload.signals) ? payload.signals : [],
-    type: String(payload.type || ''),
-    role: String(payload.role || ''),
-    focus: Array.isArray(payload.focus) ? payload.focus : [],
-    scope: Array.isArray(payload.scope) ? payload.scope : [],
-    stack: Array.isArray(payload.stack) ? payload.stack : [],
-    live: String(payload.live || '#'),
-    case: String(payload.case || '#'),
-    bento: String(payload.bento || 'bento-compact'),
-    num: String(payload.num || String(index + 1).padStart(2, '0')),
+    problem: String(item.problem || ''),
+    built: String(item.built || ''),
+    result: String(item.result || ''),
+    impact: String(item.impact || ''),
+    outcomes: children.outcomes?.[item.id] || [],
+    signals: children.signals?.[item.id] || [],
+    type: String(item.project_type || ''),
+    role: String(item.role || ''),
+    focus: children.focus?.[item.id] || [],
+    scope: children.scope?.[item.id] || [],
+    stack: children.stack?.[item.id] || [],
+    live: String(item.live_url || '#'),
+    case: String(item.case_url || '#'),
+    bento: String(item.bento || 'bento-compact'),
+    num: String(item.num || String(index + 1).padStart(2, '0')),
   };
 };
 
@@ -391,15 +413,40 @@ const Portfolio = () => {
 
     const loadProjects = async () => {
       const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,subtitle,summary,payload,sort_order,is_published')
-        .eq('collection', 'projects')
+        .from('projects')
+        .select('id,title,subtitle,summary,year,project_type,role,live_url,case_url,bento,num,problem,built,result,impact,sort_order,is_published')
         .eq('is_published', true)
         .order('sort_order', { ascending: true })
         .order('created_at', { ascending: true });
 
       if (!mounted || error || !data?.length) return;
-      setProjectItems(data.map(projectFromCmsItem));
+
+      const projectIds = data.map((project) => project.id);
+      const [
+        focusResult,
+        scopeResult,
+        stackResult,
+        outcomesResult,
+        signalsResult,
+      ] = await Promise.all([
+        supabase.from('project_focus').select('project_id,label,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
+        supabase.from('project_scope').select('project_id,label,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
+        supabase.from('project_stack').select('project_id,label,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
+        supabase.from('project_outcomes').select('project_id,body,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
+        supabase.from('project_signals').select('project_id,label,value,note,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
+      ]);
+
+      if (!mounted) return;
+
+      const children = {
+        focus: groupProjectChildren(focusResult.data || []),
+        scope: groupProjectChildren(scopeResult.data || []),
+        stack: groupProjectChildren(stackResult.data || []),
+        outcomes: groupProjectChildren(outcomesResult.data || [], 'body'),
+        signals: groupProjectSignals(signalsResult.data || []),
+      };
+
+      setProjectItems(data.map((project, index) => projectFromCmsItem(project, index, children)));
     };
 
     loadProjects();

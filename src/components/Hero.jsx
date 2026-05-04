@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
 const KINETIC_WORDS = [
   { text: 'FOCUS', top: '9%', left: '7%' },
@@ -18,19 +19,109 @@ const KINETIC_WORDS = [
   { text: 'IMPACT', top: '88%', right: '10%' },
 ];
 
-const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
+const DEFAULT_PROFILE = {
+  name: 'A Wahid Safhadi',
+  role: 'Fullstack Developer · Backend-First Engineer',
+  eyebrow: 'FULLSTACK DEVELOPER · BACKEND-FIRST ENGINEER',
+  summary: 'I build web apps, dashboards, APIs, and business systems from frontend to deployment.',
+  secondarySummary:
+    'I help teams turn ideas and messy workflows into usable, scalable, production-ready web products.',
+  signature: 'I build the interface users click and the backend that survives what they do next.',
+  ghostTitle: 'Engineer',
+  company: 'Rasa Group',
+  years: '4+',
+  city: 'Cikarang, Bekasi',
+  proofChips: ['Vue.js', 'Next.js', 'Node.js', 'NestJS', 'PostgreSQL', 'Docker'],
+  ctaPrimaryLabel: 'View Fullstack Projects',
+  ctaPrimaryHref: '#portfolio',
+  ctaSecondaryLabel: 'Download Resume',
+  ctaSecondaryHref: `${import.meta.env.BASE_URL}cv/my-cv.pdf`,
+};
 
-const PROOF_CHIPS = [
-  'Vue.js',
-  'Next.js',
-  'Node.js',
-  'NestJS',
-  'PostgreSQL',
-  'Docker',
-];
+const asStringArray = (value, fallback) => {
+  if (!Array.isArray(value)) return fallback;
+
+  const items = value.map((item) => String(item || '').trim()).filter(Boolean);
+  return items.length ? items : fallback;
+};
+
+const resolveAssetPath = (value, fallback) => {
+  const path = String(value || '').trim();
+  if (!path) return fallback;
+  return path;
+};
+
+const normalizeProfileItem = (item = {}) => {
+  const payload =
+    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
+      ? item.payload
+      : {};
+
+  return {
+    name: String(item.title || DEFAULT_PROFILE.name).trim(),
+    role: String(item.subtitle || DEFAULT_PROFILE.role).trim(),
+    eyebrow: String(payload.eyebrow || item.subtitle || DEFAULT_PROFILE.eyebrow).trim(),
+    summary: String(item.summary || DEFAULT_PROFILE.summary).trim(),
+    secondarySummary: String(payload.secondary_summary || DEFAULT_PROFILE.secondarySummary).trim(),
+    signature: String(payload.signature || DEFAULT_PROFILE.signature).trim(),
+    ghostTitle: String(payload.ghost_title || DEFAULT_PROFILE.ghostTitle).trim(),
+    company: String(payload.company || DEFAULT_PROFILE.company).trim(),
+    years: String(payload.years || DEFAULT_PROFILE.years).trim(),
+    city: String(payload.city || DEFAULT_PROFILE.city).trim(),
+    proofChips: asStringArray(payload.proof_chips, DEFAULT_PROFILE.proofChips),
+    ctaPrimaryLabel: String(payload.cta_primary_label || DEFAULT_PROFILE.ctaPrimaryLabel).trim(),
+    ctaPrimaryHref: String(payload.cta_primary_href || DEFAULT_PROFILE.ctaPrimaryHref).trim(),
+    ctaSecondaryLabel: String(payload.cta_secondary_label || DEFAULT_PROFILE.ctaSecondaryLabel).trim(),
+    ctaSecondaryHref: resolveAssetPath(payload.cta_secondary_href, DEFAULT_PROFILE.ctaSecondaryHref),
+  };
+};
+
+const splitProfileName = (name = '') => {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+
+  if (parts.length <= 2) {
+    return {
+      first: parts.join(' ') || DEFAULT_PROFILE.name,
+      last: '',
+    };
+  }
+
+  return {
+    first: parts.slice(0, 2).join(' '),
+    last: parts.slice(2).join(' '),
+  };
+};
 
 const Hero = () => {
   const rootRef = useRef(null);
+  const [profile, setProfile] = useState(DEFAULT_PROFILE);
+  const profileName = splitProfileName(profile.name);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) return undefined;
+
+    let mounted = true;
+
+    const loadProfile = async () => {
+      const { data, error } = await supabase
+        .from('cms_items')
+        .select('id,title,subtitle,summary,payload,sort_order,is_published')
+        .eq('collection', 'profile')
+        .eq('is_published', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true })
+        .limit(1);
+
+      if (!mounted || error || !data?.length) return;
+      setProfile(normalizeProfileItem(data[0]));
+    };
+
+    loadProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -156,14 +247,11 @@ const Hero = () => {
         const headingWords = gsap.utils.toArray('.hn-first, .hn-last, .hn-ghost');
 
         headingWords.forEach((word) => {
-          const origText = word.getAttribute('data-text') || word.textContent;
-          if (!word.hasAttribute('data-text')) {
-            word.setAttribute('data-text', origText);
-          }
-
           let localIv;
 
           word.addEventListener('mouseenter', () => {
+            const origText = word.getAttribute('data-text') || word.textContent;
+
             gsap.fromTo(
               word,
               { opacity: 0.75, y: 3 },
@@ -277,35 +365,37 @@ const Hero = () => {
           >
             <circle cx="4" cy="4" r="4" />
           </svg>
-          FULLSTACK DEVELOPER · BACKEND-FIRST ENGINEER
+          {profile.eyebrow}
         </div>
         <h1 className="hero-name">
           <div className="hw">
             <span className="hi hn-sub">
-              Fullstack Developer · Backend-First Engineer
+              {profile.role}
             </span>
           </div>
           <div className="hw">
-            <span className="hi hn-first">A Wahid</span>
+            <span className="hi hn-first" data-text={profileName.first}>{profileName.first}</span>
           </div>
+          {profileName.last && (
+            <div className="hw">
+              <span className="hi hn-last" data-text={profileName.last}>{profileName.last}</span>
+            </div>
+          )}
           <div className="hw">
-            <span className="hi hn-last">Safhadi</span>
-          </div>
-          <div className="hw">
-            <span className="hi hn-ghost">Engineer</span>
+            <span className="hi hn-ghost" data-text={profile.ghostTitle}>{profile.ghostTitle}</span>
           </div>
         </h1>
         <p className="hero-desc hfi">
-          I build web apps, dashboards, APIs, and business systems from frontend to deployment.
+          {profile.summary}
         </p>
         <p className="hero-desc hero-desc-sub hfi">
-          I help teams turn ideas and messy workflows into usable, scalable, production-ready web products.
+          {profile.secondarySummary}
         </p>
         <p className="hero-signature hfi">
-          I build the interface users click and the backend that survives what they do next.
+          {profile.signature}
         </p>
         <div className="hero-proof hfi">
-          {PROOF_CHIPS.map((chip) => (
+          {profile.proofChips.map((chip) => (
             <div className="hero-proof-chip" key={chip}>
               <span className="hero-proof-dot"></span>
               {chip}
@@ -313,11 +403,11 @@ const Hero = () => {
           ))}
         </div>
         <div className="hero-btns hfi">
-          <a href="#portfolio" className="btn-prime">
-            View Fullstack Projects
+          <a href={profile.ctaPrimaryHref} className="btn-prime">
+            {profile.ctaPrimaryLabel}
           </a>
-          <a href={CV_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost">
-            Download Resume
+          <a href={profile.ctaSecondaryHref} target="_blank" rel="noopener noreferrer" className="btn-ghost">
+            {profile.ctaSecondaryLabel}
           </a>
         </div>
       </div>
@@ -339,53 +429,42 @@ const Hero = () => {
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">name</span>
                 <span className="tc-w">:</span>{' '}
-                <span className="tc-y">&quot;A Wahid Safhadi&quot;</span>
+                <span className="tc-y">&quot;{profile.name}&quot;</span>
                 <span className="tc-w">,</span>
               </div>
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">role</span>
                 <span className="tc-w">:</span>{' '}
-                <span className="tc-y">&quot;Fullstack Developer&quot;</span>
+                <span className="tc-y">&quot;{profile.role}&quot;</span>
                 <span className="tc-w">,</span>
               </div>
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">company</span>
                 <span className="tc-w">:</span>{' '}
-                <span className="tc-y">&quot;Rasa Group&quot;</span>
+                <span className="tc-y">&quot;{profile.company}&quot;</span>
                 <span className="tc-w">,</span>
               </div>
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">years</span>
-                <span className="tc-w">:</span> <span className="tc-y">&quot;4+&quot;</span>
+                <span className="tc-w">:</span> <span className="tc-y">&quot;{profile.years}&quot;</span>
                 <span className="tc-w">,</span>
               </div>
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">city</span>
                 <span className="tc-w">:</span>{' '}
-                <span className="tc-y">&quot;Cikarang, Bekasi&quot;</span>
+                <span className="tc-y">&quot;{profile.city}&quot;</span>
                 <span className="tc-w">,</span>
               </div>
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-gr">stack</span>
                 <span className="tc-w">: [</span>
               </div>
-              <div className="tl">
-                &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;React&quot;</span>
-                <span className="tc-w">,</span>{' '}
-                <span className="tc-y">&quot;Next.js&quot;</span>
-                <span className="tc-w">,</span>
-              </div>
-              <div className="tl">
-                &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;Node.js&quot;</span>
-                <span className="tc-w">,</span>{' '}
-                <span className="tc-y">&quot;NestJS&quot;</span>
-                <span className="tc-w">,</span>
-              </div>
-              <div className="tl">
-                &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;PostgreSQL&quot;</span>
-                <span className="tc-w">,</span>{' '}
-                <span className="tc-y">&quot;Docker&quot;</span>
-              </div>
+              {profile.proofChips.slice(0, 6).map((chip, index, chips) => (
+                <div className="tl" key={`terminal-stack-${chip}`}>
+                  &nbsp;&nbsp;&nbsp;&nbsp;<span className="tc-y">&quot;{chip}&quot;</span>
+                  {index < chips.length - 1 && <span className="tc-w">,</span>}
+                </div>
+              ))}
               <div className="tl">
                 &nbsp;&nbsp;<span className="tc-w">],</span>
               </div>
@@ -409,7 +488,7 @@ const Hero = () => {
             </div>
           </div>
           <div className="hero-badge">
-            <div className="badge-num">4+</div>
+            <div className="badge-num">{profile.years}</div>
             <div className="badge-txt">Years Exp.</div>
           </div>
         </div>
