@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const FAQ_WEBHOOK_URL = import.meta.env.VITE_AI_FAQ_ENDPOINT || '/api/ai-faq';
 const AI_ASSISTANT_URL = import.meta.env.VITE_AI_ASSISTANT_ENDPOINT || '/api/ai-assistant';
+const FAQ_STORAGE_KEY = 'awahids:floating-faq:v1';
+const MAX_PERSISTED_MESSAGES = 40;
 
 const STARTER_FAQ_MESSAGE = {
   id: 'faq-start-float',
@@ -213,6 +215,62 @@ const createMessage = (role, text, source, meta = {}) => ({
   ...meta,
 });
 
+const sanitizeStoredMessages = (storedMessages) => {
+  if (!Array.isArray(storedMessages)) return [STARTER_FAQ_MESSAGE];
+
+  const messages = storedMessages
+    .map((message) => ({
+      id: String(message?.id || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`),
+      role: message?.role === 'user' ? 'user' : 'assistant',
+      source: String(message?.source || 'local'),
+      text: String(message?.text || '').trim(),
+      retryQuestion: String(message?.retryQuestion || ''),
+      retryForceHermes: Boolean(message?.retryForceHermes),
+      errorDetails:
+        message?.errorDetails && typeof message.errorDetails === 'object'
+          ? message.errorDetails
+          : undefined,
+    }))
+    .filter((message) => message.text);
+
+  return messages.length > 0 ? messages.slice(-MAX_PERSISTED_MESSAGES) : [STARTER_FAQ_MESSAGE];
+};
+
+const loadStoredFaqState = () => {
+  if (typeof window === 'undefined') {
+    return {
+      isOpen: false,
+      messages: [STARTER_FAQ_MESSAGE],
+      input: '',
+    };
+  }
+
+  try {
+    const rawState = window.localStorage.getItem(FAQ_STORAGE_KEY);
+    if (!rawState) {
+      return {
+        isOpen: false,
+        messages: [STARTER_FAQ_MESSAGE],
+        input: '',
+      };
+    }
+
+    const parsedState = JSON.parse(rawState);
+
+    return {
+      isOpen: Boolean(parsedState?.isOpen),
+      messages: sanitizeStoredMessages(parsedState?.messages),
+      input: String(parsedState?.input || ''),
+    };
+  } catch {
+    return {
+      isOpen: false,
+      messages: [STARTER_FAQ_MESSAGE],
+      input: '',
+    };
+  }
+};
+
 const buildErrorAnswer = (error, language) => {
   const details = error?.details || {};
   const parts = [
@@ -230,16 +288,39 @@ const buildErrorAnswer = (error, language) => {
 };
 
 const FloatingFAQ = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([STARTER_FAQ_MESSAGE]);
-  const [input, setInput] = useState('');
+  const [initialFaqState] = useState(loadStoredFaqState);
+  const [isOpen, setIsOpen] = useState(initialFaqState.isOpen);
+  const [messages, setMessages] = useState(initialFaqState.messages);
+  const [input, setInput] = useState(initialFaqState.input);
   const [loading, setLoading] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(1);
+  const [unreadCount, setUnreadCount] = useState(() => (initialFaqState.isOpen ? 0 : 1));
   const [useHermes] = useState(false);
   const originalTitle = useRef(typeof document !== 'undefined' ? document.title : '');
   const chatViewportRef = useRef(null);
   const isOpenRef = useRef(false);
+
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    try {
+      window.localStorage.setItem(
+        FAQ_STORAGE_KEY,
+        JSON.stringify({
+          isOpen,
+          input,
+          messages: sanitizeStoredMessages(messages),
+          updatedAt: new Date().toISOString(),
+        })
+      );
+    } catch {
+      // Storage can fail in private browsing or quota-limited contexts.
+    }
+  }, [input, isOpen, messages]);
 
   const buildHistoryPayload = (sourceMessages) =>
     sourceMessages
