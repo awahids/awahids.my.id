@@ -51,10 +51,15 @@ const normalizePathname = (pathname = '') => {
 const isAiLabRoute = (pathname = '') =>
   normalizePathname(pathname) === AI_LAB_PATH;
 
+const isHomeRoute = (pathname = '') => normalizePathname(pathname) === '/';
+
 const isAdminRoute = (pathname = '') => {
   const normalized = normalizePathname(pathname);
   return normalized === ADMIN_PATH_PREFIX || normalized.startsWith(`${ADMIN_PATH_PREFIX}/`);
 };
+
+const isNotFoundRoute = (pathname = '') =>
+  !isHomeRoute(pathname) && !isAiLabRoute(pathname) && !isAdminRoute(pathname);
 
 const DEFAULT_ABOUT = {
   eyebrow: 'BIOGRAPHY',
@@ -133,6 +138,12 @@ const DEFAULT_SITE_SETTINGS = {
   ogImage: '/img/aw-pixel.png',
 };
 
+const NOT_FOUND_SETTINGS = {
+  siteTitle: '404 — Page Not Found | A Wahid Safhadi',
+  seoDescription: 'The requested page could not be found on A Wahid Safhadi portfolio.',
+  ogImage: DEFAULT_SITE_SETTINGS.ogImage,
+};
+
 const normalizeSettingsItem = (item = {}) => {
   const payload =
     item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
@@ -187,16 +198,40 @@ const applySiteSettings = (settings) => {
   });
 };
 
+const NotFoundPage = () => (
+  <section className="s-not-found" aria-labelledby="not-found-title">
+    <div className="not-found-bg" aria-hidden="true">404</div>
+    <motion.div
+      className="not-found-inner"
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <p className="s-eyebrow">// PAGE_NOT_FOUND</p>
+      <h1 id="not-found-title">This route does not exist.</h1>
+      <p>
+        The page may have moved, or the URL may be incorrect. Head back to the portfolio
+        or jump straight into the selected project work.
+      </p>
+      <div className="not-found-actions">
+        <a className="not-found-primary" href="/">Back Home</a>
+        <a className="not-found-secondary" href="/#portfolio">View Projects</a>
+      </div>
+    </motion.div>
+  </section>
+);
+
 function App() {
   const [currentPathname, setCurrentPathname] = useState(() =>
     typeof window !== 'undefined' ? window.location.pathname : ''
   );
   const aiLabPage = isAiLabRoute(currentPathname);
   const adminPage = isAdminRoute(currentPathname);
+  const notFoundPage = isNotFoundRoute(currentPathname);
   const [loading, setLoading] = useState(
-    () => !isAdminRoute(currentPathname) && !shouldBypassPreloader()
+    () => !isAdminRoute(currentPathname) && !isNotFoundRoute(currentPathname) && !shouldBypassPreloader()
   );
-  const effectiveLoading = adminPage ? false : loading;
+  const effectiveLoading = adminPage || notFoundPage ? false : loading;
   const {
     viewport: sectionViewport,
     sectionContainer,
@@ -208,6 +243,7 @@ function App() {
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return undefined;
+    if (notFoundPage) return undefined;
 
     let mounted = true;
 
@@ -230,12 +266,12 @@ function App() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [notFoundPage]);
 
   useEffect(() => {
-    applySiteSettings(DEFAULT_SITE_SETTINGS);
+    applySiteSettings(notFoundPage ? NOT_FOUND_SETTINGS : DEFAULT_SITE_SETTINGS);
 
-    if (!isSupabaseConfigured || !supabase) return undefined;
+    if (notFoundPage || !isSupabaseConfigured || !supabase) return undefined;
 
     let mounted = true;
 
@@ -258,7 +294,7 @@ function App() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [notFoundPage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -289,7 +325,7 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
-    if (effectiveLoading || adminPage) return undefined;
+    if (effectiveLoading || adminPage || notFoundPage) return undefined;
 
     const progressTween = gsap.to('.scroll-progress-bar', {
       scaleX: 1,
@@ -349,7 +385,7 @@ function App() {
       progressTween.scrollTrigger?.kill();
       progressTween.kill();
     };
-  }, [adminPage, effectiveLoading]);
+  }, [adminPage, effectiveLoading, notFoundPage]);
 
   return (
     <div className={`app-container ${effectiveLoading ? 'is-preloading' : ''}`}>
@@ -360,11 +396,11 @@ function App() {
       </div>
 
       <CustomCursor />
-      {!adminPage && <Navbar isAiLabPage={aiLabPage} />}
-      {!aiLabPage && !adminPage && <MobileNav />}
-      {!aiLabPage && !adminPage && <SocialRail />}
+      {!adminPage && <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage} />}
+      {!aiLabPage && !adminPage && !notFoundPage && <MobileNav />}
+      {!aiLabPage && !adminPage && !notFoundPage && <SocialRail />}
 
-      <main className={aiLabPage ? 'main-ai-lab-page' : ''}>
+      <main className={aiLabPage ? 'main-ai-lab-page' : notFoundPage ? 'main-not-found-page' : ''}>
         {adminPage ? (
           <AdminExperience routePath={currentPathname} onNavigate={navigateAdmin} />
         ) : aiLabPage ? (
@@ -374,6 +410,8 @@ function App() {
               <AILab />
             </Suspense>
           </>
+        ) : notFoundPage ? (
+          <NotFoundPage />
         ) : (
           <>
             <Hero />
@@ -439,8 +477,8 @@ function App() {
         )}
       </main>
 
-      {!adminPage && <Footer isAiLabPage={aiLabPage} />}
-      {!adminPage && <FloatingFAQ />}
+      {!adminPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
+      {!adminPage && !notFoundPage && <FloatingFAQ />}
     </div>
   );
 }

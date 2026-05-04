@@ -13,13 +13,13 @@ const aiLabNavItems = [
   { id: 'ai-lab', label: 'AI Lab', num: '01', href: '#ai-lab', isSection: true },
 ];
 
-const Navbar = ({ isAiLabPage = false }) => {
+const Navbar = ({ isAiLabPage = false, isNotFoundPage = false }) => {
   const navItems = isAiLabPage ? aiLabNavItems : mainNavItems;
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState(() =>
     isAiLabPage ? 'ai-lab' : mainNavItems[0].id
   );
-  const resolvedActiveSection = isAiLabPage ? 'ai-lab' : activeSection;
+  const resolvedActiveSection = isNotFoundPage ? '' : isAiLabPage ? 'ai-lab' : activeSection;
 
   useEffect(() => {
     if (isAiLabPage) {
@@ -57,15 +57,23 @@ const Navbar = ({ isAiLabPage = false }) => {
 
   return (
     <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`.trim()}>
-      <a href="#home" data-scroll-target="#home" className="nav-logo">A<b>.</b>W<b>.</b>S<b>.</b></a>
+      <a
+        href={isNotFoundPage ? '/' : '#home'}
+        data-scroll-target={isNotFoundPage ? undefined : '#home'}
+        className="nav-logo"
+      >
+        A<b>.</b>W<b>.</b>S<b>.</b>
+      </a>
       <div className="nav-right">
         <ul className="nav-links">
           {navItems.map((item) => (
             <li key={item.id}>
               <a
-                href={item.href || `#${item.id}`}
+                href={isNotFoundPage ? `/#${item.id}` : item.href || `#${item.id}`}
                 data-scroll-target={
-                  isAiLabPage
+                  isNotFoundPage
+                    ? undefined
+                    : isAiLabPage
                     ? (item.isSection ? item.href : undefined)
                     : `#${item.id}`
                 }
