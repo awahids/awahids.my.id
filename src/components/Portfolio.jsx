@@ -336,7 +336,7 @@ const projects = [
     focus: ['Booking Flow', 'Admin Management', 'Production Deployment'],
     scope: ['Booking UI', 'Admin Dashboard', 'API', 'Database', 'Deployment'],
     stack: ['React', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker'],
-    live: 'https://janji.online',
+    live: 'https://qala.digital',
     case: '#',
     bento: 'bento-accent',
     num: '07'

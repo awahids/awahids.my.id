@@ -9,7 +9,7 @@ Identity:
 
 Contact & Links:
 - Email: awahid.safhadi@gmail.com
-- Booking link: https://janji.online/book/awahids
+- Booking link: https://qala.digital/book/awahids
 - GitHub: https://github.com/awahids
 - LinkedIn: https://www.linkedin.com/in/awahids
 - Resume PDF path on site: /cv/my-cv.pdf
@@ -55,7 +55,7 @@ Selected projects:
 - API Movie Reviews (2021): Backend API service for review lifecycle and media integration. Stack: ExpressJS, PostgreSQL, Cloudinary, Heroku.
 - Tokokupon.id (2024): Marketplace fullstack platform and admin CMS workflow. Stack: Next.js, NestJS, Ant Design, MySQL, Vercel. Live: https://tokokupon.com
 - WMS Rasa Group (2025): Internal fullstack WMS with API architecture and operational reporting. Stack: NestJS, Prisma ORM, Vue.js, PostgreSQL, Docker.
-- Qala Temu (2025): Fullstack appointment platform for booking and admin workflows. Stack: React, NestJS, Prisma, PostgreSQL, Docker. Live: https://janji.online
+- Qala Temu (2025): Fullstack appointment platform for booking and admin workflows. Stack: React, NestJS, Prisma, PostgreSQL, Docker. Live: https://qala.digital
 
 Education:
 - Mataram University

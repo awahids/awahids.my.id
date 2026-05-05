@@ -1,1 +1,1 @@
-export const BOOKING_URL = 'https://janji.online/book/awahids';
+export const BOOKING_URL = 'https://qala.digital/book/awahids';

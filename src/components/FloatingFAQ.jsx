@@ -87,8 +87,8 @@ const FAQ_RULES = [
   {
     keywords: ['contact', 'kontak', 'email', 'hubungi'],
     answer: {
-      id: 'Paling cepet bisa email ke awahid.safhadi@gmail.com. Kalau mau langsung ngobrolin project, bisa juga booking jadwal di https://janji.online/book/awahids.',
-      en: 'The fastest way is email at awahid.safhadi@gmail.com. If you want to discuss a project directly, you can book a call at https://janji.online/book/awahids.',
+      id: 'Paling cepet bisa email ke awahid.safhadi@gmail.com. Kalau mau langsung ngobrolin project, bisa juga booking jadwal di https://qala.digital/book/awahids.',
+      en: 'The fastest way is email at awahid.safhadi@gmail.com. If you want to discuss a project directly, you can book a call at https://qala.digital/book/awahids.',
     },
   },
   {
