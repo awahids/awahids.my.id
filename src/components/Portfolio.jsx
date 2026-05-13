@@ -7,6 +7,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { useWordSplit } from '../lib/useWordSplit';
 import { useTextScramble } from '../lib/useTextScramble';
 import { useGsapReveal } from '../lib/useGsapReveal';
+import { modalCardVariants, modalChildVariants, modalOverlayMotion } from '../lib/modalMotion';
 // PortfolioScrollSwap removed — using bento grid layout
 
 const FOCUSABLE_SELECTOR = [
@@ -419,7 +420,6 @@ const Portfolio = () => {
     ? projectItems.slice(0, MOBILE_PROJECT_LIMIT)
     : projectItems;
   const visibleScopeLimit = isMobile ? 3 : 4;
-  const ease = [0.16, 1, 0.3, 1];
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return undefined;
@@ -698,10 +698,7 @@ const Portfolio = () => {
           <motion.div
             className="modal-overlay active"
             onClick={closeModal}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0.12 : 0.28, ease }}
+            {...modalOverlayMotion(reduceMotion)}
           >
             <motion.div
               className="modal-card"
@@ -710,18 +707,19 @@ const Portfolio = () => {
               aria-modal="true"
               aria-labelledby={`project-modal-title-${selectedProject.id}`}
               tabIndex="-1"
+              data-lenis-prevent
+              data-lenis-prevent-wheel
+              data-lenis-prevent-touch
               onClick={e => e.stopPropagation()}
-              initial={reduceMotion ? { opacity: 1 } : { scale: 0.9, y: 20 }}
-              animate={reduceMotion ? { opacity: 1 } : { scale: 1, y: 0 }}
-              exit={reduceMotion ? { opacity: 1 } : { scale: 0.9, y: 20 }}
-              transition={
-                reduceMotion
-                  ? { duration: 0 }
-                  : { type: 'spring', damping: 25, stiffness: 300 }
-              }
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+              variants={modalCardVariants(reduceMotion)}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
               <button ref={closeButtonRef} className="modal-close" onClick={closeModal} aria-label="Close project details">✕</button>
-              <div className="modal-header">
+              <motion.div className="modal-header" variants={modalChildVariants}>
                 {selectedProject.cat && (
                   <div className="mh-cat">{selectedProject.cat}</div>
                 )}
@@ -729,8 +727,8 @@ const Portfolio = () => {
                 {selectedProject.year && (
                   <div className="mh-year">Release: {selectedProject.year}</div>
                 )}
-              </div>
-              <div className="modal-content">
+              </motion.div>
+              <motion.div className="modal-content" variants={modalChildVariants}>
                 <div className="m-case-sections">
                   <article className="m-case-block">
                     <div className="m-case-lbl">Overview</div>
@@ -817,7 +815,7 @@ const Portfolio = () => {
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}

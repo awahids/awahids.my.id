@@ -2128,7 +2128,7 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
 .modal-overlay {
   position:fixed; inset:0; background:rgba(8,8,8,.82); z-index:2000;
   display:flex; align-items:center; justify-content:center; padding:24px;
-  opacity:0; pointer-events:none; transition:opacity .4s var(--ease-standard);
+  opacity:0; pointer-events:none;
   backdrop-filter: blur(14px);
 }
 .is-gsap-motion .modal-overlay,
@@ -2137,16 +2137,19 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
 .modal-card {
   background:linear-gradient(180deg, rgba(26,26,26,.98) 0%, rgba(14,14,14,.98) 100%);
   width:100%; max-width:980px; border-radius:var(--radius-lg);
-  max-height:90vh; overflow-y:auto; position:relative; border:1px solid var(--stroke-soft);
-  transform:scale(0.9) translateY(40px); transition:transform .6s var(--ease-standard);
+  max-height:min(90vh, calc(100dvh - 48px));
+  overflow:hidden; position:relative; border:1px solid var(--stroke-soft);
+  display:flex; flex-direction:column;
   box-shadow:0 34px 80px rgba(0,0,0,.55);
+  overscroll-behavior:contain;
+  transform-origin:50% 58%;
+  will-change:transform, opacity, filter;
 }
 .modal-card::before {
   content:''; position:absolute; top:0; left:0; right:0; height:2px;
   background:linear-gradient(90deg, rgba(200,255,0,.75), rgba(200,255,0,0));
   opacity:.55; pointer-events:none;
 }
-.modal-overlay.active .modal-card { transform:scale(1) translateY(0); }
 .modal-close {
   position:absolute; top:22px; right:22px; background:rgba(10,10,10,.72); border:1px solid var(--stroke-soft);
   color:var(--white); cursor:pointer; width:40px; height:40px; display:flex; align-items:center; justify-content:center;
@@ -2168,7 +2171,16 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
   font-family:'DM Mono',monospace; font-size:10px; color:var(--text-dim);
   letter-spacing:.14em; text-transform:uppercase;
 }
-.modal-content { padding:34px 52px 44px; display:grid; grid-template-columns: 1.5fr 1fr; gap:46px; }
+.modal-content {
+  min-height:0;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:34px 52px 44px;
+  display:grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap:46px;
+}
 .m-case-sections {
   display:flex;
   flex-direction:column;
@@ -3032,9 +3044,6 @@ footer {
     max-height:calc(100svh - 36px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
     height:auto;
     top:auto;
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-    overscroll-behavior:contain;
   }
   .modal-close {
     top:12px;

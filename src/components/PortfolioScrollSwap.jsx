@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { BOOKING_URL } from '../lib/links';
+import { modalCardVariants, modalChildVariants, modalOverlayMotion } from '../lib/modalMotion';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -17,8 +18,6 @@ const getFocusableElements = (container) =>
   Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
     (el) => !el.hasAttribute('aria-hidden')
   );
-
-const ease = [0.16, 1, 0.3, 1];
 
 const PROJECT_ACCENTS = [
   '#C8FF00', '#FF6B00', '#C8FF00', '#0076FF',
@@ -339,10 +338,7 @@ const PortfolioScrollSwap = ({
           <motion.div
             className="modal-overlay active"
             onClick={closeModal}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reduceMotion ? 0.12 : 0.28, ease }}
+            {...modalOverlayMotion(reduceMotion)}
           >
             <motion.div
               className="modal-card"
@@ -351,19 +347,24 @@ const PortfolioScrollSwap = ({
               aria-modal="true"
               aria-labelledby={`project-modal-title-${selectedProject.id}`}
               tabIndex="-1"
+              data-lenis-prevent
+              data-lenis-prevent-wheel
+              data-lenis-prevent-touch
               onClick={(e) => e.stopPropagation()}
-              initial={reduceMotion ? { opacity: 1 } : { scale: 0.9, y: 20 }}
-              animate={reduceMotion ? { opacity: 1 } : { scale: 1, y: 0 }}
-              exit={reduceMotion ? { opacity: 1 } : { scale: 0.9, y: 20 }}
-              transition={reduceMotion ? { duration: 0 } : { type: 'spring', damping: 25, stiffness: 300 }}
+              onWheel={(e) => e.stopPropagation()}
+              onTouchMove={(e) => e.stopPropagation()}
+              variants={modalCardVariants(reduceMotion)}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
               <button ref={closeButtonRef} className="modal-close" onClick={closeModal} aria-label="Close project details">✕</button>
-              <div className="modal-header">
+              <motion.div className="modal-header" variants={modalChildVariants}>
                 {selectedProject.cat && <div className="mh-cat">{selectedProject.cat}</div>}
                 <h2 id={`project-modal-title-${selectedProject.id}`} className="mh-title">{selectedProject.title}</h2>
                 {selectedProject.year && <div className="mh-year">Release: {selectedProject.year}</div>}
-              </div>
-              <div className="modal-content">
+              </motion.div>
+              <motion.div className="modal-content" variants={modalChildVariants}>
                 <div className="m-case-sections">
                   <article className="m-case-block">
                     <div className="m-case-lbl">Overview</div>
@@ -441,7 +442,7 @@ const PortfolioScrollSwap = ({
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         )}
