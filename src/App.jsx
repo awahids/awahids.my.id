@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { useLenis } from './lib/useLenis';
 
 import Preloader from './components/Preloader';
 import Navbar from './components/Navbar';
@@ -13,6 +14,7 @@ import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
+import { useGsapReveal } from './lib/useGsapReveal';
 import { isSupabaseConfigured, supabase } from './lib/supabaseClient';
 import Portfolio from './components/Portfolio';
 import WhatIBuild from './components/WhatIBuild';
@@ -237,9 +239,52 @@ function App() {
     sectionContainer,
     sectionItem,
     staggerTight,
+    eyebrow: sectionEyebrow,
+    clipReveal: sectionClipReveal,
+    cardPop: sectionCardPop,
   } = useSectionMotion();
   const [about, setAbout] = useState(DEFAULT_ABOUT);
   const aboutTitle = getAboutTitleParts(about.title);
+
+  const lenisEnabled = !effectiveLoading && !adminPage && !notFoundPage;
+  const lenisRef = useLenis({ enabled: lenisEnabled });
+
+  const aboutSectionRef = React.useRef(null);
+  useGsapReveal(aboutSectionRef);
+
+  // Stat counter animation
+  useEffect(() => {
+    if (effectiveLoading) return;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const ctx = gsap.context(() => {
+      const statEls = document.querySelectorAll('.stat-b-num');
+      statEls.forEach((el) => {
+        const raw = el.textContent.trim();
+        const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
+        const suffix = raw.replace(/[0-9.]/g, '');
+        if (isNaN(num)) return;
+
+        if (prefersReducedMotion) return;
+
+        const proxy = { val: 0 };
+        gsap.to(proxy, {
+          val: num,
+          duration: 1.6,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+          onUpdate() {
+            const display = Number.isInteger(num)
+              ? Math.round(proxy.val)
+              : proxy.val.toFixed(1);
+            el.textContent = `${display}${suffix}`;
+          },
+        });
+      });
+    });
+
+    return () => ctx.revert();
+  }, [effectiveLoading]);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return undefined;
@@ -325,6 +370,19 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
+    const active = !effectiveLoading && !adminPage && !notFoundPage;
+    document.body.classList.toggle('is-gsap-motion', active);
+    return () => document.body.classList.remove('is-gsap-motion');
+  }, [effectiveLoading, adminPage, notFoundPage]);
+
+  useEffect(() => {
+    if (!effectiveLoading) {
+      const id = window.setTimeout(() => ScrollTrigger.refresh(), 300);
+      return () => window.clearTimeout(id);
+    }
+  }, [effectiveLoading]);
+
+  useEffect(() => {
     if (effectiveLoading || adminPage || notFoundPage) return undefined;
 
     const progressTween = gsap.to('.scroll-progress-bar', {
@@ -368,13 +426,21 @@ function App() {
       // Update URL hash without jumping
       window.history.pushState(null, null, selector);
 
-      // Scroll with GSAP
-      gsap.to(window, {
-        duration: 1.2,
-        scrollTo: { y: target, offsetY, autoKill: false },
-        ease: 'power4.inOut',
-        overwrite: 'auto'
-      });
+      // Scroll via Lenis when active, fallback to GSAP scrollTo
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(target, {
+          offset: -offsetY,
+          duration: 1.2,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        });
+      } else {
+        gsap.to(window, {
+          duration: 1.2,
+          scrollTo: { y: target, offsetY, autoKill: false },
+          ease: 'power4.inOut',
+          overwrite: 'auto',
+        });
+      }
     };
 
     document.addEventListener('click', handleAnchorScroll);
@@ -385,7 +451,7 @@ function App() {
       progressTween.scrollTrigger?.kill();
       progressTween.kill();
     };
-  }, [adminPage, effectiveLoading, notFoundPage]);
+  }, [adminPage, effectiveLoading, lenisRef, notFoundPage]);
 
   return (
     <div className={`app-container ${effectiveLoading ? 'is-preloading' : ''}`}>
@@ -422,17 +488,18 @@ function App() {
             <motion.section
               id="about"
               className="s-about"
+              ref={aboutSectionRef}
               initial="hidden"
               whileInView="visible"
               viewport={sectionViewport}
               variants={sectionContainer}
             >
-              <div className="about-bg">A.W.S</div>
+              <div className="about-bg" data-gsap-reveal="fade-up" data-gsap-delay="0.1">A.W.S</div>
               <motion.div className="about-left" variants={sectionItem}>
-                <motion.div className="s-eyebrow" variants={sectionItem}>
+                <motion.div className="s-eyebrow" variants={sectionEyebrow}>
                   // {about.eyebrow.toUpperCase()}
                 </motion.div>
-                <motion.h2 className="s-title" variants={sectionItem}>
+                <motion.h2 className="s-title" variants={sectionClipReveal}>
                   {aboutTitle.lead}{' '}
                   {aboutTitle.outline && <span className="s-outline">{aboutTitle.outline}</span>}
                 </motion.h2>
@@ -454,7 +521,7 @@ function App() {
               <motion.div className="about-right" variants={sectionItem}>
                 <motion.div className="stats-2x2" variants={staggerTight}>
                   {about.stats.map((stat) => (
-                    <motion.div key={`${stat.value}-${stat.label}`} className="stat-b" variants={sectionItem}>
+                    <motion.div key={`${stat.value}-${stat.label}`} className="stat-b" variants={sectionCardPop}>
                       <div className="stat-b-num">{stat.value}</div>
                       <div className="stat-b-lbl">{stat.label}</div>
                     </motion.div>

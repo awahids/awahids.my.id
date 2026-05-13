@@ -1,8 +1,13 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import gsap from 'gsap';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { BOOKING_URL } from '../lib/links';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
+import { useWordSplit } from '../lib/useWordSplit';
+import { useTextScramble } from '../lib/useTextScramble';
+import { useGsapReveal } from '../lib/useGsapReveal';
+// PortfolioScrollSwap removed — using bento grid layout
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -344,7 +349,6 @@ const projects = [
 ];
 
 const MOBILE_PROJECT_LIMIT = 5;
-const MOBILE_SCOPE_LIMIT = 4;
 
 const groupProjectChildren = (rows = [], valueKey = 'label') =>
   rows.reduce((acc, row) => {
@@ -400,11 +404,22 @@ const Portfolio = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [showAllMobileProjects, setShowAllMobileProjects] = useState(false);
+  const sectionRef = useRef(null);
   const modalRef = useRef(null);
   const closeButtonRef = useRef(null);
   const previousFocusedRef = useRef(null);
-  const { viewport, sectionContainer, sectionItem, staggerGrid, ease, reduceMotion } =
+
+  useWordSplit(sectionRef);
+  useTextScramble(sectionRef);
+  useGsapReveal(sectionRef);
+  const { viewport, sectionContainer, sectionItem, staggerGrid, eyebrow, cardPop, reduceMotion } =
     useSectionMotion();
+
+  const visibleProjects = isMobile && !showAllMobileProjects
+    ? projectItems.slice(0, MOBILE_PROJECT_LIMIT)
+    : projectItems;
+  const visibleScopeLimit = isMobile ? 3 : 4;
+  const ease = [0.16, 1, 0.3, 1];
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return undefined;
@@ -463,6 +478,57 @@ const Portfolio = () => {
   const closeModal = useCallback(() => {
     setSelectedProject(null);
   }, []);
+
+  // 3D tilt + spotlight glow on portfolio cards
+  useEffect(() => {
+    const cards = document.querySelectorAll('.port-card');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (prefersReducedMotion || !hasFinePointer) return;
+
+    const cleanups = [];
+    cards.forEach((card) => {
+      const onMove = (e) => {
+        const rect = card.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / (rect.width / 2);
+        const dy = (e.clientY - cy) / (rect.height / 2);
+
+        // 3D tilt + lift
+        gsap.to(card, {
+          rotateX: dy * -6,
+          rotateY: dx * 6,
+          y: -8,
+          transformPerspective: 900,
+          duration: 0.4,
+          ease: 'power2.out',
+          overwrite: 'auto',
+        });
+
+        // Mouse-tracking spotlight: update CSS custom properties
+        const pctX = ((e.clientX - rect.left) / rect.width) * 100;
+        const pctY = ((e.clientY - rect.top) / rect.height) * 100;
+        card.style.setProperty('--mx', `${pctX}%`);
+        card.style.setProperty('--my', `${pctY}%`);
+        card.classList.add('is-hovered');
+      };
+      const onLeave = () => {
+        gsap.to(card, {
+          rotateX: 0, rotateY: 0, y: 0,
+          duration: 0.55, ease: 'power3.out', overwrite: 'auto',
+        });
+        card.classList.remove('is-hovered');
+      };
+      card.addEventListener('mousemove', onMove);
+      card.addEventListener('mouseleave', onLeave);
+      cleanups.push(() => {
+        card.removeEventListener('mousemove', onMove);
+        card.removeEventListener('mouseleave', onLeave);
+      });
+    });
+    return () => cleanups.forEach((fn) => fn());
+  }, [projectItems]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 960px)');
@@ -555,27 +621,28 @@ const Portfolio = () => {
     }
   };
 
-  const visibleProjects =
-    isMobile && !showAllMobileProjects
-      ? projectItems.slice(0, MOBILE_PROJECT_LIMIT)
-      : projectItems;
-
-  const visibleScopeLimit = isMobile ? MOBILE_SCOPE_LIMIT : 5;
-
   return (
     <section className="s-portfolio" id="portfolio">
       <motion.div
+        ref={sectionRef}
         initial="hidden"
         whileInView="visible"
         viewport={viewport}
         variants={sectionContainer}
       >
-        <motion.div className="s-eyebrow" variants={sectionItem}>
-          // SELECTED_WORK
+        <motion.div className="s-eyebrow" variants={eyebrow}>
+          // <span data-scramble="SELECTED_WORK">SELECTED_WORK</span>
         </motion.div>
-        <motion.h2 className="s-title" variants={sectionItem}>
+        <motion.h2 className="s-title" variants={sectionItem} data-word-split>
           Selected <span className="s-outline">Projects</span>
         </motion.h2>
+        <motion.div
+          className="section-lime-rule"
+          variants={{
+            hidden: { scaleX: 0, originX: 0 },
+            visible: { scaleX: 1, originX: 0, transition: { type: 'spring', stiffness: 60, damping: 18, delay: 0.2 } },
+          }}
+        />
         <motion.p className="port-intro" variants={sectionItem}>
           Real projects across web apps, dashboards, backend systems, automation, and deployment.
         </motion.p>
@@ -594,7 +661,7 @@ const Portfolio = () => {
               tabIndex="0"
               aria-haspopup="dialog"
               aria-label={`Open project details for ${p.title}`}
-              variants={sectionItem}
+              variants={cardPop}
               initial={false}
             >
               <div className="port-card-num">{p.num}</div>

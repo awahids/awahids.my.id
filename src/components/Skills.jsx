@@ -1,8 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import SkillsScene from './SkillsScene';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useSectionMotion } from '../lib/sectionMotion';
-import { loadAnimeModule } from '../lib/animeLoader';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
+import { useWordSplit } from '../lib/useWordSplit';
+import { useParallaxBg } from '../lib/useParallaxBg';
+import { useGsapReveal } from '../lib/useGsapReveal';
+import { useTextScramble } from '../lib/useTextScramble';
 
 const skillsData = [
   {
@@ -65,9 +71,23 @@ const skillFromCmsItem = (item, index) => {
 
 const Skills = () => {
   const rootRef = useRef(null);
+  const sectionRef = rootRef; // reuse same ref for wordSplit and parallaxBg
   const [skillItems, setSkillItems] = useState(skillsData);
-  const { viewport, sectionContainer, sectionItem, staggerGrid } =
-    useSectionMotion();
+  const [isMobile, setIsMobile] = useState(false);
+  const { viewport, sectionContainer, sectionItem, staggerGrid, eyebrow, cardPop } = useSectionMotion();
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const sync = (e) => setIsMobile(e.matches);
+    sync(mq);
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
+  useWordSplit(sectionRef);
+  useParallaxBg(sectionRef);
+  useGsapReveal(sectionRef);
+  useTextScramble(sectionRef);
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return undefined;
@@ -94,162 +114,163 @@ const Skills = () => {
     };
   }, []);
 
+  // GSAP hover effects — replace anime.js entirely
   useEffect(() => {
     const root = rootRef.current;
-
     if (!root || typeof window === 'undefined') return undefined;
 
-    const prefersReducedMotion = window.matchMedia(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
-    const hasFinePointer = window.matchMedia(
-      '(hover: hover) and (pointer: fine)'
-    ).matches;
-    const isMobileDisplay = window.matchMedia('(max-width: 768px)').matches;
-    const shouldAnimateOnViewport = isMobileDisplay || !hasFinePointer;
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-    if (prefersReducedMotion) return undefined;
+    if (prefersReducedMotion || !hasFinePointer) return undefined;
 
-    let disposed = false;
-    let animeApi = null;
-    let mobileObserver = null;
-    const runningAnimations = new Map();
-    const cardDrawables = new Map();
     const cards = Array.from(root.querySelectorAll('.skill-card'));
+    const cleanups = [];
 
-    loadAnimeModule()
-      .then(({ animate, stagger, svg }) => {
-        if (!disposed) {
-          animeApi = { animate, stagger };
+    cards.forEach((card) => {
+      const chips = Array.from(card.querySelectorAll('.skill-chip'));
+      const icon = card.querySelector('.skill-card-icon svg');
 
-          cards.forEach((card) => {
-            const drawableLines = Array.from(
-              card.querySelectorAll(
-                '.skill-card-icon path, .skill-card-icon polyline, .skill-card-icon line, .skill-card-icon rect, .skill-card-icon circle, .skill-card-icon ellipse'
-              )
-            )
-              .flatMap((line) => svg?.createDrawable(line) || [])
-              .filter(Boolean);
+      const onEnter = () => {
+        // Lift card (GSAP overrides FM's final transform safely)
+        gsap.to(card, { y: -10, duration: 0.35, ease: 'power3.out', overwrite: 'auto' });
 
-            drawableLines.forEach((drawable) => {
-              drawable.draw = shouldAnimateOnViewport ? '0 0' : '0 1';
-            });
+        // Icon spin
+        if (icon) {
+          gsap.to(icon, { rotation: 12, scale: 1.15, duration: 0.35, ease: 'back.out(2)', overwrite: 'auto' });
+        }
 
-            cardDrawables.set(card, drawableLines);
-          });
+        // Chips stagger reveal
+        if (chips.length) {
+          gsap.fromTo(chips,
+            { y: 6, opacity: 0.4 },
+            { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', stagger: 0.025, overwrite: 'auto' }
+          );
+        }
+      };
 
-          if (shouldAnimateOnViewport && 'IntersectionObserver' in window) {
-            mobileObserver = new IntersectionObserver(
-              (entries, observer) => {
-                entries.forEach((entry) => {
-                  if (!entry.isIntersecting) return;
+      const onLeave = () => {
+        gsap.to(card, { y: 0, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
+        if (icon) {
+          gsap.to(icon, { rotation: 0, scale: 1, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
+        }
+      };
 
-                  animateCard(entry.target);
-                  observer.unobserve(entry.target);
-                });
-              },
-              {
-                rootMargin: '0px 0px -10% 0px',
-                threshold: 0.18,
-              }
+      card.addEventListener('mouseenter', onEnter);
+      card.addEventListener('mouseleave', onLeave);
+      cleanups.push(() => {
+        card.removeEventListener('mouseenter', onEnter);
+        card.removeEventListener('mouseleave', onLeave);
+      });
+    });
+
+    // Mobile: stagger reveal chips on viewport enter
+    const isMobileDisplay = window.matchMedia('(max-width: 768px)').matches;
+    if (isMobileDisplay) {
+      const observer = new IntersectionObserver(
+        (entries, obs) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const chips = entry.target.querySelectorAll('.skill-chip');
+            gsap.fromTo(chips,
+              { y: 8, opacity: 0 },
+              { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out', stagger: 0.03, delay: 0.1 }
             );
-
-            cards.forEach((card) => mobileObserver.observe(card));
-          } else if (shouldAnimateOnViewport) {
-            cards.forEach((card, index) => {
-              window.setTimeout(() => animateCard(card), 120 + index * 120);
-            });
-          }
-        }
-      })
-      .catch((error) => {
-        if (import.meta.env.DEV) {
-          console.warn('Anime.js failed to load from CDN.', error);
-        }
-      });
-
-    const stopCardAnimations = (card) => {
-      const animations = runningAnimations.get(card);
-      if (!animations) return;
-
-      animations.forEach((animation) => animation.revert?.());
-      runningAnimations.delete(card);
-    };
-
-    const animateCard = (card) => {
-      if (!animeApi) return;
-
-      const chips = card.querySelectorAll('.skill-chip');
-      const drawables = cardDrawables.get(card) || [];
-
-      if (!chips.length && !drawables.length) return;
-
-      stopCardAnimations(card);
-
-      const animations = [];
-
-      if (chips.length) {
-        animations.push(
-          animeApi.animate(chips, {
-            y: { from: 8, to: 0 },
-            opacity: { from: 0.38, to: 1 },
-            scale: { from: 0.96, to: 1 },
-            duration: 420,
-            delay: animeApi.stagger(32),
-            ease: 'out(3)',
-          })
-        );
-      }
-
-      if (drawables.length) {
-        animations.push(
-          animeApi.animate(drawables, {
-            draw: ['0 0', '0 1'],
-            duration: 900,
-            delay: animeApi.stagger(60),
-            ease: 'inOutQuad',
-          })
-        );
-      }
-
-      runningAnimations.set(card, animations);
-    };
-
-    const animateCardOnPointer = (event) => animateCard(event.currentTarget);
-
-    if (hasFinePointer && !isMobileDisplay) {
-      cards.forEach((card) => {
-        card.addEventListener('pointerenter', animateCardOnPointer);
-      });
+            obs.unobserve(entry.target);
+          });
+        },
+        { rootMargin: '0px 0px -10% 0px', threshold: 0.2 }
+      );
+      cards.forEach((card) => observer.observe(card));
+      cleanups.push(() => observer.disconnect());
     }
 
-    return () => {
-      disposed = true;
-      mobileObserver?.disconnect();
-      cards.forEach((card) => {
-        card.removeEventListener('pointerenter', animateCardOnPointer);
-        stopCardAnimations(card);
+    return () => cleanups.forEach((fn) => fn());
+  }, [skillItems.length]);
+
+  // GSAP ScrollTrigger: animate skill card numbers on enter
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || typeof window === 'undefined') return undefined;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return undefined;
+
+    const ctx = gsap.context(() => {
+      const nums = Array.from(root.querySelectorAll('.skill-card-num'));
+      nums.forEach((num, i) => {
+        ScrollTrigger.create({
+          trigger: num,
+          start: 'top 88%',
+          once: true,
+          onEnter() {
+            gsap.delayedCall(i * 0.08, () => num.classList.add('is-visible'));
+          },
+        });
       });
-      cardDrawables.clear();
-    };
+    }, root);
+
+    return () => ctx.revert();
+  }, [skillItems.length]);
+
+  // GSAP ScrollTrigger: chip rows drift horizontally as user scrolls (alternating dirs)
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || typeof window === 'undefined') return undefined;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return undefined;
+
+    const ctx = gsap.context(() => {
+      const chipLists = Array.from(root.querySelectorAll('.skill-card-list'));
+      chipLists.forEach((list, i) => {
+        const dir = i % 2 === 0 ? -28 : 28;
+        gsap.fromTo(
+          list,
+          { x: -dir },
+          {
+            x: dir,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: root,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.5,
+            },
+          }
+        );
+      });
+    }, root);
+
+    return () => ctx.revert();
   }, [skillItems.length]);
 
   return (
     <section className="s-skills" id="skills">
+      <SkillsScene isMobile={isMobile} />
       <motion.div
         ref={rootRef}
+        className="skills-content"
         initial="hidden"
         whileInView="visible"
         viewport={viewport}
         variants={sectionContainer}
       >
-        <motion.div className="s-eyebrow" variants={sectionItem}>
-          // TECH_STACK_BY_LAYER
+        <div className="s-skills-bg-label" data-gsap-reveal="fade-up" data-gsap-delay="0.1" aria-hidden="true">STACK</div>
+        <motion.div className="s-eyebrow" variants={eyebrow}>
+          // <span data-scramble="TECH_STACK_BY_LAYER">TECH_STACK_BY_LAYER</span>
         </motion.div>
-        <div className="skills-copy">
-          <motion.h2 className="skills-copy-title" variants={sectionItem}>
-            Fullstack Capability <em>by Layer</em>.
+        <div className="skills-copy" data-parallax="0.18">
+          <motion.h2 className="skills-copy-title" variants={sectionItem} data-word-split>
+            Fullstack Capability by Layer.
           </motion.h2>
+          <motion.div
+            className="section-lime-rule"
+            variants={{
+              hidden: { scaleX: 0, originX: 0 },
+              visible: { scaleX: 1, originX: 0, transition: { type: 'spring', stiffness: 60, damping: 18, delay: 0.15 } },
+            }}
+          />
           <motion.span className="skills-copy-sub" variants={sectionItem}>
             Frontend, backend, database, deployment, and automation.
           </motion.span>
@@ -267,7 +288,7 @@ const Skills = () => {
             <motion.div
               key={index}
               className="skill-card"
-              variants={sectionItem}
+              variants={cardPop}
             >
               <div className="skill-card-icon">{skill.icon}</div>
               <div className="skill-card-num">{skill.num}</div>

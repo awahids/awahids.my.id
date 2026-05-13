@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
+
+const btnSpring = { type: 'spring', stiffness: 360, damping: 22 };
 import { BOOKING_URL } from '../lib/links';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { Waves } from './Waves';
@@ -74,8 +76,23 @@ const renderContactTitle = (title) => {
 
 const Contact = () => {
   const [contact, setContact] = useState(DEFAULT_CONTACT);
-  const { viewport, sectionContainer, sectionItem, staggerGrid } =
+  const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef(null);
+  const reduced = useReducedMotion();
+  const { viewport, sectionContainer, sectionItem, staggerGrid, clipReveal, cardPop } =
     useSectionMotion();
+
+  const handleEmailCopy = async (e) => {
+    e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(contact.email);
+      setCopied(true);
+      clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.location.href = `mailto:${contact.email}`;
+    }
+  };
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return undefined;
@@ -121,24 +138,34 @@ const Contact = () => {
       >
         <motion.div className="contact-top" variants={sectionItem}>
           <motion.div variants={sectionItem}>
-            <motion.h2 className="contact-headline" variants={sectionItem}>
+            <motion.h2 className="contact-headline" variants={clipReveal}>
               {renderContactTitle(contact.title)}
             </motion.h2>
             <motion.p className="contact-kicker" variants={sectionItem}>
               {contact.summary}
             </motion.p>
             <motion.div className="contact-top-actions" variants={sectionItem}>
-              <a
+              <motion.a
                 href={contact.bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-top-link is-prime"
+                whileHover={reduced ? {} : { scale: 1.04 }}
+                whileTap={reduced ? {} : { scale: 0.96 }}
+                transition={btnSpring}
               >
                 {contact.ctaPrimaryLabel}
-              </a>
-              <a href="#portfolio" data-scroll-target="#portfolio" className="contact-top-link">
+              </motion.a>
+              <motion.a
+                href="#portfolio"
+                data-scroll-target="#portfolio"
+                className="contact-top-link"
+                whileHover={reduced ? {} : { x: 4 }}
+                whileTap={reduced ? {} : { scale: 0.97 }}
+                transition={btnSpring}
+              >
                 {contact.ctaSecondaryLabel}
-              </a>
+              </motion.a>
             </motion.div>
           </motion.div>
           <motion.div className="contact-badge" variants={sectionItem}>
@@ -154,18 +181,21 @@ const Contact = () => {
         </motion.div>
 
         <motion.div className="contact-grid" variants={staggerGrid}>
-          <motion.div className="contact-card" variants={sectionItem}>
+          <motion.div className="contact-card" variants={cardPop}>
             <div className="cc-icon">
               <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m3 7 12 6 9-6" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
             <div className="cc-lbl">EMAIL</div>
-            <a href={`mailto:${contact.email}`} className="cc-val">{contact.email}</a>
+            <button type="button" className="cc-val cc-email-copy" onClick={handleEmailCopy} aria-label="Copy email address">
+              {contact.email}
+              <span className={`cc-copied-badge${copied ? ' is-visible' : ''}`}>Copied!</span>
+            </button>
             <div className="cc-remote">
               <div className="status-pulse"></div> AVAILABLE FOR FULLSTACK PROJECTS
             </div>
           </motion.div>
 
-          <motion.div className="contact-card" variants={sectionItem}>
+          <motion.div className="contact-card" variants={cardPop}>
             <div className="cc-icon">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M12 7v6l4 2" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
@@ -181,7 +211,7 @@ const Contact = () => {
             </a>
           </motion.div>
 
-          <motion.div className="contact-card" variants={sectionItem}>
+          <motion.div className="contact-card" variants={cardPop}>
             <div className="cc-icon">
               <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
