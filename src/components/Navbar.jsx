@@ -121,7 +121,15 @@ const Navbar = ({ isAiLabPage = false, isNotFoundPage = false }) => {
           <div className="nav-underline" ref={underlineRef} aria-hidden="true" />
         </div>
       </div>
-      <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="nav-cta">Discuss a Project</a>
+      <a
+        href={BOOKING_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="nav-cta"
+        onClick={() => window.plausible?.('BookingCTA', { props: { source: 'navbar' } })}
+      >
+        Discuss a Project
+      </a>
     </nav>
   );
 };

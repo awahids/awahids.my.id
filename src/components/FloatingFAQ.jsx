@@ -10,7 +10,7 @@ const STARTER_FAQ_MESSAGE = {
   id: 'faq-start-float',
   role: 'assistant',
   source: 'local',
-  text: "Hi! I'm an AI assistant. Ask me about Wahid's tech stack, experience, or project delivery.",
+  text: "Hi! I'm an AI assistant built into this portfolio. Ask me about my tech stack, past projects, or how I can help with your build.",
 };
 
 const QUICK_QUESTIONS = [

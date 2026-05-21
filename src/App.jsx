@@ -73,9 +73,9 @@ const DEFAULT_ABOUT = {
   tags: ['Frontend to Deployment', 'Product-Oriented', 'Backend-First Strength'],
   stats: [
     { value: '4+', label: 'Years Exp.' },
-    { value: '20+', label: 'Products Built' },
+    { value: '20+', label: 'Projects Shipped' },
     { value: '5+', label: 'Core Domains' },
-    { value: '100%', label: 'Project Ownership' },
+    { value: '100%', label: 'End-to-End Ownership' },
   ],
   education: {
     school: 'Mataram University',
@@ -137,6 +137,13 @@ const DEFAULT_SITE_SETTINGS = {
   siteTitle: 'A Wahid Safhadi — Fullstack Developer with Backend-First Strength',
   seoDescription:
     'Fullstack developer building web apps, dashboards, APIs, automation, and scalable business systems from frontend to deployment.',
+  ogImage: '/img/aw-pixel.png',
+};
+
+const AI_LAB_SETTINGS = {
+  siteTitle: 'AI Lab — Architecture Brief Generator | A Wahid Safhadi',
+  seoDescription:
+    'Generate a technical architecture brief for your web product. A free AI-powered planning tool by fullstack developer A Wahid Safhadi.',
   ogImage: '/img/aw-pixel.png',
 };
 
@@ -314,9 +321,11 @@ function App() {
   }, [notFoundPage]);
 
   useEffect(() => {
-    applySiteSettings(notFoundPage ? NOT_FOUND_SETTINGS : DEFAULT_SITE_SETTINGS);
+    applySiteSettings(
+      notFoundPage ? NOT_FOUND_SETTINGS : aiLabPage ? AI_LAB_SETTINGS : DEFAULT_SITE_SETTINGS
+    );
 
-    if (notFoundPage || !isSupabaseConfigured || !supabase) return undefined;
+    if (notFoundPage || aiLabPage || !isSupabaseConfigured || !supabase) return undefined;
 
     let mounted = true;
 

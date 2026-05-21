@@ -14,7 +14,7 @@ const certs = [
   },
   {
     issuer: 'ORACLE ACADEMY',
-    name: 'Pemroggraming Database with SQL',
+    name: 'Programming Database with SQL',
     year: 'Sep 2021'
   },
   {

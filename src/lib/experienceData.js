@@ -4,7 +4,7 @@ export const DEFAULT_EXPERIENCES = [
     title: 'Rasa Group',
     role: 'Senior IT Developer',
     blurb:
-      'Senior IT Developer — built and maintained warehouse, logistics, and operational systems across dashboard interfaces, backend APIs, database workflows, and internal automation.',
+      'Currently building and maintaining warehouse, logistics, and operational systems — covering dashboard interfaces, backend APIs, database workflows, and internal automation pipelines.',
     tag: 'Feb 2025 — Present · Cikarang, Bekasi',
     glyph: '✺',
     sort_order: 10,
@@ -15,7 +15,7 @@ export const DEFAULT_EXPERIENCES = [
     title: 'PT. Ethis Fintech Indonesia',
     role: 'Backend Developer',
     blurb:
-      'Backend Developer — designed and deployed scalable API services and contributed to end-to-end product delivery with NestJS, MySQL, and TypeORM.',
+      'Designed and deployed scalable API services, contributing to end-to-end product delivery using NestJS, MySQL, and TypeORM across multiple fintech product cycles.',
     tag: 'Aug 2022 — Feb 2025 · West Jakarta',
     glyph: '◍',
     sort_order: 20,
@@ -26,7 +26,7 @@ export const DEFAULT_EXPERIENCES = [
     title: 'Tokokupon.com',
     role: 'Fullstack Engineer',
     blurb:
-      'Fullstack Engineer — built top-up product across frontend flow, service API, and operational backend using Next.js, NestJS, and MySQL.',
+      'Built a top-up product end-to-end — frontend flow, service API, and operational backend — using Next.js, NestJS, and MySQL.',
     tag: 'Jul — Sep 2024 · Remote',
     glyph: '❍',
     sort_order: 30,
@@ -37,7 +37,7 @@ export const DEFAULT_EXPERIENCES = [
     title: 'adala.id',
     role: 'Backend Developer',
     blurb:
-      'Backend Developer — developed scalable inventory APIs and helped shape warehouse product workflows with NestJS and MySQL.',
+      'Developed scalable inventory APIs and helped shape warehouse product workflows, working on data modeling and backend service design with NestJS and MySQL.',
     tag: 'Jan 2022 — Aug 2022 · Remote',
     glyph: '✦',
     sort_order: 40,

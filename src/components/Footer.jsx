@@ -41,7 +41,7 @@ const Footer = ({ isAiLabPage = false }) => {
         </div>
         <div className="footer-actions">
           <div className="fc">
-            FULLSTACK DEVELOPER · BACKEND-FIRST DELIVERY
+            FULLSTACK DEVELOPER · BACKEND-FIRST ENGINEER
           </div>
           <a
             href={secondaryLink.href}

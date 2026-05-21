@@ -416,6 +416,7 @@ const Hero = () => {
             whileHover={reduced ? {} : { scale: 1.05 }}
             whileTap={reduced ? {} : { scale: 0.96 }}
             transition={btnSpring}
+            onClick={() => window.plausible?.('CVDownload', { props: { source: 'hero' } })}
           >
             {profile.ctaSecondaryLabel}
           </motion.a>
@@ -460,7 +461,7 @@ const Hero = () => {
               <div className="status-pulse" />
               <span>Open to Remote</span>
             </div>
-            <div className="hsc-sublbl">Fullstack · Backend-First</div>
+            <div className="hsc-sublbl">Backend-First · Fullstack</div>
           </motion.div>
         </motion.div>
       </motion.div>

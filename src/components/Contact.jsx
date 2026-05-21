@@ -13,7 +13,7 @@ const DEFAULT_CONTACT = {
   title: 'Have a web app, dashboard, or backend system to build?',
   eyebrow: 'Contact',
   summary:
-    'Tell me what you are building, what is breaking, or what needs to scale. I can help with fullstack development, backend architecture, workflow automation, and deployment.',
+    'Tell me what you are building, where your current system is falling short, or what needs to scale. I can help with fullstack development, backend architecture, workflow automation, and deployment.',
   email: 'awahid.safhadi@gmail.com',
   bookingUrl: BOOKING_URL,
   location: 'Cikarang, Bekasi, Jawa Barat',
@@ -153,6 +153,7 @@ const Contact = () => {
                 whileHover={reduced ? {} : { scale: 1.04 }}
                 whileTap={reduced ? {} : { scale: 0.96 }}
                 transition={btnSpring}
+                onClick={() => window.plausible?.('BookingCTA', { props: { source: 'contact' } })}
               >
                 {contact.ctaPrimaryLabel}
               </motion.a>
@@ -176,7 +177,15 @@ const Contact = () => {
               <span className="contact-badge-name">Curriculum Vitae</span>
               <span className="contact-badge-role">PDF Resume</span>
             </div>
-            <a href={contact.cvUrl} target="_blank" rel="noopener noreferrer" className="contact-badge-link">Download Resume ↗</a>
+            <a
+              href={contact.cvUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="contact-badge-link"
+              onClick={() => window.plausible?.('CVDownload', { props: { source: 'contact' } })}
+            >
+              Download Resume ↗
+            </a>
           </motion.div>
         </motion.div>
 
