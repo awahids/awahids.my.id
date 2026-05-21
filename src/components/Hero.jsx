@@ -78,9 +78,9 @@ const DEFAULT_PROFILE = {
   name: 'A Wahid Safhadi',
   role: 'Fullstack Developer · Backend-First Engineer',
   eyebrow: 'FULLSTACK DEVELOPER · BACKEND-FIRST ENGINEER',
-  summary: 'I build web apps, dashboards, APIs, and business systems from frontend to deployment.',
+  summary: 'I build web apps, APIs, dashboards, and the backend logic that makes them hold up in production.',
   secondarySummary:
-    'I help teams turn ideas and messy workflows into usable, scalable, production-ready web products.',
+    'I help teams ship scalable web products — from messy ideas and workflow gaps to production-ready systems.',
   signature: 'I build the interface users click and the backend that survives what they do next.',
   ghostTitle: 'Engineer',
   company: 'Rasa Group',

@@ -555,17 +555,51 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
 .hfi { }                 /* entrance: Framer Motion fadeUp */
 /* @keyframes hlin and @keyframes fup retired — Framer Motion handles these */
 
-/* TICKER */
-.ticker { background:var(--lime); overflow:hidden; padding:13px 0; }
-.ticker-track { display:flex; width:max-content; animation:tick 34s linear infinite; }
-.ticker-track:hover { animation-play-state:paused; }
-@keyframes tick { from{transform:translateX(0)} to{transform:translateX(-50%)} }
-.t-item {
-  display:flex; align-items:center; gap:14px; padding:0 28px;
-  font-family:'Unbounded',sans-serif; font-size:11px; font-weight:700;
-  letter-spacing:.1em; text-transform:uppercase; color:var(--dark); white-space:nowrap;
+/* TICKER — dual-track dev console strip */
+.ticker-wrap {
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+  position:relative;
 }
-.t-dot { font-size:16px; opacity:.2; }
+.ticker { overflow:hidden; }
+.ticker-is-lime { background:var(--lime); padding:11px 0; }
+.ticker-is-dark  {
+  background:rgba(200,255,0,.04);
+  border-top:1px solid rgba(200,255,0,.18);
+  padding:10px 0;
+}
+
+@keyframes tick     { from{transform:translateX(0)} to{transform:translateX(-33.333%)} }
+@keyframes tick-rev { from{transform:translateX(-33.333%)} to{transform:translateX(0)} }
+
+.ticker-track {
+  display:flex; width:max-content;
+  animation:tick 32s linear infinite;
+}
+.ticker-track-rev {
+  animation:tick-rev 44s linear infinite;
+}
+.ticker-track:hover,
+.ticker-track-rev:hover { animation-play-state:paused; }
+
+/* Track 1 — tech stack items */
+.t-item {
+  display:flex; align-items:center; gap:10px; padding:0 22px;
+  font-family:'DM Mono',monospace; font-size:11px; font-weight:500;
+  letter-spacing:.09em; text-transform:uppercase;
+  color:var(--dark); white-space:nowrap;
+}
+.t-prefix { color:rgba(10,10,10,.38); font-weight:700; }
+.t-sep    { color:rgba(10,10,10,.2);  font-size:13px; }
+
+/* Track 2 — capability phrases */
+.t-cap {
+  font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
+  letter-spacing:.16em; color:var(--lime);
+  gap:14px; padding:0 28px;
+}
+.t-arrow { color:rgba(200,255,0,.38); font-size:13px; }
 
 /* WHAT I BUILD */
 .s-build {
@@ -3313,7 +3347,8 @@ footer {
   a,button,.nav-cta,.btn-prime,.btn-ghost,.port-card,.port-link,.cf-submit,.floating-top-btn,.ai-submit,.ai-send,.ai-quick-btn { cursor:pointer !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track { animation:none; transform:translateX(0); }
+  .ticker-track,
+  .ticker-track-rev { animation:none; transform:translateX(0); }
   .hero-glow,
   .hero-badge,
   .scroll-line,

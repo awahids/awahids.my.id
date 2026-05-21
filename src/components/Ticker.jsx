@@ -1,35 +1,53 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { useSectionMotion } from '../lib/sectionMotion';
 
-const techStack = [
-  "React", "Next.js", "TypeScript", "Node.js", "NestJS",
-  "Laravel", "PostgreSQL", "MySQL", "Prisma", "Docker",
-  "Vercel", "Nginx", "Cloudflare", "API Integration", "Automation",
-  "GraphQL", "REST API", "JWT", "Git", "Scrum"
+/* ── Track 1 · Tech stack — terminal style on lime background ── */
+const TECH_ITEMS = [
+  'React', 'Next.js', 'TypeScript', 'Node.js', 'NestJS',
+  'Laravel', 'PostgreSQL', 'MySQL', 'Prisma', 'Docker',
+  'Vercel', 'Nginx', 'Cloudflare', 'GraphQL', 'Redis', 'Git',
 ];
 
-const Ticker = () => {
-  const { viewport, sectionItem } = useSectionMotion();
+/* ── Track 2 · Capabilities — output label style on dark background ── */
+const CAPABILITY_ITEMS = [
+  'End-to-End Delivery',
+  'Zero Downtime Deploy',
+  'API-First Architecture',
+  'Business Logic Layer',
+  'Auth & Permissions',
+  'Dashboard Interfaces',
+  'Database Modeling',
+  'Production-Ready',
+  'Fullstack Ownership',
+  'CI/CD Workflows',
+];
 
-  return (
-    <motion.div
-      className="ticker"
-      initial="hidden"
-      whileInView="visible"
-      viewport={viewport}
-      variants={sectionItem}
-    >
+const Ticker = () => (
+  <div className="ticker-wrap" aria-hidden="true">
+    {/* ── Row 1: tech stack → ── */}
+    <div className="ticker ticker-is-lime">
       <div className="ticker-track">
-        {/* We double the list for smooth infinite scrolling */}
-        {[...techStack, ...techStack].map((tech, index) => (
-          <div key={index} className="t-item">
-            {tech} <span className="t-dot">·</span>
-          </div>
+        {[...TECH_ITEMS, ...TECH_ITEMS, ...TECH_ITEMS].map((tech, i) => (
+          <span key={i} className="t-item">
+            <span className="t-prefix">$</span>
+            {tech}
+            <span className="t-sep">//</span>
+          </span>
         ))}
       </div>
-    </motion.div>
-  );
-};
+    </div>
+
+    {/* ── Row 2: capabilities ← ── */}
+    <div className="ticker ticker-is-dark">
+      <div className="ticker-track ticker-track-rev">
+        {[...CAPABILITY_ITEMS, ...CAPABILITY_ITEMS, ...CAPABILITY_ITEMS].map((cap, i) => (
+          <span key={i} className="t-item t-cap">
+            <span className="t-arrow">→</span>
+            {cap}
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
 export default Ticker;

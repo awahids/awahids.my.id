@@ -67,8 +67,8 @@ const DEFAULT_ABOUT = {
   eyebrow: 'BIOGRAPHY',
   title: 'Backend-first. Fullstack when it matters.',
   paragraphs: [
-    'I build complete web products, but my strongest layer is the system behind the screen: APIs, database design, business logic, automation, and deployment.',
-    'Good interfaces matter. Business systems still need reliable workflows, clean data, and backend logic that survives real users. That is the approach I apply in production at Rasa Group.',
+    'I build complete web products, but my strongest layer is what lives behind the screen: APIs, database design, business logic, automation, and the deployment that makes it real.',
+    'Good UIs matter. But the system behind them matters more — reliable workflows, clean data models, and backend logic that survives real users. That is the standard I apply in production every day at Rasa Group.',
   ],
   tags: ['Frontend to Deployment', 'Product-Oriented', 'Backend-First Strength'],
   stats: [

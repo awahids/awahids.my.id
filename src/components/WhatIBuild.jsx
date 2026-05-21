@@ -10,27 +10,27 @@ import { useTextScramble } from '../lib/useTextScramble';
 const DEFAULT_OFFERINGS = [
   {
     title: 'Web Applications',
-    desc: 'Responsive web apps with clean UI, structured user flows, and maintainable frontend architecture.',
+    desc: 'Responsive interfaces with clean component structure, smooth user flows, and frontend code that stays maintainable past v1.',
   },
   {
     title: 'Admin Dashboards',
-    desc: 'Internal tools for users, operations, reporting, approvals, and role-based business workflows.',
+    desc: 'Internal platforms your operations team will actually use — role-based, data-rich, built around real business workflows.',
   },
   {
     title: 'Backend APIs',
-    desc: 'REST APIs, authentication, authorization, business logic, and integrations for production use.',
+    desc: 'REST APIs built for production: auth, business rules, database relationships, and third-party integrations that hold under load.',
   },
   {
     title: 'Automation & Integration',
-    desc: 'Webhook flows, third-party API integrations, and automation pipelines that reduce manual work.',
+    desc: 'Webhook-driven pipelines, scheduled jobs, and API integrations that eliminate repetitive manual work across systems.',
   },
   {
     title: 'Architecture',
-    desc: 'Database modeling, app structure, role access, and backend patterns that stay maintainable at scale.',
+    desc: 'Database schemas, service boundaries, and role models designed to stay clean and readable as the product grows.',
   },
   {
     title: 'Deployment Setup',
-    desc: 'Production deployment with Vercel, Docker, VPS, Nginx, Cloudflare, and CI/CD-ready workflows.',
+    desc: 'Production-ready deployment — Vercel, Docker, Nginx, VPS — repeatable, stable, and CI/CD-friendly from day one.',
   },
 ];
 
@@ -135,8 +135,7 @@ const WhatIBuild = () => {
           }}
         />
         <motion.p className="build-intro" variants={sectionItem}>
-          I work across the full product layer: interface, backend logic, database,
-          integrations, automation, and deployment.
+          Full-product development across every layer — from the interface users see to the backend that keeps it running in production.
         </motion.p>
 
         <motion.div className="build-grid" variants={staggerGrid} ref={gridRef}>
