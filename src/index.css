@@ -385,7 +385,9 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
   border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.03);
   color:rgba(255,255,255,.72); padding:8px 12px;
   font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  transition:border-color 0.22s ease, background 0.22s ease, color 0.22s ease;
 }
+.hero-proof-chip:hover { border-color:rgba(200,255,0,.38); background:rgba(200,255,0,.05); color:rgba(255,255,255,.92); }
 .hero-proof-chip b { color:var(--lime); font-weight:600; }
 .hero-proof-dot {
   width:6px; height:6px; border-radius:50%;
@@ -2030,6 +2032,7 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
 .port-card.bento-core { --bento-col: 6; --bento-row: 3; }
 .port-card.bento-accent { --bento-col: 6; --bento-row: 3; }
 .port-card:hover {
+  transform:translateY(-4px);
   box-shadow:0 22px 48px rgba(0,0,0,.45);
   border-color:rgba(200,255,0,.34);
 }
@@ -2352,6 +2355,11 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
   background: rgba(255,255,255,0.04);
   box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 20px rgba(200,255,0,0.05);
 }
+.cert-card:focus-visible {
+  outline: none;
+  border-color: rgba(200,255,0,0.7);
+  box-shadow: 0 0 0 2px rgba(200,255,0,0.25), 0 20px 40px rgba(0,0,0,0.4);
+}
 .cert-card:hover::after { opacity: 1; }
 
 .cert-icon { 
@@ -2424,12 +2432,13 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
 .about-text em     { color:var(--lime); font-style:normal; }
 .about-tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:22px; }
 .about-tag { font-size:11px; letter-spacing:.1em; text-transform:uppercase; border:1px solid rgba(255,255,255,.1); color:var(--gray); padding:6px 14px; transition:border-color var(--tr-fast), color var(--tr-fast); }
-.about-tag:hover { border-color:var(--lime); color:var(--lime); }
+.about-tag:hover { border-color:var(--lime); color:var(--lime); background:rgba(200,255,0,.06); }
 .stats-2x2 { display:grid; grid-template-columns:1fr 1fr; gap:2px; background:rgba(255,255,255,.04); margin-bottom:24px; }
 .stat-b { background:var(--mid2); padding:24px 20px; }
 .stat-b-num { font-family:'Unbounded',sans-serif; font-size:42px; font-weight:900; color:var(--lime); line-height:1; margin-bottom:4px; }
 .stat-b-lbl { font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:var(--gray); }
-.edu-entry { padding:14px 20px; border-left:2px solid rgba(200,255,0,.2); margin-bottom:8px; }
+.edu-entry { padding:14px 20px; border-left:2px solid rgba(200,255,0,.2); margin-bottom:8px; transition:border-color 0.22s ease, background 0.22s ease; }
+.edu-entry:hover { border-left-color:var(--lime); background:rgba(200,255,0,.025); }
 .edu-school { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--white); }
 .edu-degree { font-size:11px; color:var(--gray); margin-top:3px; }
 .edu-year   { font-size:10px; color:var(--lime); margin-top:4px; }
@@ -2506,7 +2515,9 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
 .contact-badge {
   display:flex; align-items:center; gap:12px; padding:10px 14px;
   border:1px solid var(--stroke-mid); background:rgba(255,255,255,.03);
+  transition:border-color 0.22s ease, background 0.22s ease;
 }
+.contact-badge:hover { border-color:rgba(200,255,0,.28); background:rgba(200,255,0,.03); }
 .contact-badge-icon {
   width:42px; height:42px; border:1px solid rgba(200,255,0,.3);
   display:flex; align-items:center; justify-content:center; flex-shrink:0;
@@ -2577,6 +2588,18 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
   font-size:15px;
   line-height:1.5;
 }
+.cc-bullet-list > div {
+  display:flex; align-items:baseline; gap:8px;
+}
+.cc-bullet-list > div::before {
+  content:'';
+  display:inline-block;
+  width:4px; height:4px; border-radius:50%;
+  background:var(--lime);
+  flex-shrink:0;
+  margin-top:6px;
+  opacity:0.8;
+}
 .status-pulse { width:6px; height:6px; background:var(--lime); border-radius:50%; animation:blinkc .9s step-end infinite; }
 .cc-soc-list { display:flex; flex-direction:column; gap:4px; }
 .cc-soc-link {
@@ -2592,7 +2615,10 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
   color:var(--text-dim); font-weight:400;
   font-family:'DM Mono',monospace; font-size:10px;
   letter-spacing:.08em; text-transform:uppercase;
+  transition:color 0.22s ease, transform 0.22s ease;
+  display:inline-block;
 }
+.cc-soc-link:hover span { color:var(--lime); transform:translateX(4px); }
 .contact-form {
   grid-column:span 12; background:var(--surface-card);
   border:1px solid var(--border); padding:30px 28px;
@@ -4745,10 +4771,8 @@ footer {
   transition: color 0.22s ease;
 }
 
-/* ── Contact headline — bigger, more dramatic ── */
-.contact-headline {
-  font-size: clamp(26px, 3.8vw, 52px);
-}
+/* ── Contact CTA primary label — typographic polish ── */
+/* (contact-headline size is intentionally large in original declaration — no override) */
 
 /* ── Contact CTA link spring — will-change for smooth FM scale ── */
 .contact-top-link {
@@ -4820,22 +4844,9 @@ footer {
   perspective: 800px;
 }
 
-/* ── Hero photo frame — subtle gradient border ── */
+/* ── Hero photo frame — lime glow via box-shadow (works with overflow:hidden) ── */
 .hero-photo-frame {
-  position: relative;
-}
-.hero-photo-frame::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(200,255,0,0.5) 0%, transparent 60%);
-  z-index: 0;
-  pointer-events: none;
-}
-.hero-photo-img {
-  position: relative;
-  z-index: 1;
+  box-shadow: inset 2px 0 0 rgba(200,255,0,0.55), 0 0 40px rgba(200,255,0,0.06);
 }
 
 /* ── Stat card shimmer on hover ── */
