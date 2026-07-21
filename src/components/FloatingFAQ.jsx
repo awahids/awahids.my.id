@@ -357,12 +357,39 @@ const FloatingFAQ = () => {
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isOpen) {
+    if (isOpen) return undefined;
+
+    let shown = false;
+
+    const revealIfClear = () => {
+      if (shown || isOpenRef.current) return;
+      const heroEl = document.getElementById('home');
+      // No hero on screen (or not mounted yet) — stay put rather than assume it's clear.
+      if (!heroEl) return;
+      const heroCleared = heroEl.getBoundingClientRect().bottom <= window.innerHeight * 0.6;
+      if (heroCleared) {
+        shown = true;
+        setShowNotification(true);
+        window.removeEventListener('scroll', revealIfClear);
+      }
+    };
+
+    // Fallback so the hint still appears for users who never scroll.
+    const fallbackTimer = setTimeout(() => {
+      if (!shown && !isOpenRef.current) {
+        shown = true;
         setShowNotification(true);
       }
-    }, 1500);
-    return () => clearTimeout(timer);
+    }, 15000);
+
+    // Only the scroll listener triggers the early reveal — checking on mount
+    // would measure the hero before fonts/layout settle and fire too soon.
+    window.addEventListener('scroll', revealIfClear, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', revealIfClear);
+      clearTimeout(fallbackTimer);
+    };
   }, [isOpen]);
 
   useEffect(() => {

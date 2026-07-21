@@ -77,7 +77,7 @@ const KINETIC_WORDS = [
 const DEFAULT_PROFILE = {
   name: 'A Wahid Safhadi',
   role: 'Fullstack Developer · Backend-First Engineer',
-  eyebrow: 'FULLSTACK DEVELOPER · BACKEND-FIRST ENGINEER',
+  eyebrow: 'Available for Fullstack Projects',
   summary: 'I build web apps, APIs, dashboards, and the backend logic that makes them hold up in production.',
   secondarySummary:
     'I help teams ship scalable web products — from messy ideas and workflow gaps to production-ready systems.',
@@ -111,7 +111,7 @@ const normalizeProfileItem = (item = {}) => {
   return {
     name:              String(item.title || DEFAULT_PROFILE.name).trim(),
     role:              String(item.subtitle || DEFAULT_PROFILE.role).trim(),
-    eyebrow:           String(payload.eyebrow || item.subtitle || DEFAULT_PROFILE.eyebrow).trim(),
+    eyebrow:           String(payload.eyebrow || DEFAULT_PROFILE.eyebrow).trim(),
     summary:           String(item.summary || DEFAULT_PROFILE.summary).trim(),
     secondarySummary:  String(payload.secondary_summary || DEFAULT_PROFILE.secondarySummary).trim(),
     signature:         String(payload.signature || DEFAULT_PROFILE.signature).trim(),

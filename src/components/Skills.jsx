@@ -42,9 +42,18 @@ const skillsData = [
     name: 'Deployment & Automation',
     prof: 'Production Operations',
     num: '04',
-    chips: ['Docker', 'Vercel', 'VPS', 'Nginx', 'Cloudflare', 'n8n', 'Git', 'Postman', 'JWT'],
+    chips: ['Docker', 'Vercel', 'VPS', 'Nginx', 'Cloudflare', 'n8n', 'Git', 'Postman', 'JWT', 'Komodo'],
     icon: (
       <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+    )
+  },
+  {
+    name: 'AI-Assisted Development',
+    prof: 'AI Pair Programming',
+    num: '05',
+    chips: ['Claude AI', 'ChatGPT Codex'],
+    icon: (
+      <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg>
     )
   }
 ];

@@ -346,6 +346,52 @@ const projects = [
     case: '#',
     bento: 'bento-accent',
     num: '07'
+  },
+  {
+    id: 'attendance-system',
+    title: 'Geo Attendance System',
+    cat: 'HR Tech · Attendance & Leave Platform',
+    year: '2026',
+    desc: 'Built a fullstack attendance and leave management system with geofenced check-in, mandatory selfie verification, and a two-tier approval workflow — delivered in one week with AI-assisted development.',
+    problem:
+      'The team needed a reliable way to verify employee attendance across multiple work locations, replace manual leave paperwork, and give managers and HR a faster approval and monitoring process — all under a tight one-week delivery window.',
+    built:
+      'Implemented geofenced check-in with admin-defined location points, mandatory selfie capture, leave/day-off/attendance-correction requests, a two-tier approval chain (supervisor and HR), and admin/HR dashboards for monitoring attendance, leave, and master data. Backend built with Go and Gin Gonic, frontend with Vue.js, PostgreSQL for data, and Dockerized deployment through Komodo — with Claude Code accelerating implementation to hit the one-week deadline.',
+    result:
+      'Delivered a production-ready attendance and leave platform in seven days, replacing manual attendance tracking with location-verified, photo-confirmed check-ins and a structured approval flow.',
+    impact:
+      'Reduced attendance fraud risk, centralized leave and correction requests into one approval pipeline, and gave HR real-time visibility into attendance and leave across all work locations.',
+    outcomes: [
+      'Location-verified, selfie-confirmed check-ins across multiple work sites.',
+      'Structured two-tier approval flow for leave, day-off, and attendance corrections.',
+      'Centralized admin and HR dashboard for attendance, leave, and master data monitoring.',
+    ],
+    signals: [
+      {
+        label: 'Delivery Speed',
+        value: '7 Days',
+        note: 'Full system scoped, built, and deployed in one week with AI-assisted development using Claude Code.',
+      },
+      {
+        label: 'Attendance Integrity',
+        value: 'Location-Verified',
+        note: 'Geofenced check-in points plus mandatory selfie capture reduced buddy-punching and location fraud.',
+      },
+      {
+        label: 'Approval Flow',
+        value: 'Two-Tier Routing',
+        note: 'Leave, day-off, and correction requests route through supervisor then HR for structured sign-off.',
+      },
+    ],
+    type: 'Attendance & HR Platform',
+    role: 'Fullstack Developer',
+    focus: ['Geofenced Check-in', 'Leave & Approval Workflow', 'Admin & HR Dashboard'],
+    scope: ['Frontend', 'Backend API', 'Database', 'Deployment'],
+    stack: ['Go', 'Gin Gonic', 'Vue.js', 'PostgreSQL', 'Docker', 'Komodo'],
+    live: '#',
+    case: '#',
+    bento: 'bento-banner',
+    num: '08'
   }
 ];
 

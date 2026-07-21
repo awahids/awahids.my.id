@@ -9,6 +9,7 @@
   isolation: isolate;
   border-bottom: 1px solid var(--border);
 }
+.anomaly-hero .s-outline { -webkit-text-stroke-color:rgba(255,255,255,.22); }
 
 .anomaly-scene {
   position: absolute;
