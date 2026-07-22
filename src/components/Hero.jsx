@@ -43,16 +43,6 @@ const photoVariant = {
   },
 };
 
-const statContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.14, delayChildren: 1.05 } },
-};
-
-const statItem = {
-  hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.52, ease: [0.22, 1, 0.36, 1] } },
-};
-
 const btnSpring = { type: 'spring', stiffness: 380, damping: 20 };
 
 // ─── Data ─────────────────────────────────────────────────────────────────
@@ -137,7 +127,6 @@ const splitProfileName = (name = '') => {
 
 const Hero = () => {
   const rootRef   = useRef(null);
-  const badgeRef  = useRef(null);
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const profileName = splitProfileName(profile.name);
   const reduced = useReducedMotion();
@@ -300,24 +289,6 @@ const Hero = () => {
     };
   }, []);
 
-  // ── GSAP: badge float + glow (starts after FM entrance completes)
-  useEffect(() => {
-    const el = badgeRef.current;
-    if (!el) return;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-
-    const float = gsap.to(el, {
-      y: -8, duration: 2.8, ease: 'sine.inOut', repeat: -1, yoyo: true, delay: 1.8,
-    });
-    const glow = gsap.to(el, {
-      boxShadow: '0 0 22px 5px rgba(200,255,0,0.35)',
-      duration: 2.0, ease: 'sine.inOut', repeat: -1, yoyo: true, delay: 2.2,
-    });
-
-    return () => { float.kill(); glow.kill(); };
-  }, []);
-
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
@@ -435,12 +406,7 @@ const Hero = () => {
         animate="visible"
         style={{ y: rightY }}
       >
-        <motion.div
-          className="hero-photo-wrap"
-          variants={safe(statContainer)}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="hero-photo-wrap">
           <div className="hero-photo-frame">
             <img
               src={`${import.meta.env.BASE_URL}img/aw.png`}
@@ -449,25 +415,7 @@ const Hero = () => {
               draggable="false"
             />
           </div>
-
-          <motion.div className="hero-stat-card hsc-exp" ref={badgeRef} variants={safe(statItem)}>
-            <div className="hsc-num">{profile.years}</div>
-            <div className="hsc-lbl">Years Exp.</div>
-          </motion.div>
-
-          <motion.div className="hero-stat-card hsc-proj" variants={safe(statItem)}>
-            <div className="hsc-num">20+</div>
-            <div className="hsc-lbl">Projects Shipped</div>
-          </motion.div>
-
-          <motion.div className="hero-stat-card hsc-remote" variants={safe(statItem)}>
-            <div className="hsc-pulse-row">
-              <div className="status-pulse" />
-              <span>Open to Remote</span>
-            </div>
-            <div className="hsc-sublbl">Backend-First · Fullstack</div>
-          </motion.div>
-        </motion.div>
+        </div>
       </motion.div>
 
       <motion.div className="scroll-hint" style={{ opacity: heroOpacity }}>

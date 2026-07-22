@@ -501,36 +501,6 @@ body.is-on-light-section .spotlight-glow {
   user-select:none; -webkit-user-drag:none;
 }
 
-/* Floating stat cards */
-.hero-stat-card {
-  position:absolute; z-index:10;
-  background:rgba(8,8,8,.82); backdrop-filter:blur(14px);
-  border:1px solid rgba(200,255,0,.2);
-  padding:12px 18px;
-  opacity:0; /* GSAP will reveal */
-}
-.hsc-num {
-  font-family:'Unbounded',sans-serif; font-size:26px; font-weight:900;
-  color:var(--lime); line-height:1;
-}
-.hsc-lbl {
-  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.14em;
-  text-transform:uppercase; color:rgba(255,255,255,.5); margin-top:4px;
-}
-.hsc-pulse-row {
-  display:flex; align-items:center; gap:8px;
-  font-family:'DM Mono',monospace; font-size:10px; letter-spacing:.12em;
-  text-transform:uppercase; color:var(--lime); font-weight:700;
-}
-.hsc-sublbl {
-  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.1em;
-  text-transform:uppercase; color:var(--text-dim); margin-top:5px;
-}
-
-/* Positions */
-.hsc-exp  { top:18%; left:-4%; }
-.hsc-proj { top:42%; right:-6%; }
-.hsc-remote { bottom:22%; left:-2%; }
 .terminal {
   width:370px; background:#0d1117;
   position:relative; z-index:4;
@@ -5135,16 +5105,6 @@ footer {
   box-shadow: inset 2px 0 0 rgba(200,255,0,0.55), 0 0 40px rgba(200,255,0,0.06);
 }
 
-/* ── Stat card shimmer on hover ── */
-.hero-stat-card {
-  transition: border-color 0.28s ease, box-shadow 0.28s ease;
-  cursor: default;
-}
-.hero-stat-card:hover {
-  border-color: rgba(200,255,0,0.5);
-  box-shadow: 0 8px 28px rgba(0,0,0,0.35), 0 0 0 1px rgba(200,255,0,0.15);
-}
-
 /* ── Journey console entrance — spring scale support ── */
 .journey-console {
   will-change: transform;
@@ -5271,7 +5231,6 @@ footer {
   .contact-card, .journey-console { will-change: auto; }
   #cursor, #cursor-ring { transition: none; }
   .status-pulse::after { animation: none; }
-  .hero-stat-card { transition: none; }
 }
 
 /* ── Mobile tweaks ── */

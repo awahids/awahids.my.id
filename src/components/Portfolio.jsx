@@ -24,6 +24,20 @@ const getFocusableElements = (container) =>
     (element) => !element.hasAttribute('aria-hidden')
   );
 
+const portCardZoom = {
+  hidden: { opacity: 0, scale: 0.62 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    transition: { type: 'spring', stiffness: 70, damping: 15 },
+  },
+};
+
+const portCardZoomStill = {
+  hidden: { opacity: 1, scale: 1 },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0 } },
+};
+
 const projects = [
   {
     id: 'arafah-group',
@@ -459,7 +473,7 @@ const Portfolio = () => {
   useWordSplit(sectionRef);
   useTextScramble(sectionRef);
   useGsapReveal(sectionRef);
-  const { viewport, sectionContainer, sectionItem, staggerGrid, eyebrow, cardPop, reduceMotion } =
+  const { viewport, sectionContainer, sectionItem, staggerGrid, eyebrow, reduceMotion } =
     useSectionMotion();
 
   const visibleProjects = isMobile && !showAllMobileProjects
@@ -707,8 +721,10 @@ const Portfolio = () => {
               tabIndex="0"
               aria-haspopup="dialog"
               aria-label={`Open project details for ${p.title}`}
-              variants={cardPop}
-              initial={false}
+              variants={reduceMotion ? portCardZoomStill : portCardZoom}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.35 }}
             >
               <div className="port-card-num">{p.num}</div>
               {p.year && <div className="port-year">{p.year}</div>}
