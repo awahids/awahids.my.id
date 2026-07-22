@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -10,7 +10,6 @@ import Navbar from './components/Navbar';
 import MobileNav from './components/MobileNav';
 import Hero from './components/Hero';
 import Ticker from './components/Ticker';
-import HeroZoomBridge from './components/HeroZoomBridge';
 import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import SpotlightGlow from './components/SpotlightGlow';
@@ -261,6 +260,17 @@ function App() {
   const aboutSectionRef = React.useRef(null);
   useGsapReveal(aboutSectionRef);
 
+  const aboutReduceMotion = useReducedMotion();
+  const { scrollYProgress: aboutScrollProgress } = useScroll({
+    target: aboutSectionRef,
+    offset: ['start end', 'end start'],
+  });
+  const aboutBgScale = useTransform(
+    aboutScrollProgress,
+    [0, 1],
+    aboutReduceMotion ? [1, 1] : [0.7, 1.35]
+  );
+
   // Stat counter animation
   useEffect(() => {
     if (effectiveLoading) return;
@@ -506,7 +516,15 @@ function App() {
               viewport={sectionViewport}
               variants={sectionContainer}
             >
-              <div className="about-bg" data-gsap-reveal="fade-up" data-gsap-delay="0.1">A.W.S</div>
+              <motion.div
+                className="about-bg"
+                data-gsap-reveal="fade-up"
+                data-gsap-delay="0.1"
+                style={{ scale: aboutBgScale }}
+                aria-hidden="true"
+              >
+                A.W.S
+              </motion.div>
               <motion.div className="about-left" variants={sectionItem}>
                 <motion.div className="s-eyebrow" variants={sectionEyebrow}>
                   // {about.eyebrow.toUpperCase()}
@@ -551,7 +569,6 @@ function App() {
             <Skills lenisRef={lenisRef} />
             <Experience />
             <Certificates />
-            <HeroZoomBridge />
             <Contact />
           </>
         )}
