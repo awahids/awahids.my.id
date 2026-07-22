@@ -494,7 +494,6 @@ function App() {
           <>
             <Hero />
             <Ticker />
-            <HeroZoomBridge />
 
             <WhatIBuild />
 
@@ -552,6 +551,7 @@ function App() {
             <Skills lenisRef={lenisRef} />
             <Experience />
             <Certificates />
+            <HeroZoomBridge />
             <Contact />
           </>
         )}
