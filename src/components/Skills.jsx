@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import SkillsScene from './SkillsScene';
+import SkillsRelay from './SkillsRelay';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
@@ -124,9 +125,10 @@ const Skills = () => {
   }, []);
 
   // GSAP hover effects — replace anime.js entirely
+  // Desktop no longer renders `.skill-card` (SkillsRelay takes over) — mobile only.
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || typeof window === 'undefined') return undefined;
+    if (!root || typeof window === 'undefined' || !isMobile) return undefined;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
@@ -195,7 +197,7 @@ const Skills = () => {
     }
 
     return () => cleanups.forEach((fn) => fn());
-  }, [skillItems.length]);
+  }, [skillItems.length, isMobile]);
 
   // GSAP ScrollTrigger: animate skill card numbers on enter
   useEffect(() => {
@@ -223,9 +225,10 @@ const Skills = () => {
   }, [skillItems.length]);
 
   // GSAP ScrollTrigger: chip rows drift horizontally as user scrolls (alternating dirs)
+  // Desktop no longer renders `.skill-card-list` (SkillsRelay takes over) — mobile only.
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || typeof window === 'undefined') return undefined;
+    if (!root || typeof window === 'undefined' || !isMobile) return undefined;
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return undefined;
@@ -252,7 +255,15 @@ const Skills = () => {
     }, root);
 
     return () => ctx.revert();
-  }, [skillItems.length]);
+  }, [skillItems.length, isMobile]);
+
+  // Relay height depends on skillItems.length and is much taller (N*100vh) than the
+  // grid it replaces, so refresh GSAP triggers further down the page after it settles.
+  useEffect(() => {
+    if (isMobile || typeof window === 'undefined') return undefined;
+    const id = window.setTimeout(() => ScrollTrigger.refresh(), 50);
+    return () => window.clearTimeout(id);
+  }, [skillItems.length, isMobile]);
 
   return (
     <section className="s-skills" id="skills">
@@ -289,30 +300,34 @@ const Skills = () => {
           </motion.p>
         </div>
 
-        <motion.div
-          className="skills-grid"
-          variants={staggerGrid}
-        >
-          {skillItems.map((skill, index) => (
-            <motion.div
-              key={index}
-              className="skill-card"
-              variants={cardPop}
-            >
-              <div className="skill-card-icon">{skill.icon}</div>
-              <div className="skill-card-num">{skill.num}</div>
-              <div className="skill-card-content">
-                <h3 className="skill-card-name">{skill.name}</h3>
-                <div className="skill-card-prof">{skill.prof}</div>
-                <div className="skill-card-list">
-                  {skill.chips.map(chip => (
-                    <span key={chip} className="skill-chip">{chip}</span>
-                  ))}
+        {isMobile ? (
+          <motion.div
+            className="skills-grid"
+            variants={staggerGrid}
+          >
+            {skillItems.map((skill, index) => (
+              <motion.div
+                key={index}
+                className="skill-card"
+                variants={cardPop}
+              >
+                <div className="skill-card-icon">{skill.icon}</div>
+                <div className="skill-card-num">{skill.num}</div>
+                <div className="skill-card-content">
+                  <h3 className="skill-card-name">{skill.name}</h3>
+                  <div className="skill-card-prof">{skill.prof}</div>
+                  <div className="skill-card-list">
+                    {skill.chips.map(chip => (
+                      <span key={chip} className="skill-chip">{chip}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
+              </motion.div>
+            ))}
+          </motion.div>
+        ) : (
+          <SkillsRelay skillItems={skillItems} />
+        )}
       </motion.div>
     </section>
   );

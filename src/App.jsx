@@ -10,8 +10,10 @@ import Navbar from './components/Navbar';
 import MobileNav from './components/MobileNav';
 import Hero from './components/Hero';
 import Ticker from './components/Ticker';
+import HeroZoomBridge from './components/HeroZoomBridge';
 import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
+import SpotlightGlow from './components/SpotlightGlow';
 import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
 import { useGsapReveal } from './lib/useGsapReveal';
@@ -471,6 +473,7 @@ function App() {
       </div>
 
       <CustomCursor />
+      {!aiLabPage && !adminPage && !notFoundPage && <SpotlightGlow />}
       {!adminPage && <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage} />}
       {!aiLabPage && !adminPage && !notFoundPage && <MobileNav />}
       {!aiLabPage && !adminPage && !notFoundPage && <SocialRail />}
@@ -491,6 +494,7 @@ function App() {
           <>
             <Hero />
             <Ticker />
+            <HeroZoomBridge />
 
             <WhatIBuild />
 

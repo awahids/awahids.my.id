@@ -31,7 +31,8 @@
   --blue: #0076FF;
 }
 html {
-  overflow-x: hidden;
+  position: relative;
+  overflow-x: clip;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -42,7 +43,8 @@ body {
   font-size: 16px;
   line-height: 1.6;
   cursor: none;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 #root,
 .app-container {
@@ -81,6 +83,23 @@ body.cursor-hover #cursor-ring { width:72px; height:72px; opacity:.55; border-co
 body.cursor-text #cursor { width:3px; height:24px; border-radius:2px; background:var(--lime); }
 body.cursor-magnet #cursor { width:24px; height:24px; }
 body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-color:var(--lime); border-width:2px; box-shadow:0 0 20px rgba(200,255,0,0.25); }
+
+/* SPOTLIGHT GLOW */
+.spotlight-glow {
+  position: fixed;
+  inset: 0;
+  display: none;
+  pointer-events: none;
+  z-index: 50;
+  background: radial-gradient(
+    circle 420px at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(200, 255, 0, 0.06),
+    transparent 70%
+  );
+}
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+  .spotlight-glow { display: block; }
+}
 
 /* PRELOADER */
 .preloader {
@@ -475,6 +494,54 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
   display:block; position:relative; z-index:1;
   filter:grayscale(12%) contrast(1.06) brightness(0.96);
   user-select:none; -webkit-user-drag:none;
+}
+
+/* HERO ZOOM BRIDGE */
+.hzb-desktop {
+  position: relative;
+  height: 300vh;
+}
+.hzb-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--dark);
+}
+.hzb-wash {
+  position: absolute;
+  inset: 0;
+  background: var(--dark);
+  pointer-events: none;
+}
+.hzb-photo {
+  position: relative;
+  z-index: 1;
+  max-height: 70vh;
+  width: auto;
+  object-fit: contain;
+  filter: grayscale(12%) contrast(1.06) brightness(0.96);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.hzb-mobile {
+  display: flex;
+  justify-content: center;
+  padding: 48px var(--section-pad-x-mobile, 20px);
+  background: var(--dark);
+}
+.hzb-mobile .hzb-photo,
+.hzb-static .hzb-photo {
+  max-height: 40vh;
+}
+.hzb-static {
+  display: flex;
+  justify-content: center;
+  padding: 48px var(--section-pad-x, 48px);
+  background: var(--dark);
 }
 
 /* Floating stat cards */
@@ -2078,6 +2145,90 @@ body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-c
   background: rgba(200,255,0,.06);
 }
 .skills-grid .skill-card.reveal { transition-delay: var(--skill-delay, 0ms); }
+
+/* SKILLS RELAY (desktop pinned scroll) */
+.skills-relay {
+  position: relative;
+  width: 100%;
+}
+.skills-relay-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.skills-relay-progress {
+  position: absolute;
+  top: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(480px, 60%);
+  height: 2px;
+  background: rgba(255,255,255,.07);
+  overflow: hidden;
+  border-radius: 2px;
+  z-index: 2;
+}
+.skills-relay-progress-fill {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--lime), #e8ff80);
+  transform-origin: left center;
+}
+.skills-relay-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0 48px;
+  will-change: transform, opacity;
+}
+.skills-relay-icon {
+  width: 48px; height: 48px;
+  color: var(--lime);
+  margin-bottom: 24px;
+}
+.skills-relay-icon svg { width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.5; }
+.skills-relay-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.42);
+  margin-bottom: 12px;
+}
+.skills-relay-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900;
+  letter-spacing: -.03em;
+  color: var(--white);
+  line-height: 1.05;
+  margin-bottom: 10px;
+}
+.skills-relay-prof {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(200,255,0,.7);
+  margin-bottom: 28px;
+}
+.skills-relay-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 640px;
+}
 
 /* PORTFOLIO */
 .s-portfolio {
@@ -5086,7 +5237,7 @@ footer {
 }
 
 /* ── Skills WebGL ambient canvas ── */
-.s-skills { position: relative; overflow: hidden; }
+.s-skills { position: relative; }
 .skills-scene-canvas {
   position: absolute;
   inset: 0;

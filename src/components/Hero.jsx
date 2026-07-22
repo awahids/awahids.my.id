@@ -143,7 +143,11 @@ const Hero = () => {
   const reduced = useReducedMotion();
 
   // Scroll parallax
-  const { scrollYProgress } = useScroll({ target: rootRef, offset: ['start start', 'end start'] });
+  const { scrollYProgress } = useScroll({
+    target: rootRef,
+    offset: ['start start', 'end start'],
+    layoutEffect: false,
+  });
   const rawLeftY   = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -120]);
   const rawRightY  = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -70]);
   const rawOpacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
