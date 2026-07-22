@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 
+const LIGHT_SECTION_SELECTOR = '.s-build, .s-exp, .s-cert';
+
 export const useSpotlightGlow = (elementRef) => {
   useEffect(() => {
     const el = elementRef.current;
@@ -62,10 +64,25 @@ export const useSpotlightGlow = (elementRef) => {
 
     syncTracking();
 
+    const lightSections = Array.from(document.querySelectorAll(LIGHT_SECTION_SELECTOR));
+    let observer;
+    if (lightSections.length) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const anyLightInView = entries.some((entry) => entry.isIntersecting);
+          document.body.classList.toggle('is-on-light-section', anyLightInView);
+        },
+        { rootMargin: '-45% 0px -45% 0px' }
+      );
+      lightSections.forEach((section) => observer.observe(section));
+    }
+
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
       window.cancelAnimationFrame(rafId);
       removeMediaListeners.forEach((remove) => remove());
+      observer?.disconnect();
+      document.body.classList.remove('is-on-light-section');
     };
   }, [elementRef]);
 };

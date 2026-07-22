@@ -79,7 +79,7 @@ const skillFromCmsItem = (item, index) => {
   };
 };
 
-const Skills = () => {
+const Skills = ({ lenisRef }) => {
   const rootRef = useRef(null);
   const sectionRef = rootRef; // reuse same ref for wordSplit and parallaxBg
   const [skillItems, setSkillItems] = useState(skillsData);
@@ -257,7 +257,7 @@ const Skills = () => {
     return () => ctx.revert();
   }, [skillItems.length, isMobile]);
 
-  // Relay height depends on skillItems.length and is much taller (N*100vh) than the
+  // Relay height depends on skillItems.length and is much taller (N*80vh) than the
   // grid it replaces, so refresh GSAP triggers further down the page after it settles.
   useEffect(() => {
     if (isMobile || typeof window === 'undefined') return undefined;
@@ -326,7 +326,7 @@ const Skills = () => {
             ))}
           </motion.div>
         ) : (
-          <SkillsRelay skillItems={skillItems} />
+          <SkillsRelay skillItems={skillItems} lenisRef={lenisRef} />
         )}
       </motion.div>
     </section>

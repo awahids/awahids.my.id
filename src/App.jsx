@@ -549,7 +549,7 @@ function App() {
             </motion.section>
 
             <Portfolio />
-            <Skills />
+            <Skills lenisRef={lenisRef} />
             <Experience />
             <Certificates />
             <Contact />
