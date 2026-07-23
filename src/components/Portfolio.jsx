@@ -25,11 +25,12 @@ const getFocusableElements = (container) =>
   );
 
 const portCardZoom = {
-  hidden: { opacity: 0, scale: 0.62 },
+  hidden: { opacity: 0, scale: 0.42, y: 40 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { type: 'spring', stiffness: 70, damping: 15 },
+    y: 0,
+    transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
   },
 };
 
@@ -724,7 +725,7 @@ const Portfolio = () => {
               variants={reduceMotion ? portCardZoomStill : portCardZoom}
               initial="hidden"
               whileInView="visible"
-              viewport={{ once: true, amount: 0.35 }}
+              viewport={{ once: true, amount: 0.15 }}
             >
               <div className="port-card-num">{p.num}</div>
               {p.year && <div className="port-year">{p.year}</div>}
