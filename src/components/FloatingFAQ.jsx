@@ -224,12 +224,6 @@ const sanitizeStoredMessages = (storedMessages) => {
       role: message?.role === 'user' ? 'user' : 'assistant',
       source: String(message?.source || 'local'),
       text: String(message?.text || '').trim(),
-      retryQuestion: String(message?.retryQuestion || ''),
-      retryForceHermes: Boolean(message?.retryForceHermes),
-      errorDetails:
-        message?.errorDetails && typeof message.errorDetails === 'object'
-          ? message.errorDetails
-          : undefined,
     }))
     .filter((message) => message.text);
 
@@ -269,22 +263,6 @@ const loadStoredFaqState = () => {
       input: '',
     };
   }
-};
-
-const buildErrorAnswer = (error, language) => {
-  const details = error?.details || {};
-  const parts = [
-    details.code ? `Code: ${details.code}` : '',
-    details.model ? `Model: ${details.model}` : '',
-    details.provider ? `Provider: ${details.provider}` : '',
-  ].filter(Boolean);
-
-  const suffix = parts.length > 0 ? `\n${parts.join(' | ')}` : '';
-  const message = error?.message || 'AI request failed.';
-
-  return language === 'id'
-    ? `AI sedang error: ${message}${suffix}`
-    : `AI error: ${message}${suffix}`;
 };
 
 const FloatingFAQ = () => {
@@ -460,7 +438,6 @@ const FloatingFAQ = () => {
 
     let answerText;
     let mode;
-    let errorDetails;
     const shouldUseHermes = forceHermes || useHermes;
 
     if (shouldUseHermes && AI_ASSISTANT_URL) {
@@ -478,9 +455,9 @@ const FloatingFAQ = () => {
         if (!answerText) throw new Error('Empty answer');
         mode = 'hermes';
       } catch (error) {
-        answerText = buildErrorAnswer(error, faqLanguage);
-        errorDetails = error?.details || {};
-        mode = 'error';
+        console.warn('AI assistant request failed, falling back to local answers:', error);
+        answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
+        mode = 'local';
       }
     } else {
       if (FAQ_WEBHOOK_URL) {
@@ -498,9 +475,9 @@ const FloatingFAQ = () => {
           if (!answerText) throw new Error('Empty answer');
           mode = 'webhook';
         } catch (error) {
-          answerText = buildErrorAnswer(error, faqLanguage);
-          errorDetails = error?.details || {};
-          mode = 'error';
+          console.warn('FAQ webhook request failed, falling back to local answers:', error);
+          answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
+          mode = 'local';
         }
       } else {
         answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
@@ -508,25 +485,10 @@ const FloatingFAQ = () => {
       }
     }
 
-    const assistantMessage = createMessage('assistant', answerText, mode, {
-      retryQuestion: mode === 'error' ? cleanedQuestion : '',
-      retryForceHermes: mode === 'error' ? shouldUseHermes : false,
-      errorDetails,
-    });
+    const assistantMessage = createMessage('assistant', answerText, mode);
     setMessages((prev) => [...prev, assistantMessage]);
     markAssistantMessageUnread();
     setLoading(false);
-  };
-
-  const retryMessage = (message) => {
-    if (!message.retryQuestion || loading) return;
-    setMessages((prev) => prev.filter((msg) => msg.id !== message.id));
-    window.setTimeout(() => {
-      void askFaq(message.retryQuestion, {
-        forceHermes: message.retryForceHermes,
-        appendUser: false,
-      });
-    }, 0);
   };
 
   const handleSubmit = (e) => {
@@ -606,22 +568,12 @@ const FloatingFAQ = () => {
                 {messages.map((msg) => (
                   <motion.div
                     key={msg.id}
-                    className={`ff-msg ${msg.role === 'user' ? 'is-user' : 'is-assistant'} ${msg.source === 'error' ? 'is-error' : ''}`}
+                    className={`ff-msg ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.2 }}
                   >
                     <div className="ff-msg-content">{msg.text}</div>
-                    {msg.source === 'error' && msg.retryQuestion && (
-                      <button
-                        type="button"
-                        className="ff-retry-btn"
-                        onClick={() => retryMessage(msg)}
-                        disabled={loading}
-                      >
-                        Retry
-                      </button>
-                    )}
                   </motion.div>
                 ))}
                 {loading && (
