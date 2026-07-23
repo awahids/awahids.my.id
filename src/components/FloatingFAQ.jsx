@@ -145,6 +145,11 @@ const buildLocalFaqAnswer = (question, language = detectInputLanguage(question))
     : 'Absolutely. Share your current stack and target, and I can suggest the most practical implementation path based on my fullstack, backend API, automation, and deployment experience.';
 };
 
+const buildMaintenanceAnswer = (language) =>
+  language === 'id'
+    ? 'AI assistant lagi maintenance sebentar, coba lagi nanti ya. Sementara itu bisa langsung email ke awahid.safhadi@gmail.com atau booking call di https://qala.digital/book/awahids.'
+    : "The AI assistant is under maintenance right now — please try again later. In the meantime, feel free to email awahid.safhadi@gmail.com or book a call at https://qala.digital/book/awahids.";
+
 const normalizeFaqAnswer = (rawPayload) => {
   const raw = rawPayload?.data || rawPayload;
   if (!raw) return '';
@@ -455,9 +460,9 @@ const FloatingFAQ = () => {
         if (!answerText) throw new Error('Empty answer');
         mode = 'hermes';
       } catch (error) {
-        console.warn('AI assistant request failed, falling back to local answers:', error);
-        answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
-        mode = 'local';
+        console.warn('AI assistant request failed:', error);
+        answerText = buildMaintenanceAnswer(faqLanguage);
+        mode = 'maintenance';
       }
     } else {
       if (FAQ_WEBHOOK_URL) {
@@ -475,9 +480,9 @@ const FloatingFAQ = () => {
           if (!answerText) throw new Error('Empty answer');
           mode = 'webhook';
         } catch (error) {
-          console.warn('FAQ webhook request failed, falling back to local answers:', error);
-          answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
-          mode = 'local';
+          console.warn('FAQ webhook request failed:', error);
+          answerText = buildMaintenanceAnswer(faqLanguage);
+          mode = 'maintenance';
         }
       } else {
         answerText = buildLocalFaqAnswer(cleanedQuestion, faqLanguage);
