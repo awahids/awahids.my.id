@@ -1240,7 +1240,6 @@ body.is-on-light-section .spotlight-glow {
   50% { opacity:.85; transform:translateX(12%); }
 }
 .journey-console,
-.skill-card,
 .port-card,
 .cert-card,
 .contact-card,
@@ -1976,105 +1975,6 @@ body.is-on-light-section .spotlight-glow {
   font-family:'Syne',sans-serif; font-size:16px; line-height:1.78;
   color:rgba(255,255,255,.72); max-width:780px;
 }
-/* ── Skills grid: full-width horizontal tier strips ── */
-.skills-grid {
-  display:grid;
-  grid-template-columns: 1fr;
-  background: transparent;
-  border: none;
-  border-top: 1px solid rgba(255,255,255,.1);
-  gap: 0;
-  margin-top: 56px;
-}
-.skill-card {
-  background: transparent;
-  padding: 32px 36px;
-  position: relative;
-  min-height: auto;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 28px;
-  overflow: hidden;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  border-left: 3px solid transparent;
-  will-change: transform;
-  cursor: pointer;
-  transition: border-left-color .38s ease, background .38s ease;
-}
-.skill-card::before { display: none; }
-.skill-card:hover {
-  border-left-color: var(--lime);
-  background: rgba(200,255,0,.032);
-}
-
-/* Icon: left anchor in horizontal strip */
-.skill-card-icon {
-  width: 28px; height: 28px;
-  color: rgba(255,255,255,.4);
-  margin-bottom: 0;
-  flex-shrink: 0;
-  transition: color .35s, transform .35s;
-}
-.skill-card-icon svg { width:100%; height:100%; stroke:currentColor; fill:none; stroke-width:1.5; }
-.skill-card:hover .skill-card-icon { color: var(--lime); }
-
-/* Number: large ghost anchor, absolutely positioned right */
-.skill-card-num {
-  position: absolute;
-  top: 50%; right: 36px;
-  transform: translateY(-50%);
-  font-family: 'Unbounded', sans-serif;
-  font-size: 72px;
-  font-weight: 900;
-  letter-spacing: -.04em;
-  line-height: 1;
-  color: rgba(255,255,255,.04);
-  pointer-events: none;
-  user-select: none;
-  transition: color .35s;
-}
-.skill-card:hover .skill-card-num { color: rgba(200,255,0,.08); }
-
-/* Content: 2-col grid — name+prof left, chips right */
-.skill-card-content {
-  flex: 1;
-  display: grid;
-  grid-template-columns: minmax(190px, 260px) 1fr;
-  grid-template-rows: auto auto;
-  gap: 4px 52px;
-  align-items: center;
-  min-width: 0;
-}
-.skill-card-name {
-  grid-area: 1 / 1;
-  font-family: 'Syne', sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--white);
-  line-height: 1.05;
-  transition: color .35s;
-}
-.skill-card:hover .skill-card-name { color: var(--white); }
-.skill-card-prof {
-  grid-area: 2 / 1;
-  font-size: 10px;
-  letter-spacing: .2em;
-  text-transform: uppercase;
-  font-family: 'DM Mono', monospace;
-  color: rgba(255,255,255,.42);
-  transition: color .35s;
-}
-.skill-card-prof::before { content: none; }
-.skill-card:hover .skill-card-prof { color: rgba(200,255,0,.7); }
-.skill-card-list {
-  grid-area: 1 / 2 / 3 / 2;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 0;
-  align-self: center;
-}
 .skill-chip {
   font-family: 'DM Mono', monospace;
   font-size: 10px;
@@ -2086,14 +1986,7 @@ body.is-on-light-section .spotlight-glow {
   color: rgba(255,255,255,.5);
   transition: color .25s, border-color .25s, background .25s;
 }
-.skill-card:hover .skill-chip {
-  border-color: rgba(200,255,0,.32);
-  color: rgba(200,255,0,.85);
-  background: rgba(200,255,0,.06);
-}
-.skills-grid .skill-card.reveal { transition-delay: var(--skill-delay, 0ms); }
-
-/* SKILLS RELAY (desktop pinned scroll) */
+/* SKILLS RELAY (scroll-pinned relay, desktop + mobile) */
 .skills-relay {
   position: relative;
   width: 100%;
@@ -3084,9 +2977,6 @@ footer {
   .skills-copy { margin-bottom:34px; }
   .skills-copy-title { font-size:clamp(36px, 6vw, 72px); }
   .skills-copy-sub { font-size:clamp(18px, 3.2vw, 26px); }
-  .skills-grid { grid-template-columns: 1fr; }
-  .skill-card-content { grid-template-columns: minmax(160px, 220px) 1fr; gap: 4px 32px; }
-  .skill-card-num { font-size: 52px; right: 24px; }
   .build-card { grid-column:span 6; min-height:210px; }
 }
 @media (max-width:1200px) {
@@ -3246,12 +3136,9 @@ footer {
     margin-left:0;
     text-align:left;
   }
-  .skill-card { padding:22px 18px; gap:18px; }
-  .skill-card-content { grid-template-columns: 1fr; grid-template-rows: auto auto auto; gap: 6px; }
-  .skill-card-name { grid-area: auto; font-size: 20px; }
-  .skill-card-prof { grid-area: auto; }
-  .skill-card-list { grid-area: auto; margin-top: 8px; }
-  .skill-card-num { font-size: 40px; right: 18px; }
+  .skills-relay-layer { padding: 0 24px; }
+  .skills-relay-dots { right: 16px; }
+  .skills-relay-progress { top: 32px; width: min(320px, 70%); }
   .port-intro { text-align:center; margin:12px auto 0 !important; }
   .port-grid { gap:16px; margin-top:40px; grid-auto-rows:80px; }
   .port-card { padding:28px 22px; }
@@ -3722,7 +3609,6 @@ footer {
   .nav-logo { font-size:11px; }
   .nav-cta { padding:7px 12px; }
   .hero-name { font-size:clamp(36px,12vw,58px); }
-  /* skills-grid is already 1fr globally — skill-card content reverts to single-col at 768px */
 }
 @media (max-width:520px) {
   .cert-grid { grid-template-columns:1fr; }
@@ -4939,7 +4825,7 @@ footer {
   .hero-badge { will-change: auto; }
   .floating-top-btn { will-change: auto; }
   .cc-email-copy { transition: none; }
-  .skill-card, .cert-card { will-change: auto; }
+  .cert-card { will-change: auto; }
   .build-card::after { display: none; }
 }
 
@@ -5042,9 +4928,6 @@ footer {
 .skill-chip {
   transition: color 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
 }
-.skill-card:hover .skill-chip {
-  box-shadow: 0 0 0 1px rgba(200,255,0,0.12);
-}
 
 /* ── cert-card will-change ── */
 .cert-card {
@@ -5054,8 +4937,7 @@ footer {
 /* ── Section items — remove overflow clip that blocks spring scale ── */
 /* Spring scale needs overflow:visible on the card wrapper */
 .build-grid,
-.cert-grid,
-.skills-grid {
+.cert-grid {
   overflow: visible;
 }
 
@@ -5207,17 +5089,6 @@ footer {
 .s-eyebrow:hover {
   animation: eyebrow-glitch 0.55s steps(1) forwards;
 }
-
-/* ── Skill card num counter animation ── */
-@keyframes num-pop {
-  0%   { opacity: 0; transform: scale(0.5) translateY(4px); }
-  60%  { opacity: 1; transform: scale(1.18) translateY(-2px); }
-  100% { opacity: 1; transform: scale(1) translateY(0); }
-}
-.skill-card-num.is-visible {
-  animation: num-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
 
 /* ── Reduced-motion additions ── */
 @media (prefers-reduced-motion: reduce) {

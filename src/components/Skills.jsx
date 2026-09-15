@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import gsap from 'gsap';
 import SkillsScene from './SkillsScene';
 import SkillsRelay from './SkillsRelay';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -84,7 +83,7 @@ const Skills = ({ lenisRef }) => {
   const sectionRef = rootRef; // reuse same ref for wordSplit and parallaxBg
   const [skillItems, setSkillItems] = useState(skillsData);
   const [isMobile, setIsMobile] = useState(false);
-  const { viewport, sectionContainer, sectionItem, staggerGrid, eyebrow, cardPop } = useSectionMotion();
+  const { viewport, sectionContainer, sectionItem, eyebrow } = useSectionMotion();
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)');
@@ -124,146 +123,13 @@ const Skills = ({ lenisRef }) => {
     };
   }, []);
 
-  // GSAP hover effects — replace anime.js entirely
-  // Desktop no longer renders `.skill-card` (SkillsRelay takes over) — mobile only.
+  // Relay height depends on skillItems.length and is much taller (N*80vh) than a
+  // static grid, so refresh GSAP triggers further down the page after it settles.
   useEffect(() => {
-    const root = rootRef.current;
-    if (!root || typeof window === 'undefined' || !isMobile) return undefined;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-    if (prefersReducedMotion || !hasFinePointer) return undefined;
-
-    const cards = Array.from(root.querySelectorAll('.skill-card'));
-    const cleanups = [];
-
-    cards.forEach((card) => {
-      const chips = Array.from(card.querySelectorAll('.skill-chip'));
-      const icon = card.querySelector('.skill-card-icon svg');
-
-      const onEnter = () => {
-        // Lift card (GSAP overrides FM's final transform safely)
-        gsap.to(card, { y: -10, duration: 0.35, ease: 'power3.out', overwrite: 'auto' });
-
-        // Icon spin
-        if (icon) {
-          gsap.to(icon, { rotation: 12, scale: 1.15, duration: 0.35, ease: 'back.out(2)', overwrite: 'auto' });
-        }
-
-        // Chips stagger reveal
-        if (chips.length) {
-          gsap.fromTo(chips,
-            { y: 6, opacity: 0.4 },
-            { y: 0, opacity: 1, duration: 0.3, ease: 'power2.out', stagger: 0.025, overwrite: 'auto' }
-          );
-        }
-      };
-
-      const onLeave = () => {
-        gsap.to(card, { y: 0, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
-        if (icon) {
-          gsap.to(icon, { rotation: 0, scale: 1, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
-        }
-      };
-
-      card.addEventListener('mouseenter', onEnter);
-      card.addEventListener('mouseleave', onLeave);
-      cleanups.push(() => {
-        card.removeEventListener('mouseenter', onEnter);
-        card.removeEventListener('mouseleave', onLeave);
-      });
-    });
-
-    // Mobile: stagger reveal chips on viewport enter
-    const isMobileDisplay = window.matchMedia('(max-width: 768px)').matches;
-    if (isMobileDisplay) {
-      const observer = new IntersectionObserver(
-        (entries, obs) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            const chips = entry.target.querySelectorAll('.skill-chip');
-            gsap.fromTo(chips,
-              { y: 8, opacity: 0 },
-              { y: 0, opacity: 1, duration: 0.4, ease: 'power3.out', stagger: 0.03, delay: 0.1 }
-            );
-            obs.unobserve(entry.target);
-          });
-        },
-        { rootMargin: '0px 0px -10% 0px', threshold: 0.2 }
-      );
-      cards.forEach((card) => observer.observe(card));
-      cleanups.push(() => observer.disconnect());
-    }
-
-    return () => cleanups.forEach((fn) => fn());
-  }, [skillItems.length, isMobile]);
-
-  // GSAP ScrollTrigger: animate skill card numbers on enter
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root || typeof window === 'undefined') return undefined;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return undefined;
-
-    const ctx = gsap.context(() => {
-      const nums = Array.from(root.querySelectorAll('.skill-card-num'));
-      nums.forEach((num, i) => {
-        ScrollTrigger.create({
-          trigger: num,
-          start: 'top 88%',
-          once: true,
-          onEnter() {
-            gsap.delayedCall(i * 0.08, () => num.classList.add('is-visible'));
-          },
-        });
-      });
-    }, root);
-
-    return () => ctx.revert();
-  }, [skillItems.length]);
-
-  // GSAP ScrollTrigger: chip rows drift horizontally as user scrolls (alternating dirs)
-  // Desktop no longer renders `.skill-card-list` (SkillsRelay takes over) — mobile only.
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root || typeof window === 'undefined' || !isMobile) return undefined;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return undefined;
-
-    const ctx = gsap.context(() => {
-      const chipLists = Array.from(root.querySelectorAll('.skill-card-list'));
-      chipLists.forEach((list, i) => {
-        const dir = i % 2 === 0 ? -28 : 28;
-        gsap.fromTo(
-          list,
-          { x: -dir },
-          {
-            x: dir,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: root,
-              start: 'top bottom',
-              end: 'bottom top',
-              scrub: 1.5,
-            },
-          }
-        );
-      });
-    }, root);
-
-    return () => ctx.revert();
-  }, [skillItems.length, isMobile]);
-
-  // Relay height depends on skillItems.length and is much taller (N*80vh) than the
-  // grid it replaces, so refresh GSAP triggers further down the page after it settles.
-  useEffect(() => {
-    if (isMobile || typeof window === 'undefined') return undefined;
+    if (typeof window === 'undefined') return undefined;
     const id = window.setTimeout(() => ScrollTrigger.refresh(), 50);
     return () => window.clearTimeout(id);
-  }, [skillItems.length, isMobile]);
+  }, [skillItems.length]);
 
   return (
     <section className="s-skills" id="skills">
@@ -300,34 +166,7 @@ const Skills = ({ lenisRef }) => {
           </motion.p>
         </div>
 
-        {isMobile ? (
-          <motion.div
-            className="skills-grid"
-            variants={staggerGrid}
-          >
-            {skillItems.map((skill, index) => (
-              <motion.div
-                key={index}
-                className="skill-card"
-                variants={cardPop}
-              >
-                <div className="skill-card-icon">{skill.icon}</div>
-                <div className="skill-card-num">{skill.num}</div>
-                <div className="skill-card-content">
-                  <h3 className="skill-card-name">{skill.name}</h3>
-                  <div className="skill-card-prof">{skill.prof}</div>
-                  <div className="skill-card-list">
-                    {skill.chips.map(chip => (
-                      <span key={chip} className="skill-chip">{chip}</span>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        ) : (
-          <SkillsRelay skillItems={skillItems} lenisRef={lenisRef} />
-        )}
+        <SkillsRelay skillItems={skillItems} lenisRef={lenisRef} />
       </motion.div>
     </section>
   );
