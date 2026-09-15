@@ -29,10 +29,6 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      // Disabled: this rule targets React Compiler codegen and false-positives on
-      // react-three-fiber's idiomatic per-frame mutation (mesh.rotation, uniforms.value, etc.)
-      // This project doesn't use the React Compiler.
-      'react-hooks/immutability': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
@@ -41,6 +37,16 @@ export default [
         'warn',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_|^React$' },
       ],
+    },
+  },
+  {
+    files: ['src/components/AnomalousHero.jsx', 'src/components/HeroGlassScene.jsx'],
+    rules: {
+      // Disabled: this rule targets React Compiler codegen and false-positives on
+      // react-three-fiber's idiomatic per-frame mutation (mesh.rotation, uniforms.value, etc.)
+      // This project doesn't use the React Compiler. Scoped to r3f files only so the rule
+      // stays active (at its recommended default) for the rest of the codebase.
+      'react-hooks/immutability': 'off',
     },
   },
 ];
