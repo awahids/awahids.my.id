@@ -29,6 +29,10 @@ export default [
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // Disabled: this rule targets React Compiler codegen and false-positives on
+      // react-three-fiber's idiomatic per-frame mutation (mesh.rotation, uniforms.value, etc.)
+      // This project doesn't use the React Compiler.
+      'react-hooks/immutability': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

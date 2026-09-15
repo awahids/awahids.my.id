@@ -1,7 +1,3 @@
-/* eslint-disable react-hooks/immutability -- r3f's imperative API intentionally
-   mutates three.js objects returned from hooks (camera, uniforms, meshes)
-   every frame instead of going through React state; this is the standard
-   r3f pattern, not a compiler-safety issue. */
 import React, { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
