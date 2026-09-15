@@ -6,3 +6,4 @@ node_modules
 supabase/*
 
 .claude/skills/*
+.superpowers/
