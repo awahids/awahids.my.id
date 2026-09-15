@@ -40,12 +40,14 @@ export default [
     },
   },
   {
-    files: ['src/components/AnomalousHero.jsx', 'src/components/HeroGlassScene.jsx'],
+    files: ['src/components/AnomalousHero.jsx', 'src/components/GlyphPortal.jsx'],
     rules: {
       // Disabled: this rule targets React Compiler codegen and false-positives on
-      // react-three-fiber's idiomatic per-frame mutation (mesh.rotation, uniforms.value, etc.)
-      // This project doesn't use the React Compiler. Scoped to r3f files only so the rule
-      // stays active (at its recommended default) for the rest of the codebase.
+      // idiomatic local-variable mutation this project doesn't use the Compiler for —
+      // react-three-fiber's per-frame mutation (mesh.rotation, uniforms.value, etc.) in
+      // AnomalousHero, and a plain accumulator loop (character offset tracking) in the
+      // third-party GlyphPortal component. Scoped to just these files so the rule stays
+      // active (at its recommended default) for the rest of the codebase.
       'react-hooks/immutability': 'off',
     },
   },

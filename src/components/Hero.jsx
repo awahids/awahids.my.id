@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion, useReducedMotion, useScroll, useTransform, useSpring } from 'framer-motion';
-import gsap from 'gsap';
+import React, { useEffect, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
-import HeroGlassScene from './HeroGlassScene';
+import GlyphPortal from './GlyphPortal';
 
 // ─── Framer Motion Variants ────────────────────────────────────────────────
 
@@ -14,16 +13,6 @@ const heroLeftContainer = {
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
-};
-
-const nameContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.11 } },
-};
-
-const clipUp = {
-  hidden: { y: '108%' },
-  visible: { y: 0, transition: { type: 'spring', stiffness: 58, damping: 15 } },
 };
 
 const chipContainer = {
@@ -48,22 +37,7 @@ const btnSpring = { type: 'spring', stiffness: 380, damping: 20 };
 
 // ─── Data ─────────────────────────────────────────────────────────────────
 
-const KINETIC_WORDS = [
-  { text: 'FOCUS',     top: '9%',  left: '7%'   },
-  { text: 'PRESENCE',  top: '9%',  right: '10%' },
-  { text: 'LISTEN',    top: '18%', left: '22%'  },
-  { text: 'DECISIONS', top: '18%', right: '24%' },
-  { text: 'PROCESS',   top: '27%', left: '8%'   },
-  { text: 'AWARENESS', top: '31%', right: '6%'  },
-  { text: 'SIMPLIFY',  top: '47%', left: '4%'   },
-  { text: 'REFINE',    top: '49%', right: '16%' },
-  { text: 'CLARITY',   top: '62%', left: '16%'  },
-  { text: 'SYSTEM',    top: '64%', right: '8%'  },
-  { text: 'TRUTH',     top: '78%', left: '10%'  },
-  { text: 'WISDOM',    top: '80%', right: '22%' },
-  { text: 'BUILD',     top: '86%', left: '34%'  },
-  { text: 'IMPACT',    top: '88%', right: '10%' },
-];
+const PORTAL_WORD = 'WAHID';
 
 const DEFAULT_PROFILE = {
   name: 'A Wahid Safhadi',
@@ -127,23 +101,9 @@ const splitProfileName = (name = '') => {
 // ─── Component ────────────────────────────────────────────────────────────
 
 const Hero = () => {
-  const rootRef   = useRef(null);
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
   const profileName = splitProfileName(profile.name);
   const reduced = useReducedMotion();
-
-  // Scroll parallax
-  const { scrollYProgress } = useScroll({
-    target: rootRef,
-    offset: ['start start', 'end start'],
-    layoutEffect: false,
-  });
-  const rawLeftY   = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -120]);
-  const rawRightY  = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : -70]);
-  const rawOpacity = useTransform(scrollYProgress, [0, 0.55], [1, 0]);
-  const leftY      = useSpring(rawLeftY,   { stiffness: 60, damping: 18 });
-  const rightY     = useSpring(rawRightY,  { stiffness: 60, damping: 18 });
-  const heroOpacity = useSpring(rawOpacity, { stiffness: 60, damping: 18 });
 
   // Build reduced-motion-safe variants
   const safe = (v) => reduced ? { hidden: {}, visible: {} } : v;
@@ -166,266 +126,110 @@ const Hero = () => {
     return () => { mounted = false; };
   }, []);
 
-  // ── GSAP: kinetic words + parallax + scramble (unchanged)
-  useEffect(() => {
-    const root = rootRef.current;
-    if (!root) return undefined;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const isMobile = window.matchMedia('(max-width: 900px)').matches;
-    const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-    if (isMobile) return undefined;
-
-    const lightweightMotion = !hasFinePointer;
-    const allowHoverInteractions = !prefersReducedMotion && hasFinePointer;
-    const allowParallax = allowHoverInteractions;
-
-    let pulseTimer = 0;
-    let parallaxRaf = 0;
-    let px = 0, py = 0;
-    const scrambleIntervals = [];
-
-    const ctx = gsap.context(() => {
-      const kineticWords = gsap.utils.toArray('.hero-kinetic-word');
-
-      kineticWords.forEach((word, index) => {
-        gsap.set(word, { opacity: 0, y: lightweightMotion ? 5 : 10 });
-        const tl = gsap.timeline({ delay: lightweightMotion ? 0.04 * index : 0.08 * index });
-        tl.to(word, { opacity: 0.34, y: 0, duration: lightweightMotion ? 0.4 : 0.6, ease: 'power3.out' })
-          .to(word, {
-            y: lightweightMotion ? `-${2 + (index % 3)}` : `-${4 + (index % 3) * 2}`,
-            duration: lightweightMotion ? 3.5 + (index % 2) * 0.4 : 2.5 + (index % 3) * 0.3,
-            ease: 'sine.inOut', repeat: -1, yoyo: true,
-          });
-
-        if (allowHoverInteractions) {
-          word.addEventListener('mouseenter', () => {
-            word.classList.add('is-active');
-            gsap.to(word, { opacity: 0.65, duration: 0.22, ease: 'sine.out', overwrite: 'auto' });
-          });
-          word.addEventListener('mouseleave', () => {
-            word.classList.remove('is-active');
-            gsap.to(word, { opacity: 0.34, duration: 0.28, ease: 'sine.inOut', overwrite: 'auto' });
-          });
-        }
-      });
-
-      const pulseRandomWord = () => {
-        if (!kineticWords.length || prefersReducedMotion) return;
-        const randomWord = kineticWords[Math.floor(Math.random() * kineticWords.length)];
-        if (randomWord.classList.contains('is-active')) {
-          pulseTimer = window.setTimeout(pulseRandomWord, 500); return;
-        }
-        randomWord.classList.add('is-active');
-        gsap.to(randomWord, {
-          opacity: 0.55, duration: 0.45, yoyo: true, repeat: 1, ease: 'sine.inOut', overwrite: 'auto',
-          onComplete: () => {
-            randomWord.classList.remove('is-active');
-            gsap.to(randomWord, { opacity: 0.34, duration: 0.2, overwrite: 'auto' });
-          },
-        });
-        pulseTimer = window.setTimeout(pulseRandomWord, 1500 + Math.random() * 2500);
-      };
-      if (!prefersReducedMotion) {
-        pulseTimer = window.setTimeout(pulseRandomWord, lightweightMotion ? 800 : 1500);
-      }
-
-      if (allowHoverInteractions) {
-        const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        const headingWords = gsap.utils.toArray('.hn-first, .hn-last, .hn-ghost');
-        headingWords.forEach((word) => {
-          let localIv;
-          word.addEventListener('mouseenter', () => {
-            const origText = word.getAttribute('data-text') || word.textContent;
-            gsap.fromTo(word, { opacity: 0.75, y: 3 }, { opacity: 1, y: 0, duration: 0.35, ease: 'power3.out', overwrite: 'auto' });
-            if (localIv) clearInterval(localIv);
-            let i = 0;
-            localIv = setInterval(() => {
-              word.textContent = origText.split('').map((c, j) => {
-                if (j < i) return origText[j];
-                if (c === ' ') return ' ';
-                return CHARS[Math.floor(Math.random() * CHARS.length)];
-              }).join('');
-              if (i++ >= origText.length) clearInterval(localIv);
-            }, 28);
-            scrambleIntervals.push(localIv);
-          });
-        });
-      }
-
-      const renderParallax = () => {
-        const rect = root.getBoundingClientRect();
-        const cx = rect.width / 2, cy = rect.height / 2;
-        const ox = (px - cx) / Math.max(cx, 1);
-        const oy = (py - cy) / Math.max(cy, 1);
-        kineticWords.forEach((word, index) => {
-          const depth = 5 + (index % 5) * 3;
-          gsap.to(word, { xPercent: ox * depth, yPercent: oy * depth * 0.8, duration: 1.2, ease: 'power2.out', overwrite: 'auto' });
-        });
-        parallaxRaf = 0;
-      };
-
-      if (allowParallax) {
-        root.addEventListener('pointermove', (e) => {
-          const rect = root.getBoundingClientRect();
-          px = e.clientX - rect.left;
-          py = e.clientY - rect.top;
-          if (!parallaxRaf) parallaxRaf = window.requestAnimationFrame(renderParallax);
-        }, { passive: true });
-
-        root.addEventListener('pointerleave', () => {
-          kineticWords.forEach((word) => {
-            gsap.to(word, { xPercent: 0, yPercent: 0, duration: 1.5, ease: 'power2.out', overwrite: 'auto' });
-          });
-        });
-      }
-    }, root);
-
-    return () => {
-      window.clearTimeout(pulseTimer);
-      window.cancelAnimationFrame(parallaxRaf);
-      scrambleIntervals.forEach(clearInterval);
-      ctx.revert();
-    };
-  }, []);
-
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
-    <section className="hero" id="home" ref={rootRef}>
-      {/* Kinetic background words */}
-      <div className="hero-kinetic-bg" aria-hidden="true">
-        {KINETIC_WORDS.map((word) => (
-          <span
-            key={`${word.text}-${word.top}-${word.left || word.right}`}
-            className="hero-kinetic-word"
-            data-text={word.text}
-            style={{ top: word.top, left: word.left, right: word.right }}
-          >
-            {word.text}
-          </span>
-        ))}
-      </div>
-
-      <div className="hero-glow" aria-hidden="true" />
-
-      <HeroGlassScene />
-
-      {/* ── LEFT — orchestrated stagger entrance ── */}
-      <motion.div
-        className="hero-left"
-        variants={safe(heroLeftContainer)}
-        initial="hidden"
-        animate="visible"
-        style={{ y: leftY }}
-      >
-        {/* Eyebrow */}
-        <motion.div className="hero-eyebrow" variants={safe(fadeUp)}>
-          <svg className="hero-eyebrow-dot" width="8" height="8" viewBox="0 0 8 8" fill="var(--lime)">
-            <circle cx="4" cy="4" r="4" />
-          </svg>
-          {profile.eyebrow}
-        </motion.div>
-
-        {/* Name — each line clips up from overflow:hidden container */}
-        <motion.h1 className="hero-name" variants={safe(nameContainer)}>
-          <div className="hw">
-            <motion.span className="hi hn-sub" variants={safe(clipUp)}>
-              {profile.role}
-            </motion.span>
-          </div>
-          <div className="hw">
-            <motion.span className="hi hn-first" data-text={profileName.first} variants={safe(clipUp)}>
-              {profileName.first}
-            </motion.span>
-          </div>
-          {profileName.last && (
-            <div className="hw">
-              <motion.span className="hi hn-last" data-text={profileName.last} variants={safe(clipUp)}>
-                {profileName.last}
-              </motion.span>
-            </div>
-          )}
-          <div className="hw">
-            <motion.span className="hi hn-ghost" data-text={profile.ghostTitle} variants={safe(clipUp)}>
-              {profile.ghostTitle}
-            </motion.span>
-          </div>
-        </motion.h1>
-
-        {/* Descriptions */}
-        <motion.p className="hero-desc" variants={safe(fadeUp)}>
-          {profile.summary}
-        </motion.p>
-        <motion.p className="hero-desc hero-desc-sub" variants={safe(fadeUp)}>
-          {profile.secondarySummary}
-        </motion.p>
-        <motion.p className="hero-signature" variants={safe(fadeUp)}>
-          {profile.signature}
-        </motion.p>
-
-        {/* Tech stack chips — stagger left slide-in */}
-        <motion.div className="hero-proof" variants={safe(chipContainer)}>
-          {profile.proofChips.map((chip) => (
-            <motion.div className="hero-proof-chip" key={chip} variants={safe(chipItem)}>
-              <span className="hero-proof-dot" />
-              {chip}
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* CTA buttons — whileHover + whileTap spring */}
-        <motion.div className="hero-btns" variants={safe(fadeUp)}>
-          <motion.a
-            href={profile.ctaPrimaryHref}
-            className="btn-prime"
-            whileHover={reduced ? {} : { scale: 1.05 }}
-            whileTap={reduced ? {} : { scale: 0.96 }}
-            transition={btnSpring}
-          >
-            {profile.ctaPrimaryLabel}
-          </motion.a>
-          <motion.a
-            href={profile.ctaSecondaryHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-ghost"
-            whileHover={reduced ? {} : { scale: 1.05 }}
-            whileTap={reduced ? {} : { scale: 0.96 }}
-            transition={btnSpring}
-            onClick={() => window.plausible?.('CVDownload', { props: { source: 'hero' } })}
-          >
-            {profile.ctaSecondaryLabel}
-          </motion.a>
-        </motion.div>
-      </motion.div>
-
-      {/* ── RIGHT — photo + floating stat cards ── */}
-      <motion.div
-        className="hero-right"
-        variants={safe(photoVariant)}
-        initial="hidden"
-        animate="visible"
-        style={{ y: rightY }}
-      >
-        <div className="hero-photo-wrap">
-          <div className="hero-photo-frame">
-            <img
-              src={`${import.meta.env.BASE_URL}img/aw.png`}
-              alt="A Wahid Safhadi"
-              className="hero-photo-img"
-              draggable="false"
-            />
+    <div id="home">
+    <GlyphPortal
+      word={PORTAL_WORD}
+      fontFamily="'Unbounded', sans-serif"
+      fontWeight={900}
+      enterLabel="Enter Portfolio"
+      style={{ '--gp-paper': 'var(--dark)', '--gp-ink': 'var(--white)' }}
+      front={
+        <div className="hero-portal-front">
+          <div className="hero-eyebrow">
+            <svg className="hero-eyebrow-dot" width="8" height="8" viewBox="0 0 8 8" fill="var(--lime)">
+              <circle cx="4" cy="4" r="4" />
+            </svg>
+            {profile.eyebrow}
           </div>
         </div>
-      </motion.div>
+      }
+    >
+      <div className="hero-portal-grid">
+        {/* ── LEFT — orchestrated stagger entrance ── */}
+        <motion.div
+          className="hero-left"
+          variants={safe(heroLeftContainer)}
+          initial="hidden"
+          animate="visible"
+        >
+          {/* Name — role + last name + ghost title (first name is shown via the portal) */}
+          <motion.h2 className="hero-portal-name" variants={safe(fadeUp)}>
+            <span className="hn-sub">{profile.role}</span>
+            {profileName.last && <span className="hn-last">{profileName.last}</span>}
+            <span className="hn-ghost">{profile.ghostTitle}</span>
+          </motion.h2>
 
-      <motion.div className="scroll-hint" style={{ opacity: heroOpacity }}>
-        <span>Scroll</span>
-        <div className="scroll-line" />
-      </motion.div>
-    </section>
+          {/* Descriptions */}
+          <motion.p className="hero-desc" variants={safe(fadeUp)}>
+            {profile.summary}
+          </motion.p>
+          <motion.p className="hero-desc hero-desc-sub" variants={safe(fadeUp)}>
+            {profile.secondarySummary}
+          </motion.p>
+          <motion.p className="hero-signature" variants={safe(fadeUp)}>
+            {profile.signature}
+          </motion.p>
+
+          {/* Tech stack chips — stagger left slide-in */}
+          <motion.div className="hero-proof" variants={safe(chipContainer)}>
+            {profile.proofChips.map((chip) => (
+              <motion.div className="hero-proof-chip" key={chip} variants={safe(chipItem)}>
+                <span className="hero-proof-dot" />
+                {chip}
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* CTA buttons — whileHover + whileTap spring */}
+          <motion.div className="hero-btns" variants={safe(fadeUp)}>
+            <motion.a
+              href={profile.ctaPrimaryHref}
+              className="btn-prime"
+              whileHover={reduced ? {} : { scale: 1.05 }}
+              whileTap={reduced ? {} : { scale: 0.96 }}
+              transition={btnSpring}
+            >
+              {profile.ctaPrimaryLabel}
+            </motion.a>
+            <motion.a
+              href={profile.ctaSecondaryHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost"
+              whileHover={reduced ? {} : { scale: 1.05 }}
+              whileTap={reduced ? {} : { scale: 0.96 }}
+              transition={btnSpring}
+              onClick={() => window.plausible?.('CVDownload', { props: { source: 'hero' } })}
+            >
+              {profile.ctaSecondaryLabel}
+            </motion.a>
+          </motion.div>
+        </motion.div>
+
+        {/* ── RIGHT — photo ── */}
+        <motion.div
+          className="hero-right"
+          variants={safe(photoVariant)}
+          initial="hidden"
+          animate="visible"
+        >
+          <div className="hero-photo-wrap">
+            <div className="hero-photo-frame">
+              <img
+                src={`${import.meta.env.BASE_URL}img/aw.png`}
+                alt="A Wahid Safhadi"
+                className="hero-photo-img"
+                draggable="false"
+              />
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </GlyphPortal>
+    </div>
   );
 };
 

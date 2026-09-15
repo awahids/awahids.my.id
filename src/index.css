@@ -299,82 +299,32 @@ body.is-on-light-section .spotlight-glow {
 .social-rail-resume:hover { color:var(--lime); }
 .social-rail-resume:focus-visible { color:var(--lime); }
 
-/* HERO - CODEPEN ACCENT */
-.hero-kinetic-bg {
-  position:absolute;
-  inset:0;
-  z-index:1;
-  pointer-events:none;
-  overflow:hidden;
-}
-.hero-kinetic-word {
-  position:absolute;
-  font-family:'DM Mono',monospace;
-  font-size:10px;
-  letter-spacing:.16em;
-  text-transform:uppercase;
-  color:rgba(200,255,0,.28);
-  white-space:nowrap;
-  opacity:0;
-  pointer-events:auto;
-  user-select:none;
-  will-change:transform, opacity;
-}
-.hero-kinetic-word::after {
-  content:'';
-  position:absolute;
-  top:-2px;
-  left:-4px;
-  width:0;
-  height:calc(100% + 4px);
-  background:rgba(200,255,0,.2);
-  transition:width .35s cubic-bezier(.34,1.56,.64,1);
-}
-.hero-kinetic-word.is-active::after { width:calc(100% + 8px); }
-.hero-kinetic-char { display:inline-block; }
+/* HERO */
 .hero-eyebrow-dot { animation:blinkc .9s step-end infinite; }
 
-@media (max-width: 768px) {
-  .hero-kinetic-word {
-    font-size:9px;
-    letter-spacing:.12em;
-  }
-}
-@media (max-width: 480px) {
-  .hero-kinetic-word {
-    font-size:8px;
-    letter-spacing:.1em;
-    opacity:.2;
-  }
-  .hero-kinetic-word:nth-child(n + 9) {
-    display:none;
-  }
+/* GlyphPortal front-slot eyebrow, positioned over the opening frame */
+.hero-portal-front {
+  position:absolute; top:clamp(32px,6vw,64px); left:clamp(24px,5vw,48px);
 }
 
-/* HERO */
-.hero {
-  min-height:100vh; display:grid; grid-template-columns:1.1fr 0.9fr;
-  align-items:center; padding:0 48px; position:relative; overflow:hidden; background:var(--dark);
-  isolation:isolate;
+/* Two-column layout for the content revealed behind the portal */
+.hero-portal-grid {
+  display:grid; grid-template-columns:1.1fr 0.9fr; align-items:center; gap:24px;
 }
-.hero::before {
-  content:''; position:absolute; inset:0;
-  background-image: linear-gradient(var(--border) 1px,transparent 1px), linear-gradient(90deg,var(--border) 1px,transparent 1px);
-  background-size:56px 56px; opacity:.4; pointer-events:none;
-}
-.hero-glow {
-  position:absolute; width:700px; height:700px;
-  background:radial-gradient(circle,rgba(200,255,0,.06) 0%,transparent 65%);
-  top:-250px; right:-200px; pointer-events:none;
-  z-index:1;
-  animation:pglow 7s ease-in-out infinite alternate;
-}
-@keyframes pglow { from{transform:scale(1)} to{transform:scale(1.2)} }
 
-.hero-3d-scene {
-  position:absolute; inset:0; z-index:2; pointer-events:none;
+.hero-portal-name {
+  margin-bottom:32px;
 }
-.hero-3d-scene canvas { display:block; width:100%; height:100%; }
+.hero-portal-name .hn-last {
+  font-family:'Unbounded',sans-serif; font-size:clamp(28px,4vw,48px);
+  font-weight:900; line-height:1; letter-spacing:-.03em; text-transform:uppercase;
+  display:block; margin-top:6px;
+}
+.hero-portal-name .hn-ghost {
+  font-family:'Unbounded',sans-serif; font-size:clamp(28px,4vw,48px);
+  font-weight:900; line-height:1; letter-spacing:-.03em; text-transform:uppercase;
+  display:block; margin-top:2px;
+}
 
 .hero-left {
   position:relative; z-index:5;
@@ -391,15 +341,10 @@ body.is-on-light-section .spotlight-glow {
   font-size:10px; letter-spacing:.2em; text-transform:uppercase; color:rgba(255,255,255,.78); margin-bottom:26px;
 }
 .hero-eyebrow::before { content:''; width:22px; height:1px; background:rgba(255,255,255,.38); }
-.hero-name {
-  font-family:'Unbounded',sans-serif; font-size:clamp(52px,8vw,118px);
-  font-weight:900; line-height:.88; letter-spacing:-.04em; text-transform:uppercase; margin-bottom:32px;
-}
 .hn-sub {
   font-family:'Unbounded',sans-serif; font-size:clamp(13px,1.5vw,19px); font-weight:300;
   letter-spacing:.22em; text-transform:uppercase; color:rgba(255,255,255,.62); display:block; margin-bottom:14px;
 }
-.hn-first { display:block; color:var(--white); }
 .hn-last  { display:block; color:var(--lime); }
 .hn-ghost { display:block; -webkit-text-stroke:1px rgba(255,255,255,.12); color:transparent; }
 .hero-desc {
@@ -572,19 +517,6 @@ body.is-on-light-section .spotlight-glow {
 @keyframes pfloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
 .badge-num { font-family:'Unbounded',sans-serif; font-size:32px; font-weight:900; color:var(--dark); line-height:1; }
 .badge-txt { font-family:'DM Mono',monospace; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:rgba(0,0,0,.5); }
-
-.scroll-hint {
-  position:absolute; bottom:28px; left:50%; transform:translateX(-50%);
-  display:flex; flex-direction:column; align-items:center; gap:8px; z-index:6;
-}
-.scroll-hint span { font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:var(--gray); }
-.scroll-line { width:1px; height:44px; background:linear-gradient(to bottom,var(--gray),transparent); animation:sline 2s ease-in-out infinite; }
-@keyframes sline { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 51%{transform:scaleY(1);transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
-
-.hw { overflow:hidden; }
-.hi  { display:block; }  /* entrance: Framer Motion clipUp spring */
-.hfi { }                 /* entrance: Framer Motion fadeUp */
-/* @keyframes hlin and @keyframes fup retired — Framer Motion handles these */
 
 /* TICKER — dual-track dev console strip */
 .ticker-wrap {
@@ -3041,14 +2973,8 @@ footer {
     font-size:9px;
     letter-spacing:.1em;
   }
-  .hero { grid-template-columns:1fr; padding:0 24px; min-height:auto; }
-  .hero-kinetic-bg,
-  .hero-glow,
-  .hero-3d-scene,
+  .hero-portal-grid { grid-template-columns:1fr; }
   .about-bg {
-    display:none;
-  }
-  .scroll-hint {
     display:none;
   }
   .hero-left {
@@ -3058,7 +2984,9 @@ footer {
   }
   .hero-eyebrow { margin-bottom:20px; }
   .hero-eyebrow::before { display:none; }
-  .hero-name { font-size:clamp(34px, 11vw, 52px); margin-bottom:20px; }
+  .hero-portal-name { margin-bottom:20px; }
+  .hero-portal-name .hn-last,
+  .hero-portal-name .hn-ghost { font-size:clamp(24px, 9vw, 36px); }
   .hn-sub { font-size:11px; letter-spacing:0.15em; }
   .hero-desc { margin:0 auto 10px; font-size:16px; line-height:1.74; }
   .hero-desc-sub { margin-bottom:14px; }
@@ -3471,13 +3399,9 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   .ticker-track,
   .ticker-track-rev { animation:none; transform:translateX(0); }
-  .hero-glow,
   .hero-badge,
-  .scroll-line,
   .pl-dot,
   .status-pulse { animation:none !important; }
-  .hero-kinetic-word::after,
-  .hero-kinetic-word { transition:none !important; }
   .floating-top-btn { transition:none; }
   .term-body .tl { animation:none; opacity:1; transform:none; }
   .section-fallback-line { animation:none; }
@@ -3608,7 +3532,6 @@ footer {
 @media (max-width:700px) {
   .nav-logo { font-size:11px; }
   .nav-cta { padding:7px 12px; }
-  .hero-name { font-size:clamp(36px,12vw,58px); }
 }
 @media (max-width:520px) {
   .cert-grid { grid-template-columns:1fr; }
@@ -4834,28 +4757,6 @@ footer {
    section entrances, scroll parallax support
    ════════════════════════════════════════════════════════ */
 
-/* ── Noise grain overlay on hero for premium texture ── */
-.hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  opacity: 0.055;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 160px 160px;
-  mix-blend-mode: overlay;
-  animation: grainShift 0.5s steps(2) infinite;
-}
-@keyframes grainShift {
-  0%   { background-position: 0 0; }
-  25%  { background-position: -20px 10px; }
-  50%  { background-position: 10px -15px; }
-  75%  { background-position: -10px 20px; }
-  100% { background-position: 0 0; }
-}
-
 /* ── Section title clip-path support ── */
 /* clipReveal variant uses clipPath inset — overflow hidden ensures clean wipe */
 .s-title,
@@ -4891,11 +4792,6 @@ footer {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-/* ── Scroll hint improvements ── */
-.scroll-hint {
-  pointer-events: none; /* FM opacity handles visibility, don't block clicks */
 }
 
 /* ── Hero left/right — smooth scroll parallax ── */
@@ -5092,7 +4988,6 @@ footer {
 
 /* ── Reduced-motion additions ── */
 @media (prefers-reduced-motion: reduce) {
-  .hero::after { display: none; }
   .hero-left, .hero-right { will-change: auto; }
   .hero-photo-frame::before { display: none; }
   .contact-top-link { will-change: auto; }
@@ -5103,7 +4998,6 @@ footer {
 
 /* ── Mobile tweaks ── */
 @media (max-width: 768px) {
-  .hero::after { opacity: 0.02; }
   .hero-photo-frame::before { display: none; }
   .contact-headline { font-size: clamp(22px, 5vw, 36px); }
 }
