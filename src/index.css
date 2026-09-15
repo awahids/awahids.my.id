@@ -371,6 +371,11 @@ body.is-on-light-section .spotlight-glow {
 }
 @keyframes pglow { from{transform:scale(1)} to{transform:scale(1.2)} }
 
+.hero-3d-scene {
+  position:absolute; inset:0; z-index:2; pointer-events:none;
+}
+.hero-3d-scene canvas { display:block; width:100%; height:100%; }
+
 .hero-left { position:relative; z-index:5; padding:120px 0 80px; }
 .hero-eyebrow {
   display:inline-flex; align-items:center; gap:8px;
@@ -3134,6 +3139,7 @@ footer {
   .hero { grid-template-columns:1fr; padding:0 24px; min-height:auto; }
   .hero-kinetic-bg,
   .hero-glow,
+  .hero-3d-scene,
   .about-bg {
     display:none;
   }

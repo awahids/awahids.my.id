@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform, useSpring } from 'framer-motion';
 import gsap from 'gsap';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
+import HeroGlassScene from './HeroGlassScene';
 
 // ─── Framer Motion Variants ────────────────────────────────────────────────
 
@@ -308,6 +309,8 @@ const Hero = () => {
       </div>
 
       <div className="hero-glow" aria-hidden="true" />
+
+      <HeroGlassScene />
 
       {/* ── LEFT — orchestrated stagger entrance ── */}
       <motion.div
