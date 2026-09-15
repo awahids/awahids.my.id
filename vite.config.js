@@ -132,22 +132,14 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react(), devApiMiddleware()],
     build: {
-      chunkSizeWarningLimit: 1000,
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (id.includes('node_modules')) {
-              if (id.includes('three')) {
-                return 'vendor-three';
-              }
-              if (id.includes('react') || id.includes('react-dom') || id.includes('framer-motion')) {
-                return 'vendor-react';
-              }
-              return 'vendor';
-            }
-          }
-        }
-      }
+      // Custom manualChunks previously split node_modules by substring-matching
+      // package names (e.g. 'three'), which silently separated @react-three/fiber
+      // and @react-three/drei — and their many transitive dependencies — from the
+      // React runtime chunk they call into, crashing the app on mount in production
+      // (a chunk executing React hooks before React is defined). Substring matching
+      // can't reliably account for every transitive dependency, so this now lets
+      // Vite/Rollup's default chunking handle vendor splitting safely.
+      chunkSizeWarningLimit: 1200,
     }
   }
 })
