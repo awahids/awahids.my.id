@@ -1,5 +1,7 @@
 # Hero Redesign: Glass UI + react-three-fiber (r3f/drei) 3D
 
+**Status:** Implemented 2026-09-15.
+
 ## Context
 
 The Hero section currently renders two stacked components in `App.jsx`:
