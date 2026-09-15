@@ -14,7 +14,7 @@ const links = [
     ),
   },
   {
-    href: 'https://linkedin.com/in/awahid',
+    href: 'https://linkedin.com/in/awahids',
     label: 'LinkedIn',
     icon: (
       <svg viewBox="0 0 24 24" aria-hidden="true">
