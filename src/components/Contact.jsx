@@ -1,19 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 
 const btnSpring = { type: 'spring', stiffness: 360, damping: 22 };
 import { BOOKING_URL } from '../lib/links';
-import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { Waves } from './Waves';
 import { openCvDownload } from '../lib/cvDownload';
 
 
-const DEFAULT_CONTACT = {
+const CONTACT = {
   title: 'Have a web app, dashboard, or backend system to build?',
   eyebrow: 'Contact',
   summary:
-    'Tell me what you are building, where your current system is falling short, or what needs to scale. I can help with fullstack development, backend architecture, workflow automation, and deployment.',
+    'Tell me what you are building, what is breaking, or what needs to scale. I can help with fullstack development, backend architecture, workflow automation, and deployment.',
   email: 'awahid.safhadi@gmail.com',
   bookingUrl: BOOKING_URL,
   location: 'Cikarang, Bekasi, Jawa Barat',
@@ -24,42 +23,12 @@ const DEFAULT_CONTACT = {
     'Automation and production deployment',
   ],
   remoteStatus: 'OPEN TO REMOTE',
-  cvUrl: '#',
   ctaPrimaryLabel: 'Start a Project Conversation',
   ctaSecondaryLabel: 'View Fullstack Projects',
 };
 
-const asStringArray = (value, fallback) => {
-  if (!Array.isArray(value)) return fallback;
-
-  const items = value.map((item) => String(item || '').trim()).filter(Boolean);
-  return items.length ? items : fallback;
-};
-
-const normalizeContactItem = (item = {}) => {
-  const payload =
-    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
-      ? item.payload
-      : {};
-
-  return {
-    title: String(item.title || DEFAULT_CONTACT.title).trim(),
-    eyebrow: String(item.subtitle || DEFAULT_CONTACT.eyebrow).trim(),
-    summary: String(item.summary || DEFAULT_CONTACT.summary).trim(),
-    email: String(payload.email || DEFAULT_CONTACT.email).trim(),
-    bookingUrl: String(payload.booking_url || DEFAULT_CONTACT.bookingUrl).trim(),
-    location: String(payload.location || DEFAULT_CONTACT.location).trim(),
-    availability: String(payload.availability || DEFAULT_CONTACT.availability).trim(),
-    availabilityPoints: asStringArray(payload.availability_points, DEFAULT_CONTACT.availabilityPoints),
-    remoteStatus: String(payload.remote_status || DEFAULT_CONTACT.remoteStatus).trim(),
-    cvUrl: String(payload.cv_url || DEFAULT_CONTACT.cvUrl).trim(),
-    ctaPrimaryLabel: String(payload.cta_primary_label || DEFAULT_CONTACT.ctaPrimaryLabel).trim(),
-    ctaSecondaryLabel: String(payload.cta_secondary_label || DEFAULT_CONTACT.ctaSecondaryLabel).trim(),
-  };
-};
-
 const renderContactTitle = (title) => {
-  const text = String(title || DEFAULT_CONTACT.title).trim();
+  const text = title;
   const highlighted = 'backend system';
   const index = text.toLowerCase().indexOf(highlighted);
 
@@ -75,7 +44,7 @@ const renderContactTitle = (title) => {
 };
 
 const Contact = () => {
-  const [contact, setContact] = useState(DEFAULT_CONTACT);
+  const contact = CONTACT;
   const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef(null);
   const reduced = useReducedMotion();
@@ -93,32 +62,6 @@ const Contact = () => {
       window.location.href = `mailto:${contact.email}`;
     }
   };
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-
-    let mounted = true;
-
-    const loadContact = async () => {
-      const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,subtitle,summary,payload,sort_order,is_published')
-        .eq('collection', 'contact')
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true })
-        .limit(1);
-
-      if (!mounted || error || !data?.length) return;
-      setContact(normalizeContactItem(data[0]));
-    };
-
-    loadContact();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   return (
     <section className="s-contact" id="contact" style={{ position: 'relative', overflow: 'hidden' }}>
@@ -178,7 +121,7 @@ const Contact = () => {
               <span className="contact-badge-role">PDF Resume</span>
             </div>
             <a
-              href={contact.cvUrl}
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="contact-badge-link"

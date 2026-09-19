@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import GlyphPortal from './GlyphPortal';
 import { openCvDownload } from '../lib/cvDownload';
 
@@ -41,69 +40,31 @@ const btnSpring = { type: 'spring', stiffness: 380, damping: 20 };
 const PORTAL_WORD = 'WAHID';
 const PORTAL_FONT_TIMEOUT_MS = 2500;
 
-const DEFAULT_PROFILE = {
+const PROFILE = {
   name: 'A Wahid Safhadi',
   role: 'Fullstack Developer · Backend-First Engineer',
   eyebrow: 'Available for Fullstack Projects',
-  summary: 'I build web apps, APIs, dashboards, and the backend logic that makes them hold up in production.',
+  summary: 'I build web apps, dashboards, APIs, and business systems from frontend to deployment.',
   secondarySummary:
-    'I help teams ship scalable web products — from messy ideas and workflow gaps to production-ready systems.',
+    'I help teams turn ideas and messy workflows into usable, scalable, production-ready web products.',
   signature: 'I build the interface users click and the backend that survives what they do next.',
   ghostTitle: 'Engineer',
-  company: 'Rasa Group',
-  years: '4+',
-  city: 'Cikarang, Bekasi',
   proofChips: ['Vue.js', 'Next.js', 'Node.js', 'NestJS', 'PostgreSQL', 'Docker'],
   ctaPrimaryLabel: 'View Fullstack Projects',
   ctaPrimaryHref: '#portfolio',
   ctaSecondaryLabel: 'Download Resume',
-  ctaSecondaryHref: '#',
-};
-
-const asStringArray = (value, fallback) => {
-  if (!Array.isArray(value)) return fallback;
-  const items = value.map((item) => String(item || '').trim()).filter(Boolean);
-  return items.length ? items : fallback;
-};
-
-const resolveAssetPath = (value, fallback) => {
-  const path = String(value || '').trim();
-  return path || fallback;
-};
-
-const normalizeProfileItem = (item = {}) => {
-  const payload =
-    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
-      ? item.payload : {};
-  return {
-    name:              String(item.title || DEFAULT_PROFILE.name).trim(),
-    role:              String(item.subtitle || DEFAULT_PROFILE.role).trim(),
-    eyebrow:           String(payload.eyebrow || DEFAULT_PROFILE.eyebrow).trim(),
-    summary:           String(item.summary || DEFAULT_PROFILE.summary).trim(),
-    secondarySummary:  String(payload.secondary_summary || DEFAULT_PROFILE.secondarySummary).trim(),
-    signature:         String(payload.signature || DEFAULT_PROFILE.signature).trim(),
-    ghostTitle:        String(payload.ghost_title || DEFAULT_PROFILE.ghostTitle).trim(),
-    company:           String(payload.company || DEFAULT_PROFILE.company).trim(),
-    years:             String(payload.years || DEFAULT_PROFILE.years).trim(),
-    city:              String(payload.city || DEFAULT_PROFILE.city).trim(),
-    proofChips:        asStringArray(payload.proof_chips, DEFAULT_PROFILE.proofChips),
-    ctaPrimaryLabel:   String(payload.cta_primary_label || DEFAULT_PROFILE.ctaPrimaryLabel).trim(),
-    ctaPrimaryHref:    String(payload.cta_primary_href || DEFAULT_PROFILE.ctaPrimaryHref).trim(),
-    ctaSecondaryLabel: String(payload.cta_secondary_label || DEFAULT_PROFILE.ctaSecondaryLabel).trim(),
-    ctaSecondaryHref:  resolveAssetPath(payload.cta_secondary_href, DEFAULT_PROFILE.ctaSecondaryHref),
-  };
 };
 
 const splitProfileName = (name = '') => {
-  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
-  if (parts.length <= 2) return { first: parts.join(' ') || DEFAULT_PROFILE.name, last: '' };
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length <= 2) return { first: parts.join(' '), last: '' };
   return { first: parts.slice(0, 2).join(' '), last: parts.slice(2).join(' ') };
 };
 
 // ─── Component ────────────────────────────────────────────────────────────
 
 const Hero = () => {
-  const [profile, setProfile] = useState(DEFAULT_PROFILE);
+  const profile = PROFILE;
   const [fontReady, setFontReady] = useState(false);
   const profileName = splitProfileName(profile.name);
   const reduced = useReducedMotion();
@@ -119,24 +80,6 @@ const Hero = () => {
     const timer = window.setTimeout(finish, PORTAL_FONT_TIMEOUT_MS);
     document.fonts.load(`900 100px 'Unbounded'`, PORTAL_WORD).then(finish, finish);
     return () => { cancelled = true; window.clearTimeout(timer); };
-  }, []);
-
-  // ── Supabase profile load
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-    let mounted = true;
-    const load = async () => {
-      const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,subtitle,summary,payload,sort_order,is_published')
-        .eq('collection', 'profile').eq('is_published', true)
-        .order('sort_order', { ascending: true }).order('created_at', { ascending: true })
-        .limit(1);
-      if (!mounted || error || !data?.length) return;
-      setProfile(normalizeProfileItem(data[0]));
-    };
-    load();
-    return () => { mounted = false; };
   }, []);
 
   // ─── Render ───────────────────────────────────────────────────────────
@@ -240,7 +183,7 @@ const Hero = () => {
               {profile.ctaPrimaryLabel}
             </motion.a>
             <motion.a
-              href={profile.ctaSecondaryHref}
+              href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-ghost"

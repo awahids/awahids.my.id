@@ -4,7 +4,6 @@ import SkillsScene from './SkillsScene';
 import SkillsRelay from './SkillsRelay';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useSectionMotion } from '../lib/sectionMotion';
-import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { useWordSplit } from '../lib/useWordSplit';
 import { useParallaxBg } from '../lib/useParallaxBg';
 import { useGsapReveal } from '../lib/useGsapReveal';
@@ -58,30 +57,9 @@ const skillsData = [
   }
 ];
 
-const fallbackSkillIcon = (
-  <svg viewBox="0 0 24 24">
-    <path d="M12 2 2 7l10 5 10-5-10-5z" />
-    <path d="M2 17l10 5 10-5" />
-    <path d="M2 12l10 5 10-5" />
-  </svg>
-);
-
-const skillFromCmsItem = (item, index) => {
-  const payload = item.payload || {};
-
-  return {
-    name: item.title,
-    prof: item.subtitle,
-    num: String(payload.num || String(index + 1).padStart(2, '0')),
-    chips: Array.isArray(payload.chips) ? payload.chips : [],
-    icon: fallbackSkillIcon,
-  };
-};
-
 const Skills = ({ lenisRef }) => {
   const rootRef = useRef(null);
   const sectionRef = rootRef; // reuse same ref for wordSplit and parallaxBg
-  const [skillItems, setSkillItems] = useState(skillsData);
   const [isMobile, setIsMobile] = useState(false);
   const { viewport, sectionContainer, sectionItem, eyebrow } = useSectionMotion();
 
@@ -98,38 +76,13 @@ const Skills = ({ lenisRef }) => {
   useGsapReveal(sectionRef);
   useTextScramble(sectionRef);
 
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-
-    let mounted = true;
-
-    const loadSkills = async () => {
-      const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,subtitle,payload,sort_order,is_published')
-        .eq('collection', 'skills')
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-
-      if (!mounted || error || !data?.length) return;
-      setSkillItems(data.map(skillFromCmsItem));
-    };
-
-    loadSkills();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // Relay height depends on skillItems.length and is much taller (N*80vh) than a
+  // Relay height depends on skillsData.length and is much taller (N*80vh) than a
   // static grid, so refresh GSAP triggers further down the page after it settles.
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const id = window.setTimeout(() => ScrollTrigger.refresh(), 50);
     return () => window.clearTimeout(id);
-  }, [skillItems.length]);
+  }, []);
 
   return (
     <section className="s-skills" id="skills">
@@ -166,7 +119,7 @@ const Skills = ({ lenisRef }) => {
           </motion.p>
         </div>
 
-        <SkillsRelay skillItems={skillItems} lenisRef={lenisRef} />
+        <SkillsRelay skillItems={skillsData} lenisRef={lenisRef} />
       </motion.div>
     </section>
   );

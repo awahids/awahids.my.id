@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { useSectionMotion } from '../lib/sectionMotion';
-import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { useTextScramble } from '../lib/useTextScramble';
 import { useGsapReveal } from '../lib/useGsapReveal';
 
@@ -34,15 +33,7 @@ const certs = [
   }
 ];
 
-const certFromCmsItem = (item) => ({
-  issuer: item.subtitle,
-  name: item.title,
-  year: item.summary,
-  url: item.payload?.url || '',
-});
-
 const Certificates = () => {
-  const [certItems, setCertItems] = useState(certs);
   const [isMobile, setIsMobile] = useState(false);
   const [showAllMobile, setShowAllMobile] = useState(false);
   const gridRef = useRef(null);
@@ -51,24 +42,6 @@ const Certificates = () => {
 
   useTextScramble(sectionRef);
   useGsapReveal(sectionRef);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-    let mounted = true;
-    const loadCertificates = async () => {
-      const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,subtitle,summary,payload,sort_order,is_published')
-        .eq('collection', 'certificates')
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-      if (!mounted || error || !data?.length) return;
-      setCertItems(data.map(certFromCmsItem));
-    };
-    loadCertificates();
-    return () => { mounted = false; };
-  }, []);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(max-width: 720px)');
@@ -127,9 +100,9 @@ const Certificates = () => {
     });
 
     return () => cleanups.forEach((fn) => fn());
-  }, [certItems.length, isMobile]);
+  }, [isMobile]);
 
-  const visibleCerts = isMobile && !showAllMobile ? certItems.slice(0, 3) : certItems;
+  const visibleCerts = isMobile && !showAllMobile ? certs.slice(0, 3) : certs;
 
   return (
     <section className="s-cert" id="certificates">
@@ -183,14 +156,14 @@ const Certificates = () => {
           ))}
         </motion.div>
 
-        {isMobile && certItems.length > 3 && (
+        {isMobile && certs.length > 3 && (
           <motion.button
             type="button"
             className="cert-mobile-toggle"
             onClick={() => setShowAllMobile((prev) => !prev)}
             variants={sectionItem}
           >
-            {showAllMobile ? 'Show Less' : `View More (${certItems.length - 3})`}
+            {showAllMobile ? 'Show Less' : `View More (${certs.length - 3})`}
           </motion.button>
         )}
       </motion.div>

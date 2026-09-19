@@ -16,7 +16,6 @@ import SpotlightGlow from './components/SpotlightGlow';
 import SocialRail from './components/SocialRail';
 import { useSectionMotion } from './lib/sectionMotion';
 import { useGsapReveal } from './lib/useGsapReveal';
-import { isSupabaseConfigured, supabase } from './lib/supabaseClient';
 import Portfolio from './components/Portfolio';
 import WhatIBuild from './components/WhatIBuild';
 import Skills from './components/Skills';
@@ -25,12 +24,10 @@ import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 import FloatingFAQ from './components/FloatingFAQ';
 import CvDownloadModal from './components/CvDownloadModal';
-import AdminExperience from './components/AdminExperience';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 import { AnomalousMatterHero } from './components/AnomalousHero';
 const AI_LAB_PATH = '/ai-lab';
-const ADMIN_PATH_PREFIX = '/admin';
 const README_GENERATOR_PATH = '/readme-generator';
 const AILab = lazy(() => import('./components/AILab'));
 const ReadmeGenerator = lazy(() => import('./components/ReadmeGenerator'));
@@ -59,21 +56,15 @@ const isAiLabRoute = (pathname = '') =>
 
 const isHomeRoute = (pathname = '') => normalizePathname(pathname) === '/';
 
-const isAdminRoute = (pathname = '') => {
-  const normalized = normalizePathname(pathname);
-  return normalized === ADMIN_PATH_PREFIX || normalized.startsWith(`${ADMIN_PATH_PREFIX}/`);
-};
-
 const isReadmeGeneratorRoute = (pathname = '') =>
   normalizePathname(pathname) === README_GENERATOR_PATH;
 
 const isNotFoundRoute = (pathname = '') =>
   !isHomeRoute(pathname) &&
   !isAiLabRoute(pathname) &&
-  !isAdminRoute(pathname) &&
   !isReadmeGeneratorRoute(pathname);
 
-const DEFAULT_ABOUT = {
+const ABOUT = {
   eyebrow: 'BIOGRAPHY',
   title: 'Backend-first. Fullstack when it matters.',
   paragraphs: [
@@ -92,45 +83,6 @@ const DEFAULT_ABOUT = {
     degree: 'Bachelor in Engineering Informatics',
     period: 'Aug 2014 — Feb 2022',
   },
-};
-
-const asStringArray = (value, fallback) => {
-  if (!Array.isArray(value)) return fallback;
-
-  const items = value.map((item) => String(item || '').trim()).filter(Boolean);
-  return items.length ? items : fallback;
-};
-
-const normalizeAboutItem = (item = {}) => {
-  const payload =
-    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
-      ? item.payload
-      : {};
-  const stats = Array.isArray(payload.stats)
-    ? payload.stats
-        .map((stat) => ({
-          value: String(stat?.value || '').trim(),
-          label: String(stat?.label || '').trim(),
-        }))
-        .filter((stat) => stat.value && stat.label)
-    : DEFAULT_ABOUT.stats;
-  const education =
-    payload.education && typeof payload.education === 'object' && !Array.isArray(payload.education)
-      ? {
-          school: String(payload.education.school || '').trim(),
-          degree: String(payload.education.degree || '').trim(),
-          period: String(payload.education.period || '').trim(),
-        }
-      : DEFAULT_ABOUT.education;
-
-  return {
-    eyebrow: String(item.subtitle || DEFAULT_ABOUT.eyebrow).trim(),
-    title: String(item.title || DEFAULT_ABOUT.title).trim(),
-    paragraphs: asStringArray(payload.paragraphs, item.summary ? [item.summary] : DEFAULT_ABOUT.paragraphs),
-    tags: asStringArray(payload.tags, DEFAULT_ABOUT.tags),
-    stats: stats.length ? stats : DEFAULT_ABOUT.stats,
-    education: education.school || education.degree || education.period ? education : DEFAULT_ABOUT.education,
-  };
 };
 
 const getAboutTitleParts = (title = '') => {
@@ -168,19 +120,6 @@ const NOT_FOUND_SETTINGS = {
   siteTitle: '404 — Page Not Found | A Wahid Safhadi',
   seoDescription: 'The requested page could not be found on A Wahid Safhadi portfolio.',
   ogImage: DEFAULT_SITE_SETTINGS.ogImage,
-};
-
-const normalizeSettingsItem = (item = {}) => {
-  const payload =
-    item.payload && typeof item.payload === 'object' && !Array.isArray(item.payload)
-      ? item.payload
-      : {};
-
-  return {
-    siteTitle: String(payload.site_title || item.title || DEFAULT_SITE_SETTINGS.siteTitle).trim(),
-    seoDescription: String(payload.seo_description || item.summary || DEFAULT_SITE_SETTINGS.seoDescription).trim(),
-    ogImage: String(payload.og_image || DEFAULT_SITE_SETTINGS.ogImage).trim(),
-  };
 };
 
 const getAbsoluteUrl = (value) => {
@@ -252,17 +191,15 @@ function App() {
     typeof window !== 'undefined' ? window.location.pathname : ''
   );
   const aiLabPage = isAiLabRoute(currentPathname);
-  const adminPage = isAdminRoute(currentPathname);
   const readmeGeneratorPage = isReadmeGeneratorRoute(currentPathname);
   const notFoundPage = isNotFoundRoute(currentPathname);
   const [loading, setLoading] = useState(
     () =>
-      !isAdminRoute(currentPathname) &&
       !isReadmeGeneratorRoute(currentPathname) &&
       !isNotFoundRoute(currentPathname) &&
       !shouldBypassPreloader()
   );
-  const effectiveLoading = adminPage || readmeGeneratorPage || notFoundPage ? false : loading;
+  const effectiveLoading = readmeGeneratorPage || notFoundPage ? false : loading;
   const {
     viewport: sectionViewport,
     sectionContainer,
@@ -272,10 +209,10 @@ function App() {
     clipReveal: sectionClipReveal,
     cardPop: sectionCardPop,
   } = useSectionMotion();
-  const [about, setAbout] = useState(DEFAULT_ABOUT);
+  const about = ABOUT;
   const aboutTitle = getAboutTitleParts(about.title);
 
-  const lenisEnabled = !effectiveLoading && !adminPage && !readmeGeneratorPage && !notFoundPage;
+  const lenisEnabled = !effectiveLoading && !readmeGeneratorPage && !notFoundPage;
   const lenisRef = useLenis({ enabled: lenisEnabled });
 
   const aboutSectionRef = React.useRef(null);
@@ -327,33 +264,6 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-    if (notFoundPage) return undefined;
-
-    let mounted = true;
-
-    const loadAbout = async () => {
-      const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,subtitle,summary,payload,sort_order,is_published')
-        .eq('collection', 'about')
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true })
-        .limit(1);
-
-      if (!mounted || error || !data?.length) return;
-      setAbout(normalizeAboutItem(data[0]));
-    };
-
-    loadAbout();
-
-    return () => {
-      mounted = false;
-    };
-  }, [notFoundPage]);
-
-  useEffect(() => {
     applySiteSettings(
       notFoundPage
         ? NOT_FOUND_SETTINGS
@@ -363,31 +273,7 @@ function App() {
             ? README_GENERATOR_SETTINGS
             : DEFAULT_SITE_SETTINGS
     );
-
-    if (notFoundPage || aiLabPage || readmeGeneratorPage || !isSupabaseConfigured || !supabase) return undefined;
-
-    let mounted = true;
-
-    const loadSettings = async () => {
-      const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,summary,payload,sort_order,is_published')
-        .eq('collection', 'settings')
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true })
-        .limit(1);
-
-      if (!mounted || error || !data?.length) return;
-      applySiteSettings(normalizeSettingsItem(data[0]));
-    };
-
-    loadSettings();
-
-    return () => {
-      mounted = false;
-    };
-  }, [notFoundPage]);
+  }, [notFoundPage, aiLabPage, readmeGeneratorPage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -400,28 +286,16 @@ function App() {
     return () => window.removeEventListener('popstate', syncPathname);
   }, []);
 
-  const navigateAdmin = (path) => {
-    if (typeof window === 'undefined') return;
-
-    const nextPath = path || '/admin/experience';
-    if (window.location.pathname !== nextPath) {
-      window.history.pushState(null, '', nextPath);
-    }
-
-    setCurrentPathname(nextPath);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   useEffect(() => {
     document.body.classList.toggle('is-preloading', effectiveLoading);
     return () => document.body.classList.remove('is-preloading');
   }, [effectiveLoading]);
 
   useEffect(() => {
-    const active = !effectiveLoading && !adminPage && !readmeGeneratorPage && !notFoundPage;
+    const active = !effectiveLoading && !readmeGeneratorPage && !notFoundPage;
     document.body.classList.toggle('is-gsap-motion', active);
     return () => document.body.classList.remove('is-gsap-motion');
-  }, [effectiveLoading, adminPage, readmeGeneratorPage, notFoundPage]);
+  }, [effectiveLoading, readmeGeneratorPage, notFoundPage]);
 
   useEffect(() => {
     if (!effectiveLoading) {
@@ -431,7 +305,7 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
-    if (effectiveLoading || adminPage || readmeGeneratorPage || notFoundPage) return undefined;
+    if (effectiveLoading || readmeGeneratorPage || notFoundPage) return undefined;
 
     const progressTween = gsap.to('.scroll-progress-bar', {
       scaleX: 1,
@@ -499,7 +373,7 @@ function App() {
       progressTween.scrollTrigger?.kill();
       progressTween.kill();
     };
-  }, [adminPage, readmeGeneratorPage, effectiveLoading, lenisRef, notFoundPage]);
+  }, [readmeGeneratorPage, effectiveLoading, lenisRef, notFoundPage]);
 
   return (
     <div className={`app-container ${effectiveLoading ? 'is-preloading' : ''}`}>
@@ -510,10 +384,10 @@ function App() {
       </div>
 
       <CustomCursor />
-      {!aiLabPage && !adminPage && !readmeGeneratorPage && !notFoundPage && <SpotlightGlow />}
-      {!adminPage && !readmeGeneratorPage && <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage} />}
-      {!aiLabPage && !adminPage && !readmeGeneratorPage && !notFoundPage && <MobileNav />}
-      {!aiLabPage && !adminPage && !readmeGeneratorPage && !notFoundPage && <SocialRail />}
+      {!aiLabPage && !readmeGeneratorPage && !notFoundPage && <SpotlightGlow />}
+      {!readmeGeneratorPage && <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage} />}
+      {!aiLabPage && !readmeGeneratorPage && !notFoundPage && <MobileNav />}
+      {!aiLabPage && !readmeGeneratorPage && !notFoundPage && <SocialRail />}
 
       <main
         className={
@@ -526,9 +400,7 @@ function App() {
                 : ''
         }
       >
-        {adminPage ? (
-          <AdminExperience routePath={currentPathname} onNavigate={navigateAdmin} />
-        ) : aiLabPage ? (
+        {aiLabPage ? (
           <>
             <AnomalousMatterHero />
             <Suspense fallback={<section className="s-ai-lab" id="ai-lab" />}>
@@ -615,9 +487,9 @@ function App() {
         )}
       </main>
 
-      {!adminPage && !readmeGeneratorPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
-      {!adminPage && !readmeGeneratorPage && !notFoundPage && <FloatingFAQ />}
-      {!adminPage && !readmeGeneratorPage && !notFoundPage && <CvDownloadModal />}
+      {!readmeGeneratorPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
+      {!readmeGeneratorPage && !notFoundPage && <FloatingFAQ />}
+      {!readmeGeneratorPage && !notFoundPage && <CvDownloadModal />}
     </div>
   );
 }

@@ -1,11 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import gsap from 'gsap';
-import { DEFAULT_EXPERIENCES, normalizeExperience } from '../lib/experienceData';
+import { EXPERIENCES } from '../lib/experienceData';
 import { useSectionMotion } from '../lib/sectionMotion';
-import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 
-const EXPERIENCE_SELECT = 'id,title,role,blurb,tag,glyph,sort_order,is_published';
 
 // Typed text hook — animates a target element character by character using anime.js
 const useTypedText = (targetRef, text, deps) => {
@@ -39,8 +37,8 @@ const useTypedText = (targetRef, text, deps) => {
 };
 
 const Experience = () => {
-  const [experiences, setExperiences] = useState(DEFAULT_EXPERIENCES);
-  const [activeId, setActiveId] = useState(DEFAULT_EXPERIENCES[0]?.id || '');
+  const experiences = EXPERIENCES;
+  const [activeId, setActiveId] = useState(EXPERIENCES[0]?.id || '');
   const { viewport, sectionContainer, sectionItem, staggerTight, eyebrow, clipReveal } = useSectionMotion();
 
   const activeExperience = useMemo(
@@ -53,27 +51,6 @@ const Experience = () => {
   const glyphRef = useRef(null);
   const cmdTextRef = useRef(null);
   const underlineRef = useRef(null);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-    let mounted = true;
-    const loadExperiences = async () => {
-      const { data, error } = await supabase
-        .from('experiences')
-        .select(EXPERIENCE_SELECT)
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-      if (!mounted || error || !data?.length) return;
-      const nextExperiences = data.map(normalizeExperience);
-      setExperiences(nextExperiences);
-      setActiveId((cur) =>
-        nextExperiences.some((e) => e.id === cur) ? cur : nextExperiences[0].id
-      );
-    };
-    loadExperiences();
-    return () => { mounted = false; };
-  }, []);
 
   // Typed command line text
   const cmdText = activeId ? `$ cat ./${activeId}.md` : '';

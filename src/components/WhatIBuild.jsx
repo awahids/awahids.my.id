@@ -1,13 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { useSectionMotion } from '../lib/sectionMotion';
-import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { useWordSplit } from '../lib/useWordSplit';
 import { useGsapReveal } from '../lib/useGsapReveal';
 import { useTextScramble } from '../lib/useTextScramble';
 
-const DEFAULT_OFFERINGS = [
+const OFFERINGS = [
   {
     title: 'Web Applications',
     desc: 'Responsive interfaces with clean component structure, smooth user flows, and frontend code that stays maintainable past v1.',
@@ -34,13 +33,7 @@ const DEFAULT_OFFERINGS = [
   },
 ];
 
-const serviceFromCmsItem = (item) => ({
-  title: String(item.title || '').trim(),
-  desc: String(item.summary || '').trim(),
-});
-
 const WhatIBuild = () => {
-  const [offerings, setOfferings] = useState(DEFAULT_OFFERINGS);
   const gridRef = useRef(null);
   const sectionRef = useRef(null);
   const { viewport, sectionContainer, sectionItem, staggerGrid, cardPop, eyebrow } = useSectionMotion();
@@ -48,38 +41,6 @@ const WhatIBuild = () => {
   useWordSplit(sectionRef);
   useGsapReveal(sectionRef);
   useTextScramble(sectionRef);
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-
-    let mounted = true;
-
-    const loadServices = async () => {
-      const { data, error } = await supabase
-        .from('cms_items')
-        .select('id,title,summary,sort_order,is_published')
-        .eq('collection', 'services')
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-
-      if (!mounted || error || !data?.length) return;
-
-      const nextOfferings = data
-        .map(serviceFromCmsItem)
-        .filter((item) => item.title && item.desc);
-
-      if (nextOfferings.length) {
-        setOfferings(nextOfferings);
-      }
-    };
-
-    loadServices();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   useEffect(() => {
     const grid = gridRef.current;
@@ -109,7 +70,7 @@ const WhatIBuild = () => {
     });
 
     return () => cleanups.forEach((fn) => fn());
-  }, [offerings]);
+  }, []);
 
   return (
     <section className="s-build" id="services">
@@ -139,7 +100,7 @@ const WhatIBuild = () => {
         </motion.p>
 
         <motion.div className="build-grid" variants={staggerGrid} ref={gridRef}>
-          {offerings.map((item, index) => (
+          {OFFERINGS.map((item, index) => (
             <motion.article className="build-card" key={item.title} variants={cardPop}>
               <div className="build-card-num">{`0${index + 1}`}</div>
               <h3 className="build-card-title">{item.title}</h3>

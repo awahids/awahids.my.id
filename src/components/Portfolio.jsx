@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { BOOKING_URL } from '../lib/links';
-import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { useWordSplit } from '../lib/useWordSplit';
 import { useTextScramble } from '../lib/useTextScramble';
 import { useGsapReveal } from '../lib/useGsapReveal';
@@ -30,13 +29,13 @@ const projects = [
     cat: 'Fullstack · Service Platform',
     year: '2023',
     desc: 'Built a fullstack service platform for driving-course operations with conversion-focused pages, lead capture handling, content workflow, and stable production deployment.',
-    problem:
+    problem: 
       'Arafah Group needed a clearer online presence to explain driving-course services, reduce manual inquiries, keep service content updated, and turn visitors into qualified leads.',
-    built:
+    built: 
       'Implemented responsive service pages, structured pricing content, lead capture handling, CMS-ready content workflow, backend service layer, and production deployment setup.',
-    result:
+    result: 
       'Created a clearer service funnel, improved lead submission flow, and gave the team a maintainable workflow for handling content updates and inbound leads.',
-    impact:
+    impact: 
       'Strengthened digital trust and gave the business a more reliable path from visitor discovery to inbound inquiry.',
     outcomes: [
       'Clearer service messaging for first-time visitors.',
@@ -67,8 +66,7 @@ const projects = [
     stack: ['Next.js', 'JavaScript', 'Vercel', 'IDCloudHost'],
     live: 'https://arafah-group.com',
     case: '#',
-    bento: 'bento-hero',
-    num: '01'
+    num: '01',
   },
   {
     id: 'adawms',
@@ -76,13 +74,13 @@ const projects = [
     cat: 'Warehouse · Fullstack System',
     year: '2024',
     desc: 'Built a fullstack warehouse system for stock movement, batch tracking, picking flow, and multi-role operational visibility.',
-    problem:
+    problem: 
       'Warehouse and online-channel stock data were frequently out of sync, creating reconciliation overhead and slower operational decisions.',
-    built:
+    built: 
       'Delivered operational dashboards, inbound-outbound movement flow, role-based controls, backend APIs, and storage integrations for daily warehouse execution.',
-    result:
+    result: 
       'Synchronized stock visibility across workflows and reduced manual reconciliation effort for day-to-day warehouse operations.',
-    impact:
+    impact: 
       'Warehouse, operations, and online-channel teams could work from the same operational data instead of fragmented stock records.',
     outcomes: [
       'Unified stock visibility across warehouse and online channels.',
@@ -113,8 +111,7 @@ const projects = [
     stack: ['NestJS', 'MySQL', 'AWS S3', 'ExpressJS', 'JWT'],
     live: 'http://adawms.com/',
     case: '#',
-    bento: 'bento-feature',
-    num: '02'
+    num: '02',
   },
   {
     id: 'ngaji-app',
@@ -122,13 +119,13 @@ const projects = [
     cat: 'Education · Fullstack Web App',
     year: '2021',
     desc: 'Built an education web app with guided lesson flows, media playback, backend services, relational data modeling, and production deployment.',
-    problem:
+    problem: 
       'Learners needed a simple digital flow to practice Quran reading basics without fragmented materials or confusing navigation.',
-    built:
+    built: 
       'Implemented lesson hierarchy, media playback support, backend content services, relational schema design, and containerized deployment setup.',
-    result:
+    result: 
       'Improved learning accessibility with a clearer self-study journey and a maintainable foundation for future lesson expansion.',
-    impact:
+    impact: 
       'Lowered learning friction for first-time users and made future content growth easier to manage.',
     outcomes: [
       'Simpler self-study flow for beginner learners.',
@@ -159,54 +156,7 @@ const projects = [
     stack: ['Next.js', 'TypeScript', 'Golang', 'PostgreSQL', 'Docker'],
     live: 'https://belajar-ngaji.online/',
     case: '#',
-    bento: 'bento-tall',
-    num: '03'
-  },
-  {
-    id: 'api-movie-reviews',
-    title: 'API Movie Reviews',
-    cat: 'Backend API · Platform Core',
-    year: '2021',
-    desc: 'Built backend APIs for review lifecycle, rating flow, media upload integration, and deployment-ready service operations.',
-    problem:
-      'The product needed one reliable backend contract to handle review lifecycle, ratings, and media assets for multiple frontend flows.',
-    built:
-      'Designed REST endpoints, structured relational models, integrated media upload services, and packaged deployment-ready backend infrastructure.',
-    result:
-      'Provided a reusable API foundation that supported product experimentation and faster frontend integration.',
-    impact:
-      'Enabled quicker feature iteration by centralizing core review logic into one reusable backend service.',
-    outcomes: [
-      'Reusable API contract for review and rating features.',
-      'Cleaner integration path for frontend experimentation.',
-      'Deployment-ready backend structure for iterative product work.',
-    ],
-    signals: [
-      {
-        label: 'Integration Speed',
-        value: 'Faster',
-        note: 'Frontend experiments moved faster with stable API contracts.',
-      },
-      {
-        label: 'API Reuse',
-        value: 'Higher',
-        note: 'Core review and rating logic was reused across product scenarios.',
-      },
-      {
-        label: 'Service Stability',
-        value: 'Improved',
-        note: 'Deployment-ready backend foundation reduced iteration risk.',
-      },
-    ],
-    type: 'Backend Platform API',
-    role: 'Backend Developer',
-    focus: ['Review Lifecycle', 'Media Integration', 'API Reliability'],
-    scope: ['Backend API', 'Data Model', 'Integration', 'Deployment'],
-    stack: ['ExpressJS', 'PostgreSQL', 'Cloudinary', 'Heroku', 'Git'],
-    live: 'https://github.com/awahids/API-panas.git',
-    case: '#',
-    bento: 'bento-wide',
-    num: '04'
+    num: '03',
   },
   {
     id: 'tokokupon',
@@ -214,13 +164,13 @@ const projects = [
     cat: 'Marketplace · Fullstack',
     year: '2024',
     desc: 'Built a marketplace web presence and admin CMS workflow so campaigns and content updates could ship faster without risky release overhead.',
-    problem:
+    problem: 
       'The team needed a marketplace-facing presence and an admin workflow that could be updated quickly without interrupting production.',
-    built:
+    built: 
       'Implemented responsive acquisition pages, CMS-oriented admin capabilities, supporting API services, and deployment flow for continuous updates.',
-    result:
+    result: 
       'Enabled faster content rollout and clearer acquisition flow while keeping backend operations stable for ongoing growth.',
-    impact:
+    impact: 
       'Reduced release friction for marketing and operations by making key marketplace content easier to update.',
     outcomes: [
       'Faster campaign and content rollout cycles.',
@@ -251,8 +201,7 @@ const projects = [
     stack: ['Next.js', 'NestJS', 'Ant Design', 'MySQL', 'Vercel'],
     live: 'https://tokokupon.com',
     case: '#',
-    bento: 'bento-compact',
-    num: '05'
+    num: '04',
   },
   {
     id: 'wms-rasa-group',
@@ -260,13 +209,13 @@ const projects = [
     cat: 'Operations · WMS',
     year: '2025',
     desc: 'Built an internal fullstack WMS for inbound-outbound execution, inventory movement, batch control, and operational reporting.',
-    problem:
+    problem: 
       'Operations relied on fragmented manual processes, making warehouse execution hard to monitor, audit, and scale reliably.',
-    built:
+    built: 
       'Developed the platform from scratch with operational dashboards, backend API architecture, PostgreSQL domain modeling, and automation hooks for warehouse controls.',
-    result:
+    result: 
       'Standardized internal warehouse workflows and established a scalable foundation for long-term operational expansion.',
-    impact:
+    impact: 
       'Created better execution visibility and auditability, so warehouse decisions could be made faster with centralized operational data.',
     outcomes: [
       'Standardized inbound, outbound, and inventory execution flow.',
@@ -297,8 +246,7 @@ const projects = [
     stack: ['NestJS', 'Prisma ORM', 'Vue.js', 'PostgreSQL', 'Docker'],
     live: '#',
     case: '#',
-    bento: 'bento-core',
-    num: '06'
+    num: '05',
   },
   {
     id: 'qala-temu',
@@ -306,13 +254,13 @@ const projects = [
     cat: 'Appointment · Platform',
     year: '2025',
     desc: 'Built a fullstack appointment platform for scheduling, service discovery, admin operations, and end-to-end booking flow.',
-    problem:
+    problem: 
       'Booking and scheduling relied on manual coordination, creating friction for end users and operational teams.',
-    built:
+    built: 
       'Implemented customer booking experience, admin dashboard, auth and role flows, NestJS API services, relational schema, and Dockerized deployment.',
-    result:
+    result: 
       'Delivered a production-ready appointment platform that improved booking clarity and reduced scheduling friction.',
-    impact:
+    impact: 
       'Gave both customers and operators a clearer scheduling workflow with fewer manual coordination steps.',
     outcomes: [
       'Cleaner booking flow from discovery to appointment submission.',
@@ -343,22 +291,21 @@ const projects = [
     stack: ['React', 'NestJS', 'Prisma', 'PostgreSQL', 'Docker'],
     live: 'https://qala.digital',
     case: '#',
-    bento: 'bento-accent',
-    num: '07'
+    num: '06',
   },
   {
     id: 'attendance-system',
     title: 'Geo Attendance System',
     cat: 'HR Tech · Attendance & Leave Platform',
     year: '2026',
-    desc: 'Built a fullstack attendance and leave management system with geofenced check-in, mandatory selfie verification, and a two-tier approval workflow — delivered in one week with AI-assisted development.',
-    problem:
-      'The team needed a reliable way to verify employee attendance across multiple work locations, replace manual leave paperwork, and give managers and HR a faster approval and monitoring process — all under a tight one-week delivery window.',
-    built:
-      'Implemented geofenced check-in with admin-defined location points, mandatory selfie capture, leave/day-off/attendance-correction requests, a two-tier approval chain (supervisor and HR), and admin/HR dashboards for monitoring attendance, leave, and master data. Backend built with Go and Gin Gonic, frontend with Vue.js, PostgreSQL for data, and Dockerized deployment through Komodo — with Claude Code accelerating implementation to hit the one-week deadline.',
-    result:
+    desc: 'Built a fullstack attendance and leave management system with geofenced check-in, mandatory selfie verification, and a two-tier approval workflow -- delivered in one week with AI-assisted development.',
+    problem: 
+      'The team needed a reliable way to verify employee attendance across multiple work locations, replace manual leave paperwork, and give managers and HR a faster approval and monitoring process -- all under a tight one-week delivery window.',
+    built: 
+      'Implemented geofenced check-in with admin-defined location points, mandatory selfie capture, leave/day-off/attendance-correction requests, a two-tier approval chain (supervisor and HR), and admin/HR dashboards for monitoring attendance, leave, and master data. Backend built with Go and Gin Gonic, frontend with Vue.js, PostgreSQL for data, and Dockerized deployment through Komodo -- with Claude Code accelerating implementation to hit the one-week deadline.',
+    result: 
       'Delivered a production-ready attendance and leave platform in seven days, replacing manual attendance tracking with location-verified, photo-confirmed check-ins and a structured approval flow.',
-    impact:
+    impact: 
       'Reduced attendance fraud risk, centralized leave and correction requests into one approval pipeline, and gave HR real-time visibility into attendance and leave across all work locations.',
     outcomes: [
       'Location-verified, selfie-confirmed check-ins across multiple work sites.',
@@ -389,62 +336,11 @@ const projects = [
     stack: ['Go', 'Gin Gonic', 'Vue.js', 'PostgreSQL', 'Docker', 'Komodo'],
     live: '#',
     case: '#',
-    bento: 'bento-banner',
-    num: '08'
-  }
+    num: '07',
+  },
 ];
 
-const groupProjectChildren = (rows = [], valueKey = 'label') =>
-  rows.reduce((acc, row) => {
-    const projectId = row.project_id;
-    if (!projectId) return acc;
-
-    if (!acc[projectId]) acc[projectId] = [];
-    acc[projectId].push(row[valueKey]);
-    return acc;
-  }, {});
-
-const groupProjectSignals = (rows = []) =>
-  rows.reduce((acc, row) => {
-    const projectId = row.project_id;
-    if (!projectId) return acc;
-
-    if (!acc[projectId]) acc[projectId] = [];
-    acc[projectId].push({
-      label: row.label,
-      value: row.value,
-      note: row.note,
-    });
-    return acc;
-  }, {});
-
-const projectFromCmsItem = (item, index, children = {}) => {
-  return {
-    id: item.id,
-    title: item.title,
-    cat: item.subtitle,
-    year: String(item.year || ''),
-    desc: item.summary,
-    problem: String(item.problem || ''),
-    built: String(item.built || ''),
-    result: String(item.result || ''),
-    impact: String(item.impact || ''),
-    outcomes: children.outcomes?.[item.id] || [],
-    signals: children.signals?.[item.id] || [],
-    type: String(item.project_type || ''),
-    role: String(item.role || ''),
-    focus: children.focus?.[item.id] || [],
-    scope: children.scope?.[item.id] || [],
-    stack: children.stack?.[item.id] || [],
-    live: String(item.live_url || '#'),
-    case: String(item.case_url || '#'),
-    bento: String(item.bento || 'bento-compact'),
-    num: String(item.num || String(index + 1).padStart(2, '0')),
-  };
-};
-
 const Portfolio = () => {
-  const [projectItems, setProjectItems] = useState(projects);
   const [selectedProject, setSelectedProject] = useState(null);
   const sectionRef = useRef(null);
   const modalRef = useRef(null);
@@ -456,56 +352,6 @@ const Portfolio = () => {
   useGsapReveal(sectionRef);
   const { viewport, sectionContainer, sectionItem, eyebrow, reduceMotion } =
     useSectionMotion();
-
-  useEffect(() => {
-    if (!isSupabaseConfigured || !supabase) return undefined;
-
-    let mounted = true;
-
-    const loadProjects = async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select('id,title,subtitle,summary,year,project_type,role,live_url,case_url,bento,num,problem,built,result,impact,sort_order,is_published')
-        .eq('is_published', true)
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: true });
-
-      if (!mounted || error || !data?.length) return;
-
-      const projectIds = data.map((project) => project.id);
-      const [
-        focusResult,
-        scopeResult,
-        stackResult,
-        outcomesResult,
-        signalsResult,
-      ] = await Promise.all([
-        supabase.from('project_focus').select('project_id,label,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
-        supabase.from('project_scope').select('project_id,label,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
-        supabase.from('project_stack').select('project_id,label,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
-        supabase.from('project_outcomes').select('project_id,body,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
-        supabase.from('project_signals').select('project_id,label,value,note,sort_order').in('project_id', projectIds).order('sort_order', { ascending: true }),
-      ]);
-
-      if (!mounted) return;
-
-      const children = {
-        focus: groupProjectChildren(focusResult.data || []),
-        scope: groupProjectChildren(scopeResult.data || []),
-        stack: groupProjectChildren(stackResult.data || []),
-        outcomes: groupProjectChildren(outcomesResult.data || [], 'body'),
-        signals: groupProjectSignals(signalsResult.data || []),
-      };
-
-      setProjectItems(data.map((project, index) => projectFromCmsItem(project, index, children)));
-    };
-
-    loadProjects();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
 
   const openModal = useCallback((project) => {
     setSelectedProject(project);
@@ -595,7 +441,7 @@ const Portfolio = () => {
           Real projects across web apps, dashboards, backend systems, automation, and deployment.
         </motion.p>
 
-        <ProjectCoverflow projects={projectItems} onOpen={openModal} />
+        <ProjectCoverflow projects={projects} onOpen={openModal} />
       </motion.div>
 
       <AnimatePresence>
