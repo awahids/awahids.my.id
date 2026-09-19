@@ -32,6 +32,11 @@ export const consumePrdQuota = async (req) => {
     throw new RequestError(502, 'QUOTA_UNAVAILABLE', 'Tidak bisa memeriksa kuota');
   }
 
-  const remaining = Number(await response.json());
-  return { allowed: remaining > 0, remaining: Number.isFinite(remaining) ? remaining : 0 };
+  // The RPC returns max - count, unclamped: 0 means this call took the last
+  // slot, negative means it went over. Anything non-numeric fails closed.
+  const remaining = await response.json();
+  if (typeof remaining !== 'number' || !Number.isFinite(remaining)) {
+    return { allowed: false, remaining: 0 };
+  }
+  return { allowed: remaining >= 0, remaining: Math.max(remaining, 0) };
 };

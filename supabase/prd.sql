@@ -27,7 +27,8 @@ begin
   do update set count = public.prd_quota.count + 1
   returning count into new_count;
 
-  return greatest(p_max - new_count, 0);
+  -- Unclamped on purpose: 0 = this call used the last slot, negative = over.
+  return p_max - new_count;
 end;
 $$;
 

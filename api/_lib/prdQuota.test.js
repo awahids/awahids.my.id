@@ -32,9 +32,25 @@ test('consumePrdQuota: allows while the RPC still reports headroom', async (t) =
   assert.deepEqual(result, { allowed: true, remaining: 2 });
 });
 
-test('consumePrdQuota: refuses once the allowance is spent', async (t) => {
+test('consumePrdQuota: the call that spends the last slot is still allowed', async (t) => {
   withEnv();
   t.mock.method(global, 'fetch', async () => ({ ok: true, json: async () => 0 }));
+
+  const result = await consumePrdQuota(req);
+  assert.deepEqual(result, { allowed: true, remaining: 0 });
+});
+
+test('consumePrdQuota: refuses once the count is past the allowance', async (t) => {
+  withEnv();
+  t.mock.method(global, 'fetch', async () => ({ ok: true, json: async () => -1 }));
+
+  const result = await consumePrdQuota(req);
+  assert.deepEqual(result, { allowed: false, remaining: 0 });
+});
+
+test('consumePrdQuota: a non-numeric RPC reply fails closed', async (t) => {
+  withEnv();
+  t.mock.method(global, 'fetch', async () => ({ ok: true, json: async () => null }));
 
   const result = await consumePrdQuota(req);
   assert.equal(result.allowed, false);
