@@ -16,6 +16,7 @@ import {
   validateFaqBody,
 } from './_lib/requestGuards.js';
 import { sendN8nEventSafe } from './_lib/n8n.js';
+import { recordQaSafe } from './_lib/qaArchive.js';
 import {
   SCOPE_RULES,
   isOutOfScopeRequest,
@@ -297,8 +298,20 @@ export default async function handler(req, res) {
       usedProvider = 'sumopod-fallback';
     }
 
-    if (looksLikeOutOfScopeAnswer(result.response)) {
+    const wasRefused = looksLikeOutOfScopeAnswer(result.response);
+    if (wasRefused) {
       result.response = outOfScopeReply(question, languageHint);
+    }
+
+    // Only archive answers the scope guard let through: a refusal is not an
+    // answer about Wahid, and would be a poor example to retrieve later.
+    if (!wasRefused) {
+      await recordQaSafe({
+        route: '/api/ai-assistant',
+        question,
+        answer: result.response,
+        language: languageHint || '',
+      });
     }
 
     const latencyMs = Date.now() - startedAt;

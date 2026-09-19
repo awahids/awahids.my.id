@@ -8,6 +8,7 @@ import {
   validateFaqBody,
 } from './_lib/requestGuards.js';
 import { sendN8nEventSafe } from './_lib/n8n.js';
+import { recordQaSafe } from './_lib/qaArchive.js';
 import {
   SCOPE_RULES,
   isOutOfScopeRequest,
@@ -114,6 +115,17 @@ export default async function handler(req, res) {
     const assistantText = looksLikeOutOfScopeAnswer(rawAnswer)
       ? outOfScopeReply(question, languageHint)
       : rawAnswer;
+
+    // Only archive answers the scope guard let through: a refusal is not an
+    // answer about Wahid, and would be a poor example to retrieve later.
+    if (assistantText === rawAnswer) {
+      await recordQaSafe({
+        route: '/api/ai-faq',
+        question,
+        answer: assistantText,
+        language: languageHint || '',
+      });
+    }
 
     await sendN8nEventSafe({
       req,

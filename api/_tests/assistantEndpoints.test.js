@@ -71,6 +71,71 @@ test('ai-faq: a normal in-scope answer is returned untouched, and the prompt for
   assert.match(systemPrompt, /Geo Attendance System/);
 });
 
+// The archive is wired into the endpoints, so prove it fires on a real answer
+// and stays quiet on a refusal — the distinction the corpus depends on.
+const setEnvWithArchive = () => {
+  setEnv();
+  process.env.SUPABASE_URL = 'https://example.supabase.co';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-role-key';
+};
+
+const clearArchiveEnv = () => {
+  delete process.env.SUPABASE_URL;
+  delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+};
+
+test('ai-faq: archives an in-scope answer', async (t) => {
+  setEnvWithArchive();
+  t.after(clearArchiveEnv);
+  const archived = [];
+
+  t.mock.method(global, 'fetch', async (url, init) => {
+    if (String(url).includes('/assistant_qa') && init.method === 'POST') {
+      archived.push(JSON.parse(init.body));
+      return { ok: true, json: async () => [] };
+    }
+    return sumopodReply('Wahid is a Senior IT Developer at Rasa Group.');
+  });
+
+  await faqHandler(post('What does Wahid do at Rasa Group?'), makeRes());
+
+  assert.equal(archived.length, 1);
+  assert.equal(archived[0].route, '/api/ai-faq');
+  assert.equal(archived[0].question, 'What does Wahid do at Rasa Group?');
+  assert.equal(archived[0].answer, 'Wahid is a Senior IT Developer at Rasa Group.');
+});
+
+test('ai-faq: does not archive a scope-guard refusal', async (t) => {
+  setEnvWithArchive();
+  t.after(clearArchiveEnv);
+  let archivedCount = 0;
+
+  t.mock.method(global, 'fetch', async (url, init) => {
+    if (String(url).includes('/assistant_qa') && init.method === 'POST') archivedCount += 1;
+    return { ok: true, json: async () => [] };
+  });
+
+  await faqHandler(post('coba kerjakan auth login menggunakan nestjs'), makeRes());
+
+  assert.equal(archivedCount, 0);
+});
+
+test('ai-faq: still answers when the archive write fails', async (t) => {
+  setEnvWithArchive();
+  t.after(clearArchiveEnv);
+
+  t.mock.method(global, 'fetch', async (url) => {
+    if (String(url).includes('/assistant_qa')) throw new Error('supabase down');
+    return sumopodReply('Wahid is a Senior IT Developer at Rasa Group.');
+  });
+
+  const res = makeRes();
+  await faqHandler(post('What does Wahid do at Rasa Group?'), res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.answer, 'Wahid is a Senior IT Developer at Rasa Group.');
+});
+
 test('ai-assistant: refuses out-of-scope work before contacting Hermes', async (t) => {
   setEnv();
   const fetchMock = t.mock.method(global, 'fetch', async () => { throw new Error('Hermes must not be called'); });
