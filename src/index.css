@@ -4687,3 +4687,13 @@ footer {
 @media (max-width:768px) {
   .s-prd-generator { padding:100px var(--section-pad-x-mobile) 60px; }
 }
+
+.prd-output { background:var(--surface-card); border:1px solid var(--border); border-radius:var(--radius-md); padding:20px; overflow:auto; max-height:60vh; font-size:13px; line-height:1.7; white-space:pre-wrap; word-break:break-word; }
+.prd-diagrams h2 { font-family:'Syne',sans-serif; font-size:20px; margin:32px 0 6px; }
+.prd-hint { font-size:14px; color:rgba(255,255,255,.6); margin:0 0 16px; }
+.prd-diagram { border:1px solid var(--border); border-radius:var(--radius-md); margin-bottom:14px; overflow:hidden; }
+.prd-diagram-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 14px; border-bottom:1px solid var(--border); font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+.prd-diagram pre { margin:0; padding:14px; overflow:auto; font-size:12px; line-height:1.6; }
+.prd-save { border:1px solid var(--border); border-radius:var(--radius-md); padding:14px; }
+.prd-save summary { cursor:pointer; font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.14em; text-transform:uppercase; }
+.prd-save .prd-field { margin-top:14px; }
