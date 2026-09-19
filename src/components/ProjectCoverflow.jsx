@@ -71,6 +71,25 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
     };
   }, [pinned, count]);
 
+  // The pinned coverflow fills the mobile viewport and .pcf-caption runs right
+  // under the fixed floating controls. Flag the body while the pin is on screen
+  // so CSS can stand them down — mobile only, see index.css.
+  useEffect(() => {
+    const pin = pinRef.current;
+    if (!pin || typeof IntersectionObserver === 'undefined') return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        document.body.classList.toggle('is-coverflow-onscreen', entry.isIntersecting);
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(pin);
+    return () => {
+      observer.disconnect();
+      document.body.classList.remove('is-coverflow-onscreen');
+    };
+  }, []);
+
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return undefined;

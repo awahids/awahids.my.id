@@ -3390,6 +3390,27 @@ footer {
     right: 84px !important;
     bottom: calc(96px + max(16px, env(safe-area-inset-bottom))) !important;
   }
+
+  /* The pinned coverflow fills the viewport, so .pcf-caption runs underneath
+     these fixed controls with no vertical room left to shift it (the tile is
+     already close to the sticky navbar). Stand the controls down while the pin
+     is on screen instead — .is-coverflow-onscreen is set in ProjectCoverflow.
+     The FAQ bubble stays put when its chat window is open, so an active
+     conversation is never hidden. Deliberately two rules: if :has() is
+     unsupported the second is dropped on its own rather than taking the
+     first with it. */
+  .floating-faq-container {
+    transition:opacity .26s var(--ease-standard), visibility .26s;
+  }
+  /* !important only to outrank .floating-top-btn.is-visible, which already
+     declares opacity/pointer-events !important further down this file. */
+  body.is-coverflow-onscreen .floating-top-btn {
+    opacity:0 !important; pointer-events:none !important;
+    transform:translateY(14px) scale(.94);
+  }
+  body.is-coverflow-onscreen .floating-faq-container:not(:has(.floating-faq-window)) {
+    opacity:0; visibility:hidden; pointer-events:none;
+  }
 }
 
 @media (max-width: 600px) {
