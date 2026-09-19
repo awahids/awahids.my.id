@@ -1,12 +1,6 @@
-const HEX_COLOR_PATTERN = /^[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?$/;
+import { cardThemeColors } from '../../src/lib/cardThemes.js';
 
-const DEFAULT_COLORS = {
-  bg: '1f222e',
-  border: '30354a',
-  title: 'f85d7f',
-  text: 'e4e6f1',
-  icon: 'f8d866',
-};
+const HEX_COLOR_PATTERN = /^[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?$/;
 
 /** Escapes text before it is interpolated into SVG markup. */
 export const escapeXml = (value) =>
@@ -22,13 +16,17 @@ export const escapeXml = (value) =>
 export const sanitizeHexColor = (value, fallback) =>
   value && HEX_COLOR_PATTERN.test(value) ? value : fallback;
 
-export const parseColorsFromQuery = (query = {}) => ({
-  bg: sanitizeHexColor(query.bg_color, DEFAULT_COLORS.bg),
-  border: sanitizeHexColor(query.border_color, DEFAULT_COLORS.border),
-  title: sanitizeHexColor(query.title_color, DEFAULT_COLORS.title),
-  text: sanitizeHexColor(query.text_color, DEFAULT_COLORS.text),
-  icon: sanitizeHexColor(query.icon_color, DEFAULT_COLORS.icon),
-});
+// `theme` picks a base palette; explicit *_color params still override single colors.
+export const parseColorsFromQuery = (query = {}) => {
+  const base = cardThemeColors(String(query.theme || ''));
+  return {
+    bg: sanitizeHexColor(query.bg_color, base.bg),
+    border: sanitizeHexColor(query.border_color, base.border),
+    title: sanitizeHexColor(query.title_color, base.title),
+    text: sanitizeHexColor(query.text_color, base.text),
+    icon: sanitizeHexColor(query.icon_color, base.icon),
+  };
+};
 
 export const isHideBorder = (query = {}) => query.hide_border === 'true';
 
@@ -36,7 +34,7 @@ export const renderCard = ({ width, height, title, colors, hideBorder, body }) =
 <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" font-family="'Segoe UI', Ubuntu, Sans-Serif">
   <rect x="0.5" y="0.5" rx="8" width="${width - 1}" height="${height - 1}" fill="#${colors.bg}"
     ${hideBorder ? '' : `stroke="#${colors.border}" stroke-width="1"`} />
-  ${title ? `<text x="25" y="35" font-size="18" font-weight="600" fill="#${colors.title}">${escapeXml(title)}</text>` : ''}
+  ${title ? `<text x="25" y="35" font-size="20" font-weight="600" fill="#${colors.title}">${escapeXml(title)}</text>` : ''}
   ${body}
 </svg>`.trim();
 

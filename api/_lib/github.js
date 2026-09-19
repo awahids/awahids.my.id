@@ -8,6 +8,9 @@ const PROFILE_QUERY = `
       name
       login
       avatarUrl
+      followers {
+        totalCount
+      }
       repositories(
         first: 100
         after: $reposCursor
@@ -184,6 +187,7 @@ export const getGithubProfileData = async (username, { timeoutMs = DEFAULT_TIMEO
       pullRequests: user.contributionsCollection.totalPullRequestContributions,
       issues: user.contributionsCollection.totalIssueContributions,
       reviews: user.contributionsCollection.totalPullRequestReviewContributions,
+      followers: user.followers?.totalCount ?? 0,
       contributions: calendar.totalContributions,
     },
     languages: [...languageTotals.values()].sort((a, b) => b.size - a.size),

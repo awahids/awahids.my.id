@@ -2,33 +2,35 @@ import { handleGithubCardRequest } from '../_lib/githubCard.js';
 import { renderCard, escapeXml } from '../_lib/svgCard.js';
 
 const FALLBACK_COLOR = '858585';
+const MAX_LANGUAGES = 5;
+const MAX_NAME_LENGTH = 16;
+const BAR_WIDTH = 245;
 
-// Every language found across the profile's repos, already sorted most-used
-// first by getGithubProfileData — no artificial top-N cap.
+// Fixed 300x195 so it sits next to the stats card at the same height instead
+// of growing with the number of languages (and being shrunk to unreadable
+// text when a README constrains its height).
 const buildTopLangsCard = (data, { colors, hideBorder }) => {
-  const languages = data.languages;
-  const totalSize = languages.reduce((sum, lang) => sum + lang.size, 0) || 1;
-
-  const width = 400;
-  const height = 55 + languages.length * 30;
+  const totalSize = data.languages.reduce((sum, lang) => sum + lang.size, 0) || 1;
+  const languages = data.languages.slice(0, MAX_LANGUAGES);
 
   const rows = languages.map((lang, index) => {
-    const y = 60 + index * 30;
-    const percent = ((lang.size / totalSize) * 100).toFixed(1);
-    const barWidth = Math.max(2, (lang.size / totalSize) * 260);
+    const y = 70 + index * 25;
+    const share = lang.size / totalSize;
     const dotColor = lang.color || `#${FALLBACK_COLOR}`;
+    const name = lang.name.length > MAX_NAME_LENGTH ? `${lang.name.slice(0, MAX_NAME_LENGTH - 1)}…` : lang.name;
 
     return `
-      <circle cx="30" cy="${y - 5}" r="5" fill="${dotColor}" />
-      <text x="42" y="${y}" font-size="13" fill="#${colors.text}">${escapeXml(lang.name)} ${percent}%</text>
-      <rect x="30" y="${y + 6}" width="260" height="6" rx="3" fill="#${colors.border}" />
-      <rect x="30" y="${y + 6}" width="${barWidth}" height="6" rx="3" fill="${dotColor}" />
+      <circle cx="31" cy="${y - 5}" r="5" fill="${dotColor}" />
+      <text x="44" y="${y}" font-size="14" fill="#${colors.text}">${escapeXml(name)}</text>
+      <text x="275" y="${y}" text-anchor="end" font-size="14" font-weight="700" fill="#${colors.icon}">${(share * 100).toFixed(1)}%</text>
+      <rect x="30" y="${y + 6}" width="${BAR_WIDTH}" height="6" rx="3" fill="#${colors.border}" />
+      <rect x="30" y="${y + 6}" width="${Math.max(4, share * BAR_WIDTH)}" height="6" rx="3" fill="${dotColor}" />
     `;
   }).join('');
 
   return renderCard({
-    width,
-    height,
+    width: 300,
+    height: 195,
     title: 'Most Used Languages',
     colors,
     hideBorder,

@@ -1,13 +1,22 @@
 import { ensureMethod, createRateLimiter } from './_lib/requestGuards.js';
 import { escapeXml, sanitizeHexColor } from './_lib/svgCard.js';
+import { cardThemeColors, isCardTheme } from '../src/lib/cardThemes.js';
 
-const TYPE_MS_PER_CHAR = 70;
-const ERASE_MS_PER_CHAR = 40;
 const DEFAULT_PAUSE_MS = 2000;
-// ponytail: assumes a monospace-ish font so char-count * this factor is a
-// decent stand-in for pixel width. Upgrade path: measure with a real text
-// shaper if a non-monospace font is ever requested.
-const CHAR_WIDTH_FACTOR = 0.6;
+const ERASE_RATIO = 0.55;
+
+// Only generic families: an SVG shown through <img> can't load web fonts, so
+// these resolve to whatever the viewer's system has.
+const FONTS = {
+  mono: { stack: "Consolas, Menlo, 'Courier New', monospace", charWidth: 0.6 },
+  sans: { stack: "'Segoe UI', Ubuntu, Arial, sans-serif", charWidth: 0.62 },
+  serif: { stack: "Georgia, 'Times New Roman', serif", charWidth: 0.6 },
+};
+// ponytail: width is estimated as chars * size * charWidth. It's exact for mono
+// and deliberately generous for proportional fonts (extra width only delays the
+// reveal; too little would clip letters). Upgrade path: measure with a real shaper.
+const BOLD_WIDTH_FACTOR = 1.07;
+const SPEEDS = { slow: 130, normal: 70, fast: 35 };
 const MAX_LINES = 8;
 const MAX_LINE_LENGTH = 80;
 
@@ -40,12 +49,12 @@ const dedupePoints = (points) => {
  * single SMIL <animate> spanning the WHOLE multi-line cycle: 0 everywhere
  * except during that line's own type -> hold -> erase window.
  */
-export const buildTypingTimeline = (lines, { pauseMs = DEFAULT_PAUSE_MS, charWidth } = {}) => {
+export const buildTypingTimeline = (lines, { pauseMs = DEFAULT_PAUSE_MS, charWidth, typeMsPerChar = SPEEDS.normal } = {}) => {
   const safePauseMs = Math.max(1, pauseMs);
   const segments = lines.map((line) => ({
     line,
-    typeDur: Math.max(1, line.length * TYPE_MS_PER_CHAR),
-    eraseDur: Math.max(1, line.length * ERASE_MS_PER_CHAR),
+    typeDur: Math.max(1, line.length * typeMsPerChar),
+    eraseDur: Math.max(1, line.length * typeMsPerChar * ERASE_RATIO),
     textWidth: line.length * charWidth,
   }));
 
@@ -82,9 +91,10 @@ export const buildTypingTimeline = (lines, { pauseMs = DEFAULT_PAUSE_MS, charWid
   return { perLine, totalSec: totalMs / 1000 };
 };
 
-const buildTypingSvg = ({ lines, size, color, center, width: widthOverride, pauseMs }) => {
-  const charWidth = size * CHAR_WIDTH_FACTOR;
-  const { perLine, totalSec } = buildTypingTimeline(lines, { pauseMs, charWidth });
+const buildTypingSvg = ({ lines, size, color, align, font, bold, speed, width: widthOverride, pauseMs }) => {
+  const family = FONTS[font];
+  const charWidth = size * family.charWidth * (bold ? BOLD_WIDTH_FACTOR : 1);
+  const { perLine, totalSec } = buildTypingTimeline(lines, { pauseMs, charWidth, typeMsPerChar: SPEEDS[speed] });
 
   const height = Math.round(size * 1.8);
   const width = Math.max(widthOverride || 0, ...perLine.map((entry) => entry.textWidth)) + 20;
@@ -92,18 +102,19 @@ const buildTypingSvg = ({ lines, size, color, center, width: widthOverride, paus
 
   const groups = perLine
     .map((entry, index) => {
-      const x = center ? (width - entry.textWidth) / 2 : 10;
+      const x = align === 'center' ? (width - entry.textWidth) / 2 : align === 'right' ? width - entry.textWidth - 10 : 10;
       const valuesAttr = entry.values.map((v) => v.toFixed(2)).join(';');
       const keyTimesAttr = entry.keyTimes.map((t) => t.toFixed(6)).join(';');
 
+      // The reveal starts at the text's own left edge, not at the SVG's.
       return `
         <clipPath id="typing-clip-${index}">
-          <rect x="0" y="0" width="0" height="${height}">
+          <rect x="${x.toFixed(2)}" y="0" width="0" height="${height}">
             <animate attributeName="width" values="${valuesAttr}" keyTimes="${keyTimesAttr}" dur="${totalSec}s" repeatCount="indefinite" calcMode="linear" />
           </rect>
         </clipPath>
         <g clip-path="url(#typing-clip-${index})">
-          <text x="${x}" y="${baselineY}" font-family="Consolas, Menlo, 'Courier New', monospace" font-size="${size}" fill="#${color}">${escapeXml(entry.line)}</text>
+          <text x="${x.toFixed(2)}" y="${baselineY}" font-family="${family.stack}" font-size="${size}"${bold ? ' font-weight="700"' : ''} fill="#${color}">${escapeXml(entry.line)}</text>
         </g>
       `;
     })
@@ -126,13 +137,18 @@ export default function handler(req, res) {
     return;
   }
 
-  const size = Math.min(80, Math.max(10, Number(req.query?.size) || 20));
-  const color = sanitizeHexColor(req.query?.color, 'e4e6f1');
-  const center = req.query?.center === 'true';
-  const width = Math.min(1200, Math.max(0, Number(req.query?.width) || 0));
-  const pauseMs = Math.min(10_000, Math.max(0, Number(req.query?.pause) || DEFAULT_PAUSE_MS));
+  const query = req.query || {};
+  const size = Math.min(80, Math.max(10, Number(query.size) || 20));
+  const themeAccent = isCardTheme(String(query.theme || '')) ? cardThemeColors(String(query.theme)).title : 'e4e6f1';
+  const color = sanitizeHexColor(query.color, themeAccent);
+  const align = ['left', 'center', 'right'].includes(query.align) ? query.align : query.center === 'true' ? 'center' : 'left';
+  const font = Object.hasOwn(FONTS, query.font) ? query.font : 'mono';
+  const speed = Object.hasOwn(SPEEDS, query.speed) ? query.speed : 'normal';
+  const bold = query.weight === 'bold';
+  const width = Math.min(1200, Math.max(0, Number(query.width) || 0));
+  const pauseMs = Math.min(10_000, Math.max(0, Number(query.pause) || DEFAULT_PAUSE_MS));
 
-  const svg = buildTypingSvg({ lines, size, color, center, width, pauseMs });
+  const svg = buildTypingSvg({ lines, size, color, align, font, bold, speed, width, pauseMs });
 
   res.setHeader('Content-Type', 'image/svg+xml');
   res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate');
