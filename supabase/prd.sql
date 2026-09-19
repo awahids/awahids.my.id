@@ -1,5 +1,10 @@
 -- Run once in the Supabase SQL Editor. Safe to re-run (idempotent).
--- Backs the PRD generator's daily quota and stored PRDs.
+-- Backs the PRD generator's daily quota.
+--
+-- Saved PRDs go into public.prds, which belongs to the aw-prd app and is NOT
+-- created or altered here: api/_lib/prdStore.js writes and reads it with the
+-- service role key as PRD_OWNER_USER_ID. Never add a public select policy to
+-- it: the table is shared, and such a policy would expose every user's rows.
 
 create table if not exists public.prd_quota (
   ip_hash text not null,
@@ -31,24 +36,3 @@ begin
   return p_max - new_count;
 end;
 $$;
-
-create table if not exists public.prds (
-  id text primary key,
-  slug text unique not null,
-  system_name text not null,
-  version text not null default '1.0',
-  status text not null default 'draft',
-  source text not null default 'web',
-  content jsonb not null,
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
-);
-
-alter table public.prds enable row level security;
-
--- Read is public so permalinks resolve without a session. There is deliberately
--- NO insert or update policy: writes go through the service role key only.
-drop policy if exists "Public can read prds" on public.prds;
-create policy "Public can read prds"
-  on public.prds for select
-  using (true);
