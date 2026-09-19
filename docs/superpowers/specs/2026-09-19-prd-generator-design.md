@@ -78,7 +78,14 @@ Two audiences, deliberately asymmetric:
   has not been investigated and warrants its own spike.
 - Kanban board, task entities, task breakdown per PRD. The
   `wahid-toolkit:task-breakdown` skill is the intended content source for that
-  work, not a new generator.
+  work, not a new generator. The intended UI is
+  `arhamkhnz/next-shadcn-admin-dashboard`, which is **Next.js 16 + TypeScript +
+  Tailwind v4 + shadcn/ui** — a stack this repo does not use (Vite 4, React 18,
+  plain JavaScript, one hand-written stylesheet). It therefore cannot be dropped
+  into this SPA, and that spec will have to decide between a separate Next.js
+  application talking to the same API and a port that keeps only the design.
+  Either way `POST /api/prd-save` and the `prds` table defined here are the
+  contract it consumes, so that decision does not affect this spec.
 - Multi-user accounts. See "Identity" for why.
 - Rendering Mermaid to images in the browser.
 - Any refactor of `ReadmeGenerator.jsx`.
