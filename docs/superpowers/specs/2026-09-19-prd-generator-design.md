@@ -1,5 +1,7 @@
 # PRD Generator: AI-assisted PRD authoring with owner-scoped persistence
 
+> **Superseded (2026-09-19).** The PRD generator moved to its own app, `awahids/aw-prd` (`prd.awahids.my.id`), with Google login and a subscription gate; see `docs/superpowers/specs/2026-09-19-prd-subscription-template-design.md` in that repo. This site keeps only a promo page at `/prd-generator`. Kept for history.
+
 **Status:** Design approved 2026-09-19. Not yet implemented.
 
 ## Context

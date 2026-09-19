@@ -19,7 +19,7 @@ const getHeaderValue = (req, headerName) => {
   return String(value || '');
 };
 
-export const getClientIp = (req) => {
+const getClientIp = (req) => {
   const xForwardedFor = getHeaderValue(req, 'x-forwarded-for');
   if (xForwardedFor) {
     return xForwardedFor.split(',')[0].trim();

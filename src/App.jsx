@@ -24,6 +24,7 @@ import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 import FloatingFAQ from './components/FloatingFAQ';
 import CvDownloadModal from './components/CvDownloadModal';
+import PrdPromo from './components/PrdPromo';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 import { AnomalousMatterHero } from './components/AnomalousHero';
@@ -32,12 +33,9 @@ import {
   isNotFoundRoute,
   isPrdGeneratorRoute,
   isReadmeGeneratorRoute,
-  prdSlugFromPath,
 } from './lib/routes';
 const AILab = lazy(() => import('./components/AILab'));
 const ReadmeGenerator = lazy(() => import('./components/ReadmeGenerator'));
-const PrdGenerator = lazy(() => import('./components/PrdGenerator'));
-const PrdPermalink = lazy(() => import('./components/PrdPermalink'));
 
 const BOT_USER_AGENT_PATTERN =
   /bot|crawler|spider|crawling|facebookexternalhit|slackbot|twitterbot|linkedinbot|discordbot|whatsapp|google-inspectiontool|lighthouse/i;
@@ -108,7 +106,7 @@ const README_GENERATOR_SETTINGS = {
 const PRD_GENERATOR_SETTINGS = {
   siteTitle: 'PRD Generator | A Wahid Safhadi',
   seoDescription:
-    'Turn a short system description into a structured PRD with user flow, architecture and ERD diagrams.',
+    'Turn a raw app idea into a feature structure, a full PRD and ready-to-build tasks.',
   ogImage: DEFAULT_SITE_SETTINGS.ogImage,
 };
 
@@ -188,9 +186,7 @@ function App() {
   );
   const aiLabPage = isAiLabRoute(currentPathname);
   const readmeGeneratorPage = isReadmeGeneratorRoute(currentPathname);
-  const prdGeneratorPage = isPrdGeneratorRoute(currentPathname);
-  const prdSlug = prdSlugFromPath(currentPathname);
-  const prdPage = prdGeneratorPage || prdSlug !== '';
+  const prdPage = isPrdGeneratorRoute(currentPathname);
   // Standalone tool pages skip the preloader, smooth scroll and homepage chrome.
   const toolPage = readmeGeneratorPage || prdPage;
   const notFoundPage = isNotFoundRoute(currentPathname);
@@ -397,7 +393,7 @@ function App() {
             ? 'main-ai-lab-page'
             : readmeGeneratorPage
               ? 'main-readme-generator-page'
-              : prdGeneratorPage
+              : prdPage
                 ? 'main-prd-generator-page'
                 : notFoundPage
                 ? 'main-not-found-page'
@@ -415,14 +411,8 @@ function App() {
           <Suspense fallback={<section className="s-readme-generator" />}>
             <ReadmeGenerator />
           </Suspense>
-        ) : prdGeneratorPage ? (
-          <Suspense fallback={<section className="s-prd-generator" />}>
-            <PrdGenerator />
-          </Suspense>
-        ) : prdSlug ? (
-          <Suspense fallback={<section className="s-prd-generator" />}>
-            <PrdPermalink slug={prdSlug} />
-          </Suspense>
+        ) : prdPage ? (
+          <PrdPromo />
         ) : notFoundPage ? (
           <NotFoundPage />
         ) : (

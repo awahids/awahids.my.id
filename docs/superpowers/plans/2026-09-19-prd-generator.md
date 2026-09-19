@@ -1,5 +1,7 @@
 # PRD Generator Implementation Plan
 
+> **Superseded (2026-09-19).** The PRD generator moved to its own app, `awahids/aw-prd` (`prd.awahids.my.id`), with Google login and a subscription gate; see `docs/superpowers/specs/2026-09-19-prd-subscription-template-design.md` in that repo. This site keeps only a promo page at `/prd-generator`. Kept for history.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Ship a hidden `/prd-generator` page that turns a short description into a complete `prd-writer`-shaped PRD, plus an owner-authenticated way to persist and share one.
