@@ -27,10 +27,17 @@ import CvDownloadModal from './components/CvDownloadModal';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 import { AnomalousMatterHero } from './components/AnomalousHero';
-const AI_LAB_PATH = '/ai-lab';
-const README_GENERATOR_PATH = '/readme-generator';
+import {
+  isAiLabRoute,
+  isNotFoundRoute,
+  isPrdGeneratorRoute,
+  isReadmeGeneratorRoute,
+  prdSlugFromPath,
+} from './lib/routes';
 const AILab = lazy(() => import('./components/AILab'));
 const ReadmeGenerator = lazy(() => import('./components/ReadmeGenerator'));
+const PrdGenerator = lazy(() => import('./components/PrdGenerator'));
+const PrdPermalink = lazy(() => import('./components/PrdPermalink'));
 
 const BOT_USER_AGENT_PATTERN =
   /bot|crawler|spider|crawling|facebookexternalhit|slackbot|twitterbot|linkedinbot|discordbot|whatsapp|google-inspectiontool|lighthouse/i;
@@ -45,24 +52,6 @@ const shouldBypassPreloader = () => {
 
   return prefersReducedMotion || botLikeAgent;
 };
-
-const normalizePathname = (pathname = '') => {
-  const normalized = pathname.replace(/\/+$/, '');
-  return normalized || '/';
-};
-
-const isAiLabRoute = (pathname = '') =>
-  normalizePathname(pathname) === AI_LAB_PATH;
-
-const isHomeRoute = (pathname = '') => normalizePathname(pathname) === '/';
-
-const isReadmeGeneratorRoute = (pathname = '') =>
-  normalizePathname(pathname) === README_GENERATOR_PATH;
-
-const isNotFoundRoute = (pathname = '') =>
-  !isHomeRoute(pathname) &&
-  !isAiLabRoute(pathname) &&
-  !isReadmeGeneratorRoute(pathname);
 
 const ABOUT = {
   eyebrow: 'BIOGRAPHY',
@@ -114,6 +103,13 @@ const README_GENERATOR_SETTINGS = {
   seoDescription:
     'Generate a GitHub profile README with self-hosted stats, streak, top-languages, activity graph, typing animation and skill icon cards.',
   ogImage: '/img/aw-pixel.png',
+};
+
+const PRD_GENERATOR_SETTINGS = {
+  siteTitle: 'PRD Generator | A Wahid Safhadi',
+  seoDescription:
+    'Turn a short system description into a structured PRD with user flow, architecture and ERD diagrams.',
+  ogImage: DEFAULT_SITE_SETTINGS.ogImage,
 };
 
 const NOT_FOUND_SETTINGS = {
@@ -192,14 +188,16 @@ function App() {
   );
   const aiLabPage = isAiLabRoute(currentPathname);
   const readmeGeneratorPage = isReadmeGeneratorRoute(currentPathname);
+  const prdGeneratorPage = isPrdGeneratorRoute(currentPathname);
+  const prdSlug = prdSlugFromPath(currentPathname);
+  const prdPage = prdGeneratorPage || prdSlug !== '';
+  // Standalone tool pages skip the preloader, smooth scroll and homepage chrome.
+  const toolPage = readmeGeneratorPage || prdPage;
   const notFoundPage = isNotFoundRoute(currentPathname);
   const [loading, setLoading] = useState(
-    () =>
-      !isReadmeGeneratorRoute(currentPathname) &&
-      !isNotFoundRoute(currentPathname) &&
-      !shouldBypassPreloader()
+    () => !toolPage && !notFoundPage && !shouldBypassPreloader()
   );
-  const effectiveLoading = readmeGeneratorPage || notFoundPage ? false : loading;
+  const effectiveLoading = toolPage || notFoundPage ? false : loading;
   const {
     viewport: sectionViewport,
     sectionContainer,
@@ -212,7 +210,7 @@ function App() {
   const about = ABOUT;
   const aboutTitle = getAboutTitleParts(about.title);
 
-  const lenisEnabled = !effectiveLoading && !readmeGeneratorPage && !notFoundPage;
+  const lenisEnabled = !effectiveLoading && !toolPage && !notFoundPage;
   const lenisRef = useLenis({ enabled: lenisEnabled });
 
   const aboutSectionRef = React.useRef(null);
@@ -271,9 +269,11 @@ function App() {
           ? AI_LAB_SETTINGS
           : readmeGeneratorPage
             ? README_GENERATOR_SETTINGS
-            : DEFAULT_SITE_SETTINGS
+            : prdPage
+              ? PRD_GENERATOR_SETTINGS
+              : DEFAULT_SITE_SETTINGS
     );
-  }, [notFoundPage, aiLabPage, readmeGeneratorPage]);
+  }, [notFoundPage, aiLabPage, readmeGeneratorPage, prdPage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -292,10 +292,10 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
-    const active = !effectiveLoading && !readmeGeneratorPage && !notFoundPage;
+    const active = !effectiveLoading && !toolPage && !notFoundPage;
     document.body.classList.toggle('is-gsap-motion', active);
     return () => document.body.classList.remove('is-gsap-motion');
-  }, [effectiveLoading, readmeGeneratorPage, notFoundPage]);
+  }, [effectiveLoading, toolPage, notFoundPage]);
 
   useEffect(() => {
     if (!effectiveLoading) {
@@ -305,7 +305,7 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
-    if (effectiveLoading || readmeGeneratorPage || notFoundPage) return undefined;
+    if (effectiveLoading || toolPage || notFoundPage) return undefined;
 
     const progressTween = gsap.to('.scroll-progress-bar', {
       scaleX: 1,
@@ -373,7 +373,7 @@ function App() {
       progressTween.scrollTrigger?.kill();
       progressTween.kill();
     };
-  }, [readmeGeneratorPage, effectiveLoading, lenisRef, notFoundPage]);
+  }, [toolPage, effectiveLoading, lenisRef, notFoundPage]);
 
   return (
     <div className={`app-container ${effectiveLoading ? 'is-preloading' : ''}`}>
@@ -384,10 +384,12 @@ function App() {
       </div>
 
       <CustomCursor />
-      {!aiLabPage && !readmeGeneratorPage && !notFoundPage && <SpotlightGlow />}
-      {!readmeGeneratorPage && <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage} />}
-      {!aiLabPage && !readmeGeneratorPage && !notFoundPage && <MobileNav />}
-      {!aiLabPage && !readmeGeneratorPage && !notFoundPage && <SocialRail />}
+      {!aiLabPage && !toolPage && !notFoundPage && <SpotlightGlow />}
+      {!readmeGeneratorPage && (
+        <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage || prdPage} />
+      )}
+      {!aiLabPage && !toolPage && !notFoundPage && <MobileNav />}
+      {!aiLabPage && !toolPage && !notFoundPage && <SocialRail />}
 
       <main
         className={
@@ -395,7 +397,9 @@ function App() {
             ? 'main-ai-lab-page'
             : readmeGeneratorPage
               ? 'main-readme-generator-page'
-              : notFoundPage
+              : prdGeneratorPage
+                ? 'main-prd-generator-page'
+                : notFoundPage
                 ? 'main-not-found-page'
                 : ''
         }
@@ -410,6 +414,14 @@ function App() {
         ) : readmeGeneratorPage ? (
           <Suspense fallback={<section className="s-readme-generator" />}>
             <ReadmeGenerator />
+          </Suspense>
+        ) : prdGeneratorPage ? (
+          <Suspense fallback={<section className="s-prd-generator" />}>
+            <PrdGenerator />
+          </Suspense>
+        ) : prdSlug ? (
+          <Suspense fallback={<section className="s-prd-generator" />}>
+            <PrdPermalink slug={prdSlug} />
           </Suspense>
         ) : notFoundPage ? (
           <NotFoundPage />
@@ -487,9 +499,9 @@ function App() {
         )}
       </main>
 
-      {!readmeGeneratorPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
-      {!readmeGeneratorPage && !notFoundPage && <FloatingFAQ />}
-      {!readmeGeneratorPage && !notFoundPage && <CvDownloadModal />}
+      {!toolPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
+      {!toolPage && !notFoundPage && <FloatingFAQ />}
+      {!toolPage && !notFoundPage && <CvDownloadModal />}
     </div>
   );
 }
