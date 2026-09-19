@@ -76,9 +76,14 @@ const recordQa = async ({ route, question, answer, language = '' }) => {
 };
 
 /**
- * Archives one answered question. Never throws and never delays the response:
- * the archive is a convenience for the site owner, so a Supabase outage must
- * not cost a visitor their answer.
+ * Archives one answered question. Never throws: the archive is a convenience
+ * for the site owner, so a Supabase outage must not cost a visitor their
+ * answer.
+ *
+ * This IS awaited before the response is sent, adding two Supabase round-trips
+ * to a request that already waits on the model. That is deliberate — on Vercel
+ * a promise left unawaited can be frozen the moment the response goes out, so
+ * a literal fire-and-forget would drop writes at random.
  *
  * Callers skip questions the scope guard refused — those are not real questions
  * about Wahid and would only pollute the corpus that phase 2 retrieves from.
