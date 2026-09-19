@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildTypingTimeline } from './typing.js';
+import { buildTypingTimeline } from '../typing.js';
 
 test('buildTypingTimeline: a single line has strictly increasing keyTimes from 0 to 1', () => {
   const { perLine, totalSec } = buildTypingTimeline(['Hi'], { pauseMs: 2000, charWidth: 12 });

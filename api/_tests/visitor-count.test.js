@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import handler from './visitor-count.js';
+import handler from '../visitor-count.js';
 
 const makeRes = () => ({
   statusCode: 200,

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import handler from './stars-badge.js';
+import handler from '../../github/stars-badge.js';
 
 const makeRes = () => ({
   statusCode: 200,

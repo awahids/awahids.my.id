@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRank } from './stats.js';
-import { computeStreakStats } from './streak.js';
+import { computeRank } from '../../github/stats.js';
+import { computeStreakStats } from '../../github/streak.js';
 
 test('computeRank: zero activity grades C, heavy activity approaches S', () => {
   assert.equal(computeRank({ stars: 0, commits: 0, pullRequests: 0, issues: 0, reviews: 0 }).grade, 'C');

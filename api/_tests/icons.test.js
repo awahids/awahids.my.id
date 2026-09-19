@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveIcon } from './_lib/simpleIcons.js';
-import { buildIconsGrid } from './icons.js';
+import { resolveIcon } from '../_lib/simpleIcons.js';
+import { buildIconsGrid } from '../icons.js';
 
 test('resolveIcon: shorthand alias resolves to the real Simple Icons artwork', () => {
   const icon = resolveIcon('js');
