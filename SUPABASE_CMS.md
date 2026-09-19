@@ -1,184 +1,98 @@
-# Supabase Experience CMS
+# Supabase Content (`cms_items`)
 
-Admin panel tersedia di:
+> **Admin panel sudah tidak ada.** Panel `/admin/*` beserta login Google OAuth-nya
+> dihapus di commit `afea5be` ("refactor: hardcode site content and remove the
+> admin CMS"). Hampir semua konten situs sekarang hardcoded di dalam kode.
+> Dokumen ini hanya menjelaskan bagian Supabase yang **masih benar-benar dipakai**.
 
-```text
-/admin/experience
-```
+## Yang masih dibaca saat runtime
+
+Satu koleksi saja, yaitu `ai-faq` dari tabel `cms_items`:
+
+| Pembaca | Jalur |
+|---|---|
+| `api/ai-faq.js` | `buildPortfolioAssistantContext()` |
+| `api/ai-assistant.js` | `buildPortfolioAssistantContext()` |
+
+Keduanya lewat `api/_lib/cmsFaqContext.js:45`, yang memanggil
+`readPublishedCmsItems('ai-faq', { limit: 30 })` dari `api/_lib/cms.js` — satu-satunya
+call site `readPublishedCmsItems` di seluruh repo.
+
+Isi koleksi ini jadi konteks pengetahuan untuk AI assistant di landing page.
+Kalau Supabase belum dikonfigurasi atau koleksinya kosong, kedua endpoint jatuh
+ke konteks default yang sudah hardcoded.
 
 ## Setup
 
 1. Buat project Supabase.
-2. Aktifkan Google provider di `Authentication > Providers > Google`.
-3. Buat OAuth Client di Google Cloud Console, lalu masukkan Client ID dan Client Secret ke Supabase Google provider.
-4. Di Google OAuth Client, tambahkan Authorized redirect URI Supabase:
-
-```text
-https://YOUR_SUPABASE_PROJECT_REF.supabase.co/auth/v1/callback
-```
-
-Project ref bisa dilihat dari Supabase project URL.
-
-5. Di Supabase `Authentication > URL Configuration`, tambahkan redirect URL untuk admin panel:
-
-```text
-http://localhost:5173/admin/experience
-http://localhost:5173/admin/**
-https://your-domain.com/admin/experience
-https://your-domain.com/admin/**
-```
-
-6. Jalankan SQL schema di `supabase/experience-cms.sql` lewat Supabase SQL Editor.
-7. Jalankan data awal/seeder di `supabase/cms-seed.sql`.
-8. Buat `.env.local`:
+2. Jalankan `supabase/experience-cms.sql` lewat Supabase SQL Editor (idempoten).
+   File ini yang membuat tabel `cms_items`.
+3. Jalankan `supabase/cms-seed.sql` untuk data awal. Memakai
+   `on conflict do update`, jadi aman diulang.
+4. Buat `.env.local`:
 
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Gunakan anon key saja di Vite. Jangan pernah memasukkan service role key ke file env frontend.
+Sisi server (`api/_lib/cms.js`, `api/_lib/supabaseRest.js`) menerima
+`SUPABASE_URL` / `SUPABASE_ANON_KEY`, dan jatuh ke varian `VITE_` kalau tidak ada.
 
-Admin yang diizinkan:
+**Gunakan anon key saja di env frontend. Jangan pernah memasukkan service role key
+ke file env frontend** — apa pun yang ber-prefix `VITE_` akan di-inline Vite ke
+bundle klien, sementara service role mem-bypass seluruh RLS.
 
-```text
-awahid.safhadi@gmail.com
-```
+## Cara mengubah konten sekarang
 
-## Security
+Karena tidak ada lagi UI admin, `ai-faq` diedit langsung lewat **Supabase
+dashboard atau SQL Editor** (atau dengan menyunting `supabase/cms-seed.sql` lalu
+menjalankannya ulang).
 
-CMS ini memakai Supabase Auth dan Row Level Security:
+## Soal RLS dan `is_admin()`
 
-- pengunjung hanya bisa membaca experience yang `is_published = true`
-- login admin hanya memakai Google OAuth
-- hanya `awahid.safhadi@gmail.com` yang bisa membuka CMS dan mengubah data
-- akun Google lain akan langsung ditolak di UI dan tetap ditolak oleh Supabase RLS
-- draft tetap bisa dilihat oleh admin, tapi tidak tampil di website publik
+Perlu dicatat supaya tidak membingungkan saat membaca SQL-nya: `experience-cms.sql`
+**masih** mendefinisikan `is_admin()` (`experience-cms.sql:121`), yang mencocokkan
+`auth.jwt() ->> 'email'` dengan `awahid.safhadi@gmail.com`, lengkap dengan policy
+insert/update/delete untuk admin di tiap tabel.
 
-## Admin Menus
+Policy itu masih berlaku di level database. Yang hilang adalah **antarmukanya** —
+tidak ada satu pun file di `src/` yang menyentuh `supabase.auth`, dan
+`src/lib/supabaseClient.js:16` mematikan sesi secara eksplisit
+(`persistSession: false`, `autoRefreshToken: false`, `detectSessionInUrl: false`).
+Jadi aplikasi ini tidak pernah menghasilkan JWT yang bisa lolos `is_admin()`.
 
-`/admin/experience` memakai tabel khusus `experiences`.
-`/admin/projects` memakai tabel khusus `projects`.
+Yang tetap aktif dan relevan: pengunjung hanya bisa membaca baris dengan
+`is_published = true`.
 
-Menu berikut memakai tabel umum `cms_items`:
+## Tabel dan koleksi yang tidak lagi dibaca
 
-```text
-/admin/skills
-/admin/services
-/admin/certificates
-/admin/profile
-/admin/about
-/admin/contact
-/admin/ai-faq        # AI Knowledge
-/admin/api-settings  # AI Settings
-/admin/settings
-```
+`experience-cms.sql` dan `cms-seed.sql` masih membuat dan mengisi lebih banyak
+tabel dan koleksi daripada yang dipakai. Berikut yang **tidak** dibaca oleh kode
+mana pun saat ini:
 
-Landing page dan runtime API membaca data published dari `cms_items`:
+- Tabel `experiences` — `src/components/Experience.jsx:40` memakai konstanta
+  `EXPERIENCES` dari `src/lib/experienceData.js`
+- Tabel `projects` beserta `project_focus`, `project_scope`, `project_stack`,
+  `project_outcomes`, `project_signals` — data portfolio hardcoded di
+  `src/components/Portfolio.jsx`
+- Koleksi `cms_items`: `profile`, `services`, `skills`, `certificates`, `about`,
+  `contact`, `settings`, `api-settings`
 
-- `profile` untuk Hero
-- `services` untuk What I Build
-- `skills` untuk Tech Stack by Layer
-- `certificates` untuk Certificates
-- `about` untuk Biography
-- `contact` untuk Contact
-- `settings` untuk title/meta SEO client-side
-- `ai-faq` untuk context `/api/ai-faq` dan `/api/ai-assistant`
-- `api-settings` untuk runtime AI provider settings
+Semuanya dibiarkan apa adanya, bukan dihapus — tetapi jangan berharap mengubahnya
+akan mengubah tampilan situs.
 
-Portfolio membaca data published dari tabel `projects` dan tabel detail:
+## AI provider settings
 
-- `project_focus`
-- `project_scope`
-- `project_stack`
-- `project_outcomes`
-- `project_signals`
-
-Setiap integrasi otomatis fallback ke data hardcoded/default kalau Supabase belum
-configured atau tabel/collection masih kosong.
-
-Data awal untuk semua menu sudah tersedia di:
-
-```text
-supabase/cms-seed.sql
-```
-
-File seed ini memakai `on conflict do update`, jadi aman dijalankan ulang saat ingin
-reset/sinkronisasi data awal.
-
-Struktur data yang dipakai:
-
-Projects (`projects`):
-
-```json
-{
-  "year": "2025",
-  "project_type": "Appointment Platform",
-  "role": "Fullstack Developer",
-  "live_url": "https://example.com",
-  "case_url": "#",
-  "bento": "bento-compact",
-  "num": "01",
-  "problem": "...",
-  "built": "...",
-  "result": "...",
-  "impact": "..."
-}
-```
-
-Project list/detail memakai child tables:
-
-```text
-project_focus     label
-project_scope     label
-project_stack     label
-project_outcomes  body
-project_signals   label, value, note
-```
-
-Skills:
-
-```json
-{
-  "num": "01",
-  "chips": ["React", "Next.js", "TypeScript"]
-}
-```
-
-Services:
-
-```json
-{}
-```
-
-Gunakan `title` sebagai nama service dan `summary` sebagai deskripsi kartu.
-
-Certificates:
-
-```json
-{
-  "url": "https://credential-url.example"
-}
-```
-
-AI Settings:
-
-```json
-{
-  "provider": "sumopod",
-  "base_url": "https://ai.sumopod.com/v1",
-  "models": ["gpt-4o-mini", "gpt-4.1-mini"],
-  "model": "gpt-4o-mini",
-  "timeout_ms": 12000,
-  "notes": "API key stays in server environment variable SUMOPOD_API_KEY."
-}
-```
-
-`/api/ai-faq`, `/api/ai-brief`, dan fallback SumoPod di `/api/ai-assistant`
-membaca item `api-settings-sumopod` dari `cms_items`. Setting ini hanya untuk
-runtime non-secret seperti base URL, model, dan timeout. API key tetap wajib
-disimpan di environment server:
+Konfigurasi runtime SumoPod dibaca **dari environment variable saja**, bukan dari
+`cms_items`. `getSumopodConfig()` di `api/_lib/sumopod.js` membaca:
 
 ```env
 SUMOPOD_API_KEY=your_sumopod_api_key
+SUMOPOD_BASE_URL=https://ai.sumopod.com/v1
+SUMOPOD_MODEL=["gpt-4o-mini","gpt-4.1-mini"]
+SUMOPOD_TIMEOUT_MS=12000
 ```
+
+Koleksi `api-settings-sumopod` di seed masih ada, tapi tidak ada kode yang
+membacanya.
