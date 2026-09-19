@@ -1,4 +1,4 @@
-class RequestError extends Error {
+export class RequestError extends Error {
   constructor(status, code, message) {
     super(message);
     this.name = 'RequestError';
@@ -41,7 +41,7 @@ const cleanupRateLimitStore = (now) => {
   }
 };
 
-const parseLimitedString = ({
+export const parseLimitedString = ({
   value,
   field,
   required = false,
