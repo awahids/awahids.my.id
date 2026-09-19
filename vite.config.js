@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import aiFaqHandler from './api/ai-faq.js'
 import aiBriefHandler from './api/ai-brief.js'
 import aiAssistantHandler from './api/ai-assistant.js'
+import readmeAssistantHandler from './api/readme-assistant.js'
 import githubStatsHandler from './api/github/stats.js'
 import githubTopLangsHandler from './api/github/top-langs.js'
 import githubStreakHandler from './api/github/streak.js'
@@ -94,6 +95,7 @@ const devApiMiddleware = () => ({
       ['/api/ai-faq', aiFaqHandler],
       ['/api/ai-brief', aiBriefHandler],
       ['/api/ai-assistant', aiAssistantHandler],
+      ['/api/readme-assistant', readmeAssistantHandler],
       ['/api/github/stats', githubStatsHandler],
       ['/api/github/top-langs', githubTopLangsHandler],
       ['/api/github/streak', githubStreakHandler],

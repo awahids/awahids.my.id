@@ -1,3 +1,4 @@
+import { DEFAULT_THEME, isCardTheme } from './cardThemes.js';
 import { isSkillIcon, skillIconsBannerUrl } from './skillIcons.js';
 
 const escapeHtml = (value) =>
@@ -37,6 +38,18 @@ export const buildReadmeMarkdown = (values, { origin }) => {
     (link) => link.label && link.url && isSafeLinkUrl(link.url)
   );
   const skills = (values.skills || []).filter(isSkillIcon);
+  const theme = isCardTheme(values.theme) && values.theme !== DEFAULT_THEME ? values.theme : '';
+  const themed = (params) => (theme ? { ...params, theme } : params);
+  const typing = values.typing || {};
+  const typingParams = {
+    lines: taglineLines.join(';'),
+    size: String(typing.size || 30),
+    align: ['left', 'right'].includes(typing.align) ? typing.align : 'center',
+    ...(['sans', 'serif'].includes(typing.font) && { font: typing.font }),
+    ...(typing.bold && { weight: 'bold' }),
+    ...(['slow', 'fast'].includes(typing.speed) && { speed: typing.speed }),
+    ...(/^[0-9a-f]{6}$/i.test(typing.color || '') && { color: typing.color }),
+  };
   const pinnedRepos = (values.pinnedRepos || []).map((repo) => repo.trim()).filter(Boolean);
 
   const topBadges = [
@@ -54,7 +67,7 @@ export const buildReadmeMarkdown = (values, { origin }) => {
 
   const typingHeader = taglineLines.length
     ? `<h1 align="center">
-  <img src="${cardUrl(origin, '/api/typing', { lines: taglineLines.join(';'), center: 'true', size: '30' })}">
+  <img src="${cardUrl(origin, '/api/typing', themed(typingParams))}">
 </h1>\n\n`
     : '';
 
@@ -87,11 +100,11 @@ ${socialLinks.map((link) => `  <code><a href="${escapeHtml(link.url)}" title="${
 <h2 align="center">⚡ Stats ⚡</h2>
 <br>
 <p align="center">
-  <img src="${cardUrl(origin, '/api/github/streak', { username })}" /><br>
-  <img src="${cardUrl(origin, '/api/github/stats', { username })}" height="192px"/>
-  <img src="${cardUrl(origin, '/api/github/top-langs', { username })}" height="192px"/>
+  <img src="${cardUrl(origin, '/api/github/streak', themed({ username }))}" /><br>
+  <img src="${cardUrl(origin, '/api/github/stats', themed({ username }))}" />
+  <img src="${cardUrl(origin, '/api/github/top-langs', themed({ username }))}" />
   <br>
-  <img src="${cardUrl(origin, '/api/github/activity-graph', { username })}" width="100%"/>
+  <img src="${cardUrl(origin, '/api/github/activity-graph', themed({ username }))}" width="100%"/>
 </p>\n`
     : '';
 

@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { buildReadmeMarkdown } from '../lib/readmeTemplate';
+import ReadmeAiHelper from './ReadmeAiHelper';
+import { CARD_THEMES, DEFAULT_THEME } from '../lib/cardThemes';
 import { DEFAULT_SKILL_IDS, SKILL_GROUPS, skillIconUrl } from '../lib/skillIcons';
 
 // `label` is the form field caption; `linkLabel` is the shorter text shown
@@ -36,6 +38,9 @@ const ReadmeGenerator = () => {
   const [bioText, setBioText] = useState('');
   const [skillIds, setSkillIds] = useState(DEFAULT_SKILL_IDS);
   const [socials, setSocials] = useState(() => Object.fromEntries(SOCIAL_FIELDS.map((f) => [f.key, ''])));
+  const [theme, setTheme] = useState(DEFAULT_THEME);
+  const [typing, setTyping] = useState({ font: 'mono', bold: false, speed: 'normal', align: 'center', size: 30, color: '' });
+  const setTypingOption = (key, value) => setTyping((prev) => ({ ...prev, [key]: value }));
   const [previewTab, setPreviewTab] = useState('preview');
   const [copied, setCopied] = useState(false);
 
@@ -49,6 +54,8 @@ const ReadmeGenerator = () => {
         taglineLines: taglineText.split('\n').map((line) => line.trim()),
         bio: bioText.split('\n').map((line) => line.trim()),
         skills: skillIds,
+        theme,
+        typing,
         socialLinks: SOCIAL_FIELDS.map((field) => {
           const value = socials[field.key].trim();
           return { label: field.linkLabel, url: value ? field.toUrl(value) : '' };
@@ -56,7 +63,15 @@ const ReadmeGenerator = () => {
       },
       { origin }
     );
-  }, [username, pinnedReposText, showVisitorCounter, taglineText, bioText, skillIds, socials]);
+  }, [username, pinnedReposText, showVisitorCounter, taglineText, bioText, skillIds, socials, theme, typing]);
+
+  const applySuggestion = ({ taglines, bio, skills }) => {
+    if (taglines) setTaglineText(taglines.join('\n'));
+    if (bio) setBioText(bio.join('\n'));
+    if (skills) setSkillIds((prev) => [...prev, ...skills.filter((id) => !prev.includes(id))]);
+  };
+
+  const aiContext = { username, tagline: taglineText, bio: bioText, skills: skillIds };
 
   const toggleSkill = (id) =>
     setSkillIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -106,6 +121,25 @@ const ReadmeGenerator = () => {
                 />
                 Show a visitor counter badge
               </label>
+              <div className="rg-theme">
+                <span>Card theme</span>
+                <div className="rg-theme-grid" role="radiogroup" aria-label="Card theme">
+                  {Object.entries(CARD_THEMES).map(([id, t]) => (
+                    <button
+                      key={id}
+                      type="button"
+                      role="radio"
+                      aria-checked={theme === id}
+                      className={`rg-theme-swatch${theme === id ? ' is-active' : ''}`}
+                      style={{ background: `#${t.bg}`, borderColor: `#${t.border}`, color: `#${t.title}` }}
+                      onClick={() => setTheme(id)}
+                    >
+                      <i style={{ background: `#${t.icon}` }} />
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -115,10 +149,49 @@ const ReadmeGenerator = () => {
                 Typing lines (one per line)
                 <textarea rows={3} value={taglineText} onChange={(e) => setTaglineText(e.target.value)} />
               </label>
+              <div className="rg-typing-opts">
+                <label>
+                  Font
+                  <select value={typing.font} onChange={(e) => setTypingOption('font', e.target.value)}>
+                    <option value="mono">Monospace</option>
+                    <option value="sans">Sans-serif</option>
+                    <option value="serif">Serif</option>
+                  </select>
+                </label>
+                <label>
+                  Speed
+                  <select value={typing.speed} onChange={(e) => setTypingOption('speed', e.target.value)}>
+                    <option value="slow">Slow</option>
+                    <option value="normal">Normal</option>
+                    <option value="fast">Fast</option>
+                  </select>
+                </label>
+                <label>
+                  Align
+                  <select value={typing.align} onChange={(e) => setTypingOption('align', e.target.value)}>
+                    <option value="left">Left</option>
+                    <option value="center">Center</option>
+                    <option value="right">Right</option>
+                  </select>
+                </label>
+                <label>
+                  Size ({typing.size}px)
+                  <input type="range" min="14" max="60" value={typing.size} onChange={(e) => setTypingOption('size', Number(e.target.value))} />
+                </label>
+                <label>
+                  Color (hex, blank = theme)
+                  <input value={typing.color} maxLength={6} placeholder="c8ff00" onChange={(e) => setTypingOption('color', e.target.value.replace(/[^0-9a-f]/gi, ''))} />
+                </label>
+                <label className="rg-checkbox">
+                  <input type="checkbox" checked={typing.bold} onChange={(e) => setTypingOption('bold', e.target.checked)} />
+                  Bold
+                </label>
+              </div>
               <label>
                 Bio (one paragraph per line)
                 <textarea rows={4} value={bioText} onChange={(e) => setBioText(e.target.value)} />
               </label>
+              <ReadmeAiHelper focus="about" context={aiContext} onApply={applySuggestion} />
             </div>
           )}
 
@@ -162,6 +235,7 @@ const ReadmeGenerator = () => {
                   </div>
                 ))}
               </fieldset>
+              <ReadmeAiHelper focus="skills" context={aiContext} onApply={applySuggestion} />
             </div>
           )}
 

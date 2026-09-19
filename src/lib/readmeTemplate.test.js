@@ -85,3 +85,32 @@ test('buildReadmeMarkdown: renders one combined stars badge for every pinned rep
   assert.match(markdown, /username=awahids/);
   assert.match(markdown, /repos=belajar-ngaji%2Caw-prd/);
 });
+
+test('buildReadmeMarkdown: a non-default theme is passed to every card and the typing header', () => {
+  const markdown = buildReadmeMarkdown({ username: 'awahids', taglineLines: ['Hi'], theme: 'dracula' }, { origin: ORIGIN });
+  for (const path of ['streak', 'stats', 'top-langs', 'activity-graph']) {
+    assert.match(markdown, new RegExp(`api/github/${path}\\?username=awahids&theme=dracula`));
+  }
+  assert.match(markdown, /api\/typing\?[^"]*theme=dracula/);
+});
+
+test('buildReadmeMarkdown: default or unknown theme adds no theme param', () => {
+  for (const theme of ['default', 'nope', undefined]) {
+    assert.doesNotMatch(buildReadmeMarkdown({ username: 'a', theme }, { origin: ORIGIN }), /theme=/);
+  }
+});
+
+test('buildReadmeMarkdown: typing options map to query params and ignore invalid values', () => {
+  const md = buildReadmeMarkdown(
+    { taglineLines: ['Hi'], typing: { font: 'serif', bold: true, speed: 'fast', align: 'right', size: 24, color: 'ff0000' } },
+    { origin: ORIGIN }
+  );
+  assert.match(md, /font=serif/);
+  assert.match(md, /weight=bold/);
+  assert.match(md, /speed=fast/);
+  assert.match(md, /align=right/);
+  assert.match(md, /size=24/);
+  assert.match(md, /color=ff0000/);
+  const bad = buildReadmeMarkdown({ taglineLines: ['Hi'], typing: { font: 'x', speed: 'x', color: 'zzz' } }, { origin: ORIGIN });
+  assert.doesNotMatch(bad, /font=|speed=|color=|weight=/);
+});
