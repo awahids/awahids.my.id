@@ -2188,6 +2188,34 @@ body.is-on-light-section .spotlight-glow {
   .pcf-caption { animation:none; }
 }
 
+/* CV DOWNLOAD MODAL */
+.cvm-card {
+  position:relative; width:min(460px, 100%);
+  padding:40px 36px 32px;
+  background:var(--mid); border:1px solid var(--stroke-mid);
+  box-shadow:0 30px 80px rgba(0,0,0,.55);
+}
+.cvm-form, .cvm-done { display:flex; flex-direction:column; gap:16px; }
+.cvm-title { font-family:'Unbounded',sans-serif; font-size:clamp(22px, 3vw, 28px); font-weight:800; line-height:1.1; letter-spacing:-.02em; padding-right:36px; }
+.cvm-lead { color:var(--text-muted); font-size:15px; line-height:1.6; margin-bottom:4px; }
+.cvm-field { display:flex; flex-direction:column; gap:7px; }
+.cvm-field span { font-family:'DM Mono',monospace; font-size:12px; letter-spacing:.04em; color:rgba(255,255,255,.7); }
+.cvm-field em { font-style:normal; color:rgba(255,255,255,.45); }
+.cvm-field input {
+  width:100%; border:1px solid rgba(255,255,255,.18); background:rgba(10,10,10,.6); color:var(--white);
+  font-family:'Syne',sans-serif; font-size:15px; line-height:1.5; padding:11px 13px; outline:none;
+  transition:border-color var(--tr-fast) ease, background var(--tr-fast) ease;
+}
+.cvm-field input:focus { border-color:rgba(200,255,0,.6); background:rgba(10,10,10,.85); }
+.cvm-trap { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
+.cvm-error { color:#ff9c96; font-size:14px; line-height:1.5; border-left:2px solid var(--red); padding-left:12px; }
+.cvm-submit { border:none; cursor:none; text-align:center; margin-top:4px; }
+.cvm-submit:disabled { opacity:.6; cursor:progress; animation:none; }
+.cvm-note { font-size:12px; color:rgba(255,255,255,.5); line-height:1.5; }
+.cvm-actions { display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; }
+.cvm-plain { background:transparent; cursor:none; }
+@media (max-width:640px) { .cvm-card { padding:32px 22px 24px; } }
+
 /* MODAL */
 .modal-overlay {
   position:fixed; inset:0; background:rgba(8,8,8,.82); z-index:2000;

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import GlyphPortal from './GlyphPortal';
+import { openCvDownload } from '../lib/cvDownload';
 
 // ─── Framer Motion Variants ────────────────────────────────────────────────
 
@@ -56,7 +57,7 @@ const DEFAULT_PROFILE = {
   ctaPrimaryLabel: 'View Fullstack Projects',
   ctaPrimaryHref: '#portfolio',
   ctaSecondaryLabel: 'Download Resume',
-  ctaSecondaryHref: `${import.meta.env.BASE_URL}cv/my-cv.pdf`,
+  ctaSecondaryHref: '#',
 };
 
 const asStringArray = (value, fallback) => {
@@ -246,7 +247,7 @@ const Hero = () => {
               whileHover={reduced ? {} : { scale: 1.05 }}
               whileTap={reduced ? {} : { scale: 0.96 }}
               transition={btnSpring}
-              onClick={() => window.plausible?.('CVDownload', { props: { source: 'hero' } })}
+              onClick={(event) => { event.preventDefault(); openCvDownload('hero'); }}
             >
               {profile.ctaSecondaryLabel}
             </motion.a>

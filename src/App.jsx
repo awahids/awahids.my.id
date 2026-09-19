@@ -24,6 +24,7 @@ import Experience from './components/Experience';
 import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 import FloatingFAQ from './components/FloatingFAQ';
+import CvDownloadModal from './components/CvDownloadModal';
 import AdminExperience from './components/AdminExperience';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
@@ -616,6 +617,7 @@ function App() {
 
       {!adminPage && !readmeGeneratorPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
       {!adminPage && !readmeGeneratorPage && !notFoundPage && <FloatingFAQ />}
+      {!adminPage && !readmeGeneratorPage && !notFoundPage && <CvDownloadModal />}
     </div>
   );
 }

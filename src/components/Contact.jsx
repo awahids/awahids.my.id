@@ -6,8 +6,8 @@ const btnSpring = { type: 'spring', stiffness: 360, damping: 22 };
 import { BOOKING_URL } from '../lib/links';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { Waves } from './Waves';
+import { openCvDownload } from '../lib/cvDownload';
 
-const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
 
 const DEFAULT_CONTACT = {
   title: 'Have a web app, dashboard, or backend system to build?',
@@ -24,7 +24,7 @@ const DEFAULT_CONTACT = {
     'Automation and production deployment',
   ],
   remoteStatus: 'OPEN TO REMOTE',
-  cvUrl: CV_URL,
+  cvUrl: '#',
   ctaPrimaryLabel: 'Start a Project Conversation',
   ctaSecondaryLabel: 'View Fullstack Projects',
 };
@@ -182,7 +182,7 @@ const Contact = () => {
               target="_blank"
               rel="noopener noreferrer"
               className="contact-badge-link"
-              onClick={() => window.plausible?.('CVDownload', { props: { source: 'contact' } })}
+              onClick={(event) => { event.preventDefault(); openCvDownload('contact'); }}
             >
               Download Resume ↗
             </a>

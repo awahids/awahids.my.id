@@ -12,7 +12,7 @@ Contact & Links:
 - Booking link: https://qala.digital/book/awahids
 - GitHub: https://github.com/awahids
 - LinkedIn: https://www.linkedin.com/in/awahids
-- Resume PDF path on site: /cv/my-cv.pdf
+- Resume: available from the "Download Resume" button on the site (visitors leave their name and email first)
 
 Timezone & Working Hours:
 - Timezone: WIB (GMT+7)

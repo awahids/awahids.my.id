@@ -1,6 +1,6 @@
 import React from 'react';
 
-const CV_URL = `${import.meta.env.BASE_URL}cv/my-cv.pdf`;
+import { openCvDownload } from '../lib/cvDownload';
 
 const links = [
   {
@@ -58,10 +58,11 @@ const SocialRail = () => {
         ))}
       </div>
       <a
-        href={CV_URL}
+        href="#"
         target="_blank"
         rel="noopener noreferrer"
         className="social-rail-resume"
+        onClick={(event) => { event.preventDefault(); openCvDownload('social-rail'); }}
       >
         Resume ↗
       </a>
