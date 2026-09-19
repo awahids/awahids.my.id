@@ -1,15 +1,6 @@
-import { getSupabaseRestConfig } from './supabaseRest.js';
-
 const DEFAULT_BASE_URL = 'https://ai.sumopod.com/v1';
 const DEFAULT_MODEL = 'gpt-4o-mini';
 const DEFAULT_TIMEOUT_MS = 12_000;
-const CMS_AI_SETTINGS_ID = 'api-settings-sumopod';
-const CMS_AI_SETTINGS_CACHE_MS = 30_000;
-
-let cmsAiSettingsCache = {
-  expiresAt: 0,
-  payload: null,
-};
 
 const ensureNoTrailingSlash = (value) => value.replace(/\/$/, '');
 
@@ -44,53 +35,6 @@ const toPositiveInt = (value, fallback) => {
   const parsed = Number(value);
   if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
   return fallback;
-};
-
-const readCmsAiSettings = async () => {
-  if (process.env.CMS_AI_SETTINGS_ENABLED === 'false') return null;
-
-  const now = Date.now();
-  if (cmsAiSettingsCache.payload && cmsAiSettingsCache.expiresAt > now) {
-    return cmsAiSettingsCache.payload;
-  }
-
-  const { url, anonKey } = getSupabaseRestConfig();
-  if (!url || !anonKey) return null;
-
-  try {
-    const query = new URLSearchParams({
-      select: 'payload,is_published',
-      id: `eq.${CMS_AI_SETTINGS_ID}`,
-      collection: 'eq.api-settings',
-      is_published: 'eq.true',
-      limit: '1',
-    });
-
-    const response = await fetch(`${url}/rest/v1/cms_items?${query.toString()}`, {
-      headers: {
-        apikey: anonKey,
-        Authorization: `Bearer ${anonKey}`,
-      },
-    });
-
-    if (!response.ok) return null;
-
-    const rows = await response.json();
-    const payload = rows?.[0]?.payload;
-
-    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
-      return null;
-    }
-
-    cmsAiSettingsCache = {
-      expiresAt: now + CMS_AI_SETTINGS_CACHE_MS,
-      payload,
-    };
-
-    return payload;
-  } catch {
-    return null;
-  }
 };
 
 const createServiceError = ({
@@ -153,19 +97,11 @@ export const parseJsonLenient = (text) => {
 };
 
 export const getSumopodConfig = async () => {
-  const cmsSettings = await readCmsAiSettings();
   const apiKey = process.env.SUMOPOD_API_KEY;
-  const baseURL = ensureNoTrailingSlash(
-    cmsSettings?.base_url || process.env.SUMOPOD_BASE_URL || DEFAULT_BASE_URL
-  );
-  const models = parseModelList(
-    cmsSettings?.models || cmsSettings?.model || process.env.SUMOPOD_MODEL || DEFAULT_MODEL
-  );
+  const baseURL = ensureNoTrailingSlash(process.env.SUMOPOD_BASE_URL || DEFAULT_BASE_URL);
+  const models = parseModelList(process.env.SUMOPOD_MODEL);
   const model = pickRandomModel(models);
-  const timeoutMs = toPositiveInt(
-    cmsSettings?.timeout_ms || process.env.SUMOPOD_TIMEOUT_MS,
-    DEFAULT_TIMEOUT_MS
-  );
+  const timeoutMs = toPositiveInt(process.env.SUMOPOD_TIMEOUT_MS, DEFAULT_TIMEOUT_MS);
 
   return {
     apiKey,
