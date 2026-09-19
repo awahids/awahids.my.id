@@ -1568,10 +1568,17 @@ body.is-on-light-section .spotlight-glow {
      stacking context here, a positioned ::before paints above static children
      (a card's plain <div> text would vanish behind it). */
   isolation:isolate;
-  --tab-w:78px; --tab-h:38px; --tab-r:16px;
+  /* Defaults live in the var() fallbacks, NOT as declarations on --tab-*.
+     Declaring them here would put this rule in a plain cascade fight with each
+     consumer (both are single-class selectors), so a consumer defined earlier
+     in this file would silently lose its own values. Substitution reads the
+     element's final --tab-*, so source order stops mattering. */
+  --_tab-w:var(--tab-w, 78px);
+  --_tab-h:var(--tab-h, 38px);
+  --_tab-r:var(--tab-r, 16px);
   --fill:linear-gradient(#000,#000);
-  --in:radial-gradient(circle at 0 0, #000 calc(var(--tab-r) - .5px), transparent var(--tab-r));
-  --out:radial-gradient(circle at 100% 100%, transparent calc(var(--tab-r) - .5px), #000 var(--tab-r));
+  --in:radial-gradient(circle at 0 0, #000 calc(var(--_tab-r) - .5px), transparent var(--_tab-r));
+  --out:radial-gradient(circle at 100% 100%, transparent calc(var(--_tab-r) - .5px), #000 var(--_tab-r));
   background:none; border:none;
 }
 .notch-surface::before {
@@ -1587,23 +1594,24 @@ body.is-on-light-section .spotlight-glow {
      else `mask` wins and `-webkit-mask-composite:xor` is inert, as intended. */
   -webkit-mask:
     var(--fill) 0 0 / 100% 100% no-repeat,
-    var(--fill) 0 0 / var(--tab-w) calc(var(--tab-h) - var(--tab-r)) no-repeat,
-    var(--fill) 0 calc(var(--tab-h) - var(--tab-r)) / calc(var(--tab-w) - var(--tab-r)) var(--tab-r) no-repeat,
-    var(--in) calc(var(--tab-w) - var(--tab-r)) calc(var(--tab-h) - var(--tab-r)) / var(--tab-r) var(--tab-r) no-repeat,
-    var(--out) var(--tab-w) 0 / var(--tab-r) var(--tab-r) no-repeat,
-    var(--out) 0 var(--tab-h) / var(--tab-r) var(--tab-r) no-repeat;
+    var(--fill) 0 0 / var(--_tab-w) calc(var(--_tab-h) - var(--_tab-r)) no-repeat,
+    var(--fill) 0 calc(var(--_tab-h) - var(--_tab-r)) / calc(var(--_tab-w) - var(--_tab-r)) var(--_tab-r) no-repeat,
+    var(--in) calc(var(--_tab-w) - var(--_tab-r)) calc(var(--_tab-h) - var(--_tab-r)) / var(--_tab-r) var(--_tab-r) no-repeat,
+    var(--out) var(--_tab-w) 0 / var(--_tab-r) var(--_tab-r) no-repeat,
+    var(--out) 0 var(--_tab-h) / var(--_tab-r) var(--_tab-r) no-repeat;
   -webkit-mask-composite:xor;
   mask:
     var(--fill) 0 0 / 100% 100% no-repeat exclude,
-    var(--fill) 0 0 / var(--tab-w) calc(var(--tab-h) - var(--tab-r)) no-repeat exclude,
-    var(--fill) 0 calc(var(--tab-h) - var(--tab-r)) / calc(var(--tab-w) - var(--tab-r)) var(--tab-r) no-repeat exclude,
-    var(--in) calc(var(--tab-w) - var(--tab-r)) calc(var(--tab-h) - var(--tab-r)) / var(--tab-r) var(--tab-r) no-repeat exclude,
-    var(--out) var(--tab-w) 0 / var(--tab-r) var(--tab-r) no-repeat exclude,
-    var(--out) 0 var(--tab-h) / var(--tab-r) var(--tab-r) no-repeat;
+    var(--fill) 0 0 / var(--_tab-w) calc(var(--_tab-h) - var(--_tab-r)) no-repeat exclude,
+    var(--fill) 0 calc(var(--_tab-h) - var(--_tab-r)) / calc(var(--_tab-w) - var(--_tab-r)) var(--_tab-r) no-repeat exclude,
+    var(--in) calc(var(--_tab-w) - var(--_tab-r)) calc(var(--_tab-h) - var(--_tab-r)) / var(--_tab-r) var(--_tab-r) no-repeat exclude,
+    var(--out) var(--_tab-w) 0 / var(--_tab-r) var(--_tab-r) no-repeat exclude,
+    var(--out) 0 var(--_tab-h) / var(--_tab-r) var(--_tab-r) no-repeat;
 }
 
 .pcf-tile {
   position:absolute; top:50%; left:50%;
+  --tab-w:78px; --tab-h:38px; --tab-r:16px;
   width:310px; height:420px; margin:-210px 0 0 -155px;
   padding:26px 24px;
   display:flex; flex-direction:column; justify-content:space-between; text-align:left;
@@ -3389,6 +3397,23 @@ footer {
   .floating-top-btn {
     right: 84px !important;
     bottom: calc(96px + max(16px, env(safe-area-inset-bottom))) !important;
+  }
+
+  /* The social rail is fixed at x 12-42 from this breakpoint down, and the
+     corner tab would land on top of it (the icon chips sat at x 18-23, so they
+     covered the rail's own icons). Widen the notch and inset its contents past
+     the rail: the empty left part of the cut is then exactly where the rail
+     passes, so nothing overlaps and no content width is lost.
+     30px inset clears x 42 on both card origins — 18px on phones, 24px on
+     tablets — with a few px to spare. */
+  .contact-card,
+  .cert-card,
+  .build-card { --tab-w:84px; --tab-inset:30px; }
+  .cc-icon,
+  .cert-icon { left:var(--tab-inset); }
+  .build-card-num {
+    left:var(--tab-inset);
+    width:calc(var(--tab-w) - var(--tab-inset));
   }
 
   /* The pinned coverflow fills the viewport, so .pcf-caption runs underneath
