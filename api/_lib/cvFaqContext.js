@@ -56,6 +56,14 @@ Selected projects:
 - Tokokupon.id (2024): Marketplace fullstack platform and admin CMS workflow. Stack: Next.js, NestJS, Ant Design, MySQL, Vercel. Live: https://tokokupon.com
 - WMS Rasa Group (2025): Internal fullstack WMS with API architecture and operational reporting. Stack: NestJS, Prisma ORM, Vue.js, PostgreSQL, Docker.
 - Qala Temu (2025): Fullstack appointment platform for booking and admin workflows. Stack: React, NestJS, Prisma, PostgreSQL, Docker. Live: https://qala.digital
+- Geo Attendance System (2026): Fullstack attendance and leave platform with geofenced check-in, mandatory selfie verification, and a two-tier (supervisor, HR) approval flow, delivered in one week with AI-assisted development (Claude Code). Stack: Go, Gin Gonic, Vue.js, PostgreSQL, Docker, Komodo.
+
+Certificates:
+- Backend Developer (Node.js and ExpressJS API course), Glints x Binar, Dec 2021
+- Programming Database with SQL, Oracle Academy, Sep 2021
+- Design Database, Oracle Academy, Aug 2021
+- JavaScript Course, Progate, Jul 2021
+- Sass Course, Progate, Jul 2021
 
 Education:
 - Mataram University

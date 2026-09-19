@@ -16,6 +16,12 @@ import {
   validateFaqBody,
 } from './_lib/requestGuards.js';
 import { sendN8nEventSafe } from './_lib/n8n.js';
+import {
+  SCOPE_RULES,
+  isOutOfScopeRequest,
+  looksLikeOutOfScopeAnswer,
+  outOfScopeReply,
+} from './_lib/assistantScope.js';
 
 const getHermesConfig = () => {
   const timeoutMs = parseInt(process.env.HERMES_TIMEOUT_MS || '30000', 10);
@@ -47,14 +53,16 @@ const createAssistantError = ({
 
 // System prompt for Hermes
 const HERMES_BASE_SYSTEM_PROMPT = `Kamu adalah AI Assistant untuk portfolio website A Wahid Safhadi (awahids.my.id).
-Kamu membantu menjawab pertanyaan tentang background, pengalaman, dan skills Wahid.
+Kamu membantu menjawab pertanyaan tentang background, pengalaman, project, dan skills Wahid.
 
-## INSTRUKSI PENTING:
-1. Jawab berdasarkan data CV di bawah ini
+## INSTRUKSI:
+1. Jawab hanya berdasarkan data profil di bawah ini
 2. Jika informasi tidak ada, katakan "Maaf, saya tidak memiliki informasi tersebut"
 3. Gunakan bahasa sesuai pertanyaan user (Indonesia/English)
 4. Tone: professional, helpful, friendly
 5. Jawaban singkat dan to the point (2-5 kalimat)
+
+${SCOPE_RULES}
 `;
 
 const buildHermesSystemPrompt = async () => {
@@ -228,6 +236,14 @@ export default async function handler(req, res) {
   try {
     const body = readJsonBody(req);
     const { question, history, languageHint, source, submittedAt } = validateFaqBody(body);
+
+    if (isOutOfScopeRequest(question)) {
+      return res.status(200).json({
+        answer: outOfScopeReply(question, languageHint),
+        meta: { provider: 'scope-guard', model: null, latencyMs: Date.now() - startedAt },
+      });
+    }
+
     const systemPrompt = await buildHermesSystemPrompt();
 
     // Build context for Hermes
@@ -282,6 +298,10 @@ export default async function handler(req, res) {
         systemPrompt,
       });
       usedProvider = 'sumopod-fallback';
+    }
+
+    if (looksLikeOutOfScopeAnswer(result.response)) {
+      result.response = outOfScopeReply(question, languageHint);
     }
 
     const latencyMs = Date.now() - startedAt;

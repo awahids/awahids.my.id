@@ -8,12 +8,17 @@ import {
   validateFaqBody,
 } from './_lib/requestGuards.js';
 import { sendN8nEventSafe } from './_lib/n8n.js';
+import {
+  SCOPE_RULES,
+  isOutOfScopeRequest,
+  looksLikeOutOfScopeAnswer,
+  outOfScopeReply,
+} from './_lib/assistantScope.js';
 
 const BASE_FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi portfolio.
 
-- First, try to answer based on the CV context provided below.
+- Answer only from the CV context provided below.
 - If the question is about Wahid's specific experience, pricing, or personal details not found in the CV context, politely say that you don't have that specific information.
-- If the question is a general question (e.g., about technology, programming, tools, or general knowledge), feel free to answer using your own knowledge and research capabilities.
 - Keep answers concise and practical (2-5 sentences).
 - Write naturally, like a real human conversation, not like CV bullet points.
 - Paraphrase facts from CV into flowing sentences, but **always use the exact role titles** (e.g., Senior IT Developer, Backend Developer) when discussing work experience. Do not generalize the titles.
@@ -22,6 +27,8 @@ const BASE_FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi
 - When replying in Indonesian, keep the tone casual, friendly, and professional (santai tapi tetap sopan). Do not be overly formal or stiff. Use everyday professional Indonesian words (e.g., "bisa", "buat", "dipakai", "kalau", "aku") instead of formal ones (like "merupakan", "adalah", "saya").
 - Use bullet list only when user explicitly asks for list.
 - Do not mix Indonesian and English in one answer unless user does it first.
+
+${SCOPE_RULES}
 `;
 
 const buildFaqSystemPrompt = async () => {
@@ -83,6 +90,13 @@ export default async function handler(req, res) {
     relayContext.languageHint = languageHint;
     relayContext.question = question;
 
+    if (isOutOfScopeRequest(question)) {
+      return res.status(200).json({
+        answer: outOfScopeReply(question, languageHint),
+        meta: { provider: 'scope-guard', model: null },
+      });
+    }
+
     const faqSystemPrompt = await buildFaqSystemPrompt();
     const apiMessages = [
       {
@@ -96,11 +110,14 @@ export default async function handler(req, res) {
       },
     ];
 
-    const { assistantText, model } = await callSumopodChat({
+    const { assistantText: rawAnswer, model } = await callSumopodChat({
       messages: apiMessages,
       temperature: 0.2,
       maxTokens: 420,
     });
+    const assistantText = looksLikeOutOfScopeAnswer(rawAnswer)
+      ? outOfScopeReply(question, languageHint)
+      : rawAnswer;
 
     await sendN8nEventSafe({
       req,
