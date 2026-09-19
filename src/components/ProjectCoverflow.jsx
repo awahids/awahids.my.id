@@ -138,7 +138,7 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
             <button
               type="button"
               key={p.id}
-              className={`pcf-tile ${isActive ? 'is-active' : ''}`}
+              className={`notch-surface pcf-tile ${isActive ? 'is-active' : ''}`}
               style={tileTransform(offset, reduced)}
               onClick={() => (isActive ? onOpen(p) : goTo(i))}
               aria-current={isActive}
@@ -146,11 +146,13 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
               tabIndex={-1}
               draggable={false}
             >
-              <span className="pcf-corner pcf-corner-tl" aria-hidden="true" />
+              <span className="pcf-tab">
+                <span className="pcf-tile-num">{p.num}</span>
+                <span className="pcf-tab-arrow" aria-hidden="true">→</span>
+              </span>
               <span className="pcf-corner pcf-corner-br" aria-hidden="true" />
               <span className="pcf-tile-ghost" aria-hidden="true">{p.num}</span>
               <span className="pcf-tile-top">
-                <span className="pcf-tile-num">{p.num}</span>
                 {p.year && <span className="pcf-tile-year">{p.year}</span>}
               </span>
               <span className="pcf-tile-body">

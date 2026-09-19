@@ -7,3 +7,5 @@ supabase/*
 
 .claude/skills/*
 .superpowers/
+
+.DS_Store

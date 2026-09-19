@@ -135,7 +135,7 @@ const Certificates = () => {
           {visibleCerts.map((c, i) => (
             <motion.div
               key={i}
-              className="cert-card"
+              className="notch-surface cert-card"
               variants={cardPop}
               initial={false}
             >

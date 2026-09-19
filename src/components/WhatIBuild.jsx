@@ -101,7 +101,7 @@ const WhatIBuild = () => {
 
         <motion.div className="build-grid" variants={staggerGrid} ref={gridRef}>
           {OFFERINGS.map((item, index) => (
-            <motion.article className="build-card" key={item.title} variants={cardPop}>
+            <motion.article className="notch-surface build-card" key={item.title} variants={cardPop}>
               <div className="build-card-num">{`0${index + 1}`}</div>
               <h3 className="build-card-title">{item.title}</h3>
               <p className="build-card-desc">{item.desc}</p>
