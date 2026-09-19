@@ -3145,6 +3145,7 @@ footer {
   gap: 12px;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
+  overscroll-behavior: contain;
 }
 
 .ff-msg {

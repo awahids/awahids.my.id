@@ -535,6 +535,9 @@ const FloatingFAQ = () => {
         {isOpen && (
           <motion.div
             className="floating-faq-window"
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            data-lenis-prevent-touch
             initial={{ opacity: 0, y: 24, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, y: 0, transformOrigin: 'bottom right' }}
             exit={{ opacity: 0, y: 24, transformOrigin: 'bottom right' }}
