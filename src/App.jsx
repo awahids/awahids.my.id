@@ -30,7 +30,9 @@ gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 import { AnomalousMatterHero } from './components/AnomalousHero';
 const AI_LAB_PATH = '/ai-lab';
 const ADMIN_PATH_PREFIX = '/admin';
+const README_GENERATOR_PATH = '/readme-generator';
 const AILab = lazy(() => import('./components/AILab'));
+const ReadmeGenerator = lazy(() => import('./components/ReadmeGenerator'));
 
 const BOT_USER_AGENT_PATTERN =
   /bot|crawler|spider|crawling|facebookexternalhit|slackbot|twitterbot|linkedinbot|discordbot|whatsapp|google-inspectiontool|lighthouse/i;
@@ -61,8 +63,14 @@ const isAdminRoute = (pathname = '') => {
   return normalized === ADMIN_PATH_PREFIX || normalized.startsWith(`${ADMIN_PATH_PREFIX}/`);
 };
 
+const isReadmeGeneratorRoute = (pathname = '') =>
+  normalizePathname(pathname) === README_GENERATOR_PATH;
+
 const isNotFoundRoute = (pathname = '') =>
-  !isHomeRoute(pathname) && !isAiLabRoute(pathname) && !isAdminRoute(pathname);
+  !isHomeRoute(pathname) &&
+  !isAiLabRoute(pathname) &&
+  !isAdminRoute(pathname) &&
+  !isReadmeGeneratorRoute(pathname);
 
 const DEFAULT_ABOUT = {
   eyebrow: 'BIOGRAPHY',
@@ -145,6 +153,13 @@ const AI_LAB_SETTINGS = {
   siteTitle: 'AI Lab — Architecture Brief Generator | A Wahid Safhadi',
   seoDescription:
     'Generate a technical architecture brief for your web product. A free AI-powered planning tool by fullstack developer A Wahid Safhadi.',
+  ogImage: '/img/aw-pixel.png',
+};
+
+const README_GENERATOR_SETTINGS = {
+  siteTitle: 'GitHub README Generator | A Wahid Safhadi',
+  seoDescription:
+    'Generate a GitHub profile README with self-hosted stats, streak, top-languages, activity graph, typing animation and skill icon cards.',
   ogImage: '/img/aw-pixel.png',
 };
 
@@ -237,11 +252,16 @@ function App() {
   );
   const aiLabPage = isAiLabRoute(currentPathname);
   const adminPage = isAdminRoute(currentPathname);
+  const readmeGeneratorPage = isReadmeGeneratorRoute(currentPathname);
   const notFoundPage = isNotFoundRoute(currentPathname);
   const [loading, setLoading] = useState(
-    () => !isAdminRoute(currentPathname) && !isNotFoundRoute(currentPathname) && !shouldBypassPreloader()
+    () =>
+      !isAdminRoute(currentPathname) &&
+      !isReadmeGeneratorRoute(currentPathname) &&
+      !isNotFoundRoute(currentPathname) &&
+      !shouldBypassPreloader()
   );
-  const effectiveLoading = adminPage || notFoundPage ? false : loading;
+  const effectiveLoading = adminPage || readmeGeneratorPage || notFoundPage ? false : loading;
   const {
     viewport: sectionViewport,
     sectionContainer,
@@ -254,7 +274,7 @@ function App() {
   const [about, setAbout] = useState(DEFAULT_ABOUT);
   const aboutTitle = getAboutTitleParts(about.title);
 
-  const lenisEnabled = !effectiveLoading && !adminPage && !notFoundPage;
+  const lenisEnabled = !effectiveLoading && !adminPage && !readmeGeneratorPage && !notFoundPage;
   const lenisRef = useLenis({ enabled: lenisEnabled });
 
   const aboutSectionRef = React.useRef(null);
@@ -334,10 +354,16 @@ function App() {
 
   useEffect(() => {
     applySiteSettings(
-      notFoundPage ? NOT_FOUND_SETTINGS : aiLabPage ? AI_LAB_SETTINGS : DEFAULT_SITE_SETTINGS
+      notFoundPage
+        ? NOT_FOUND_SETTINGS
+        : aiLabPage
+          ? AI_LAB_SETTINGS
+          : readmeGeneratorPage
+            ? README_GENERATOR_SETTINGS
+            : DEFAULT_SITE_SETTINGS
     );
 
-    if (notFoundPage || aiLabPage || !isSupabaseConfigured || !supabase) return undefined;
+    if (notFoundPage || aiLabPage || readmeGeneratorPage || !isSupabaseConfigured || !supabase) return undefined;
 
     let mounted = true;
 
@@ -391,10 +417,10 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
-    const active = !effectiveLoading && !adminPage && !notFoundPage;
+    const active = !effectiveLoading && !adminPage && !readmeGeneratorPage && !notFoundPage;
     document.body.classList.toggle('is-gsap-motion', active);
     return () => document.body.classList.remove('is-gsap-motion');
-  }, [effectiveLoading, adminPage, notFoundPage]);
+  }, [effectiveLoading, adminPage, readmeGeneratorPage, notFoundPage]);
 
   useEffect(() => {
     if (!effectiveLoading) {
@@ -404,7 +430,7 @@ function App() {
   }, [effectiveLoading]);
 
   useEffect(() => {
-    if (effectiveLoading || adminPage || notFoundPage) return undefined;
+    if (effectiveLoading || adminPage || readmeGeneratorPage || notFoundPage) return undefined;
 
     const progressTween = gsap.to('.scroll-progress-bar', {
       scaleX: 1,
@@ -472,7 +498,7 @@ function App() {
       progressTween.scrollTrigger?.kill();
       progressTween.kill();
     };
-  }, [adminPage, effectiveLoading, lenisRef, notFoundPage]);
+  }, [adminPage, readmeGeneratorPage, effectiveLoading, lenisRef, notFoundPage]);
 
   return (
     <div className={`app-container ${effectiveLoading ? 'is-preloading' : ''}`}>
@@ -483,12 +509,22 @@ function App() {
       </div>
 
       <CustomCursor />
-      {!aiLabPage && !adminPage && !notFoundPage && <SpotlightGlow />}
-      {!adminPage && <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage} />}
-      {!aiLabPage && !adminPage && !notFoundPage && <MobileNav />}
-      {!aiLabPage && !adminPage && !notFoundPage && <SocialRail />}
+      {!aiLabPage && !adminPage && !readmeGeneratorPage && !notFoundPage && <SpotlightGlow />}
+      {!adminPage && !readmeGeneratorPage && <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage} />}
+      {!aiLabPage && !adminPage && !readmeGeneratorPage && !notFoundPage && <MobileNav />}
+      {!aiLabPage && !adminPage && !readmeGeneratorPage && !notFoundPage && <SocialRail />}
 
-      <main className={aiLabPage ? 'main-ai-lab-page' : notFoundPage ? 'main-not-found-page' : ''}>
+      <main
+        className={
+          aiLabPage
+            ? 'main-ai-lab-page'
+            : readmeGeneratorPage
+              ? 'main-readme-generator-page'
+              : notFoundPage
+                ? 'main-not-found-page'
+                : ''
+        }
+      >
         {adminPage ? (
           <AdminExperience routePath={currentPathname} onNavigate={navigateAdmin} />
         ) : aiLabPage ? (
@@ -498,6 +534,10 @@ function App() {
               <AILab />
             </Suspense>
           </>
+        ) : readmeGeneratorPage ? (
+          <Suspense fallback={<section className="s-readme-generator" />}>
+            <ReadmeGenerator />
+          </Suspense>
         ) : notFoundPage ? (
           <NotFoundPage />
         ) : (
@@ -574,8 +614,8 @@ function App() {
         )}
       </main>
 
-      {!adminPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
-      {!adminPage && !notFoundPage && <FloatingFAQ />}
+      {!adminPage && !readmeGeneratorPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
+      {!adminPage && !readmeGeneratorPage && !notFoundPage && <FloatingFAQ />}
     </div>
   );
 }

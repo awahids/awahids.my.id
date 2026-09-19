@@ -1,3 +1,5 @@
+import { getSupabaseRestConfig } from './supabaseRest.js';
+
 const DEFAULT_BASE_URL = 'https://ai.sumopod.com/v1';
 const DEFAULT_MODEL = 'gpt-4o-mini';
 const DEFAULT_TIMEOUT_MS = 12_000;
@@ -42,17 +44,6 @@ const toPositiveInt = (value, fallback) => {
   const parsed = Number(value);
   if (Number.isFinite(parsed) && parsed > 0) return Math.floor(parsed);
   return fallback;
-};
-
-const getSupabaseRestConfig = () => {
-  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
-  const anonKey =
-    process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
-
-  return {
-    url: ensureNoTrailingSlash(url),
-    anonKey,
-  };
 };
 
 const readCmsAiSettings = async () => {

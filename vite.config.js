@@ -3,6 +3,14 @@ import react from '@vitejs/plugin-react'
 import aiFaqHandler from './api/ai-faq.js'
 import aiBriefHandler from './api/ai-brief.js'
 import aiAssistantHandler from './api/ai-assistant.js'
+import githubStatsHandler from './api/github/stats.js'
+import githubTopLangsHandler from './api/github/top-langs.js'
+import githubStreakHandler from './api/github/streak.js'
+import githubActivityGraphHandler from './api/github/activity-graph.js'
+import githubStarsBadgeHandler from './api/github/stars-badge.js'
+import iconsHandler from './api/icons.js'
+import typingHandler from './api/typing.js'
+import visitorCountHandler from './api/visitor-count.js'
 
 const MAX_DEV_BODY_BYTES = 1_000_000
 
@@ -66,6 +74,16 @@ const attachVercelLikeResponseHelpers = (res) => {
     return res
   }
 
+  res.send = (body) => {
+    if (!res.getHeader('Content-Type')) {
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+    }
+
+    res.statusCode = statusCode
+    res.end(body)
+    return res
+  }
+
   return res
 }
 
@@ -77,6 +95,14 @@ const devApiMiddleware = () => ({
       ['/api/ai-faq', aiFaqHandler],
       ['/api/ai-brief', aiBriefHandler],
       ['/api/ai-assistant', aiAssistantHandler],
+      ['/api/github/stats', githubStatsHandler],
+      ['/api/github/top-langs', githubTopLangsHandler],
+      ['/api/github/streak', githubStreakHandler],
+      ['/api/github/activity-graph', githubActivityGraphHandler],
+      ['/api/github/stars-badge', githubStarsBadgeHandler],
+      ['/api/visitor-count', visitorCountHandler],
+      ['/api/icons', iconsHandler],
+      ['/api/typing', typingHandler],
     ])
 
     server.middlewares.use(async (req, res, next) => {
@@ -91,6 +117,7 @@ const devApiMiddleware = () => ({
       try {
         const rawBody = await readRawBody(req)
         req.body = parseBodyByContentType(rawBody, req.headers['content-type'])
+        req.query = Object.fromEntries(new URL(req.url, 'http://localhost').searchParams)
         attachVercelLikeResponseHelpers(res)
 
         await handler(req, res)
