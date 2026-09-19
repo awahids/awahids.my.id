@@ -38,6 +38,7 @@ const btnSpring = { type: 'spring', stiffness: 380, damping: 20 };
 // ─── Data ─────────────────────────────────────────────────────────────────
 
 const PORTAL_WORD = 'WAHID';
+const PORTAL_FONT_TIMEOUT_MS = 2500;
 
 const DEFAULT_PROFILE = {
   name: 'A Wahid Safhadi',
@@ -102,11 +103,22 @@ const splitProfileName = (name = '') => {
 
 const Hero = () => {
   const [profile, setProfile] = useState(DEFAULT_PROFILE);
+  const [fontReady, setFontReady] = useState(false);
   const profileName = splitProfileName(profile.name);
   const reduced = useReducedMotion();
 
   // Build reduced-motion-safe variants
   const safe = (v) => reduced ? { hidden: {}, visible: {} } : v;
+
+  // GlyphPortal freezes its font at mount and disables the scroll effect if the face isn't loaded yet.
+  useEffect(() => {
+    let cancelled = false;
+    const finish = () => { if (!cancelled) setFontReady(true); };
+    if (!document.fonts?.load) { finish(); return undefined; }
+    const timer = window.setTimeout(finish, PORTAL_FONT_TIMEOUT_MS);
+    document.fonts.load(`900 100px 'Unbounded'`, PORTAL_WORD).then(finish, finish);
+    return () => { cancelled = true; window.clearTimeout(timer); };
+  }, []);
 
   // ── Supabase profile load
   useEffect(() => {
@@ -129,13 +141,44 @@ const Hero = () => {
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
-    <div id="home">
-    <GlyphPortal
+    <div id="home" style={fontReady ? undefined : { minHeight: '100svh' }}>
+    {fontReady && <GlyphPortal
       word={PORTAL_WORD}
+      className="hero-portal"
       fontFamily="'Unbounded', sans-serif"
       fontWeight={900}
       enterLabel="Enter Portfolio"
-      style={{ '--gp-paper': 'var(--dark)', '--gp-ink': 'var(--white)' }}
+      hint="Scroll to step inside."
+      style={{
+        '--gp-paper': 'var(--dark)',
+        '--gp-ink': 'var(--white)',
+        '--gp-field': 'var(--dark)',
+        '--gp-foreground': 'var(--white)',
+      }}
+      background={
+        <div aria-hidden="true" style={{ position: 'absolute', inset: 0, transform: 'scale(var(--gp-field-scale,1))' }}>
+          {/* base — grid on flat dark, this is what stays once the hero content is revealed */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              backgroundImage:
+                'linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px)',
+              backgroundSize: '56px 56px',
+              backgroundColor: 'var(--dark)',
+            }}
+          />
+          {/* glow — lights the WAHID cutout while scrolling, fades out as the hero content reveals */}
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'radial-gradient(140% 120% at 50% 45%, rgba(200,255,0,.4), rgba(200,255,0,.16) 55%, rgba(200,255,0,0) 85%)',
+              opacity: 'calc(1 - var(--gp-reveal, 0))',
+            }}
+          />
+        </div>
+      }
       front={
         <div className="hero-portal-front">
           <div className="hero-eyebrow">
@@ -158,6 +201,7 @@ const Hero = () => {
           {/* Name — role + last name + ghost title (first name is shown via the portal) */}
           <motion.h2 className="hero-portal-name" variants={safe(fadeUp)}>
             <span className="hn-sub">{profile.role}</span>
+            {profileName.first && <span className="hn-first">{profileName.first}</span>}
             {profileName.last && <span className="hn-last">{profileName.last}</span>}
             <span className="hn-ghost">{profile.ghostTitle}</span>
           </motion.h2>
@@ -228,7 +272,7 @@ const Hero = () => {
           </div>
         </motion.div>
       </div>
-    </GlyphPortal>
+    </GlyphPortal>}
     </div>
   );
 };

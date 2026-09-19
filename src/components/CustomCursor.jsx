@@ -24,6 +24,8 @@ const CustomCursor = () => {
       return undefined;
     }
 
+    document.body.classList.add('has-custom-cursor');
+
     let mx = window.innerWidth * 0.5;
     let my = window.innerHeight * 0.5;
     let rx = mx;
@@ -140,6 +142,7 @@ const CustomCursor = () => {
       document.removeEventListener('pointerover', hoverOn);
       document.removeEventListener('pointerout', hoverOff);
       window.removeEventListener('blur', resetHover);
+      document.body.classList.remove('has-custom-cursor');
       resetHover();
     };
   }, []);

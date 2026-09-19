@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import gsap from 'gsap';
 import { useSectionMotion } from '../lib/sectionMotion';
 import { BOOKING_URL } from '../lib/links';
 import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
@@ -8,7 +7,7 @@ import { useWordSplit } from '../lib/useWordSplit';
 import { useTextScramble } from '../lib/useTextScramble';
 import { useGsapReveal } from '../lib/useGsapReveal';
 import { modalCardVariants, modalChildVariants, modalOverlayMotion } from '../lib/modalMotion';
-// PortfolioScrollSwap removed — using bento grid layout
+import ProjectCoverflow from './ProjectCoverflow';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -23,21 +22,6 @@ const getFocusableElements = (container) =>
   Array.from(container.querySelectorAll(FOCUSABLE_SELECTOR)).filter(
     (element) => !element.hasAttribute('aria-hidden')
   );
-
-const portCardZoom = {
-  hidden: { opacity: 0, scale: 0.42, y: 40 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { duration: 0.75, ease: [0.16, 1, 0.3, 1] },
-  },
-};
-
-const portCardZoomStill = {
-  hidden: { opacity: 1, scale: 1 },
-  visible: { opacity: 1, scale: 1, transition: { duration: 0 } },
-};
 
 const projects = [
   {
@@ -410,8 +394,6 @@ const projects = [
   }
 ];
 
-const MOBILE_PROJECT_LIMIT = 5;
-
 const groupProjectChildren = (rows = [], valueKey = 'label') =>
   rows.reduce((acc, row) => {
     const projectId = row.project_id;
@@ -464,8 +446,6 @@ const projectFromCmsItem = (item, index, children = {}) => {
 const Portfolio = () => {
   const [projectItems, setProjectItems] = useState(projects);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [isMobile, setIsMobile] = useState(false);
-  const [showAllMobileProjects, setShowAllMobileProjects] = useState(false);
   const sectionRef = useRef(null);
   const modalRef = useRef(null);
   const closeButtonRef = useRef(null);
@@ -474,13 +454,8 @@ const Portfolio = () => {
   useWordSplit(sectionRef);
   useTextScramble(sectionRef);
   useGsapReveal(sectionRef);
-  const { viewport, sectionContainer, sectionItem, staggerGrid, eyebrow, reduceMotion } =
+  const { viewport, sectionContainer, sectionItem, eyebrow, reduceMotion } =
     useSectionMotion();
-
-  const visibleProjects = isMobile && !showAllMobileProjects
-    ? projectItems.slice(0, MOBILE_PROJECT_LIMIT)
-    : projectItems;
-  const visibleScopeLimit = isMobile ? 3 : 4;
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) return undefined;
@@ -540,87 +515,6 @@ const Portfolio = () => {
     setSelectedProject(null);
   }, []);
 
-  // 3D tilt + spotlight glow on portfolio cards
-  useEffect(() => {
-    const cards = document.querySelectorAll('.port-card');
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (prefersReducedMotion || !hasFinePointer) return;
-
-    const cleanups = [];
-    cards.forEach((card) => {
-      const onMove = (e) => {
-        const rect = card.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const dx = (e.clientX - cx) / (rect.width / 2);
-        const dy = (e.clientY - cy) / (rect.height / 2);
-
-        // 3D tilt + lift
-        gsap.to(card, {
-          rotateX: dy * -6,
-          rotateY: dx * 6,
-          y: -8,
-          transformPerspective: 900,
-          duration: 0.4,
-          ease: 'power2.out',
-          overwrite: 'auto',
-        });
-
-        // Mouse-tracking spotlight: update CSS custom properties
-        const pctX = ((e.clientX - rect.left) / rect.width) * 100;
-        const pctY = ((e.clientY - rect.top) / rect.height) * 100;
-        card.style.setProperty('--mx', `${pctX}%`);
-        card.style.setProperty('--my', `${pctY}%`);
-        card.classList.add('is-hovered');
-      };
-      const onLeave = () => {
-        gsap.to(card, {
-          rotateX: 0, rotateY: 0, y: 0,
-          duration: 0.55, ease: 'power3.out', overwrite: 'auto',
-        });
-        card.classList.remove('is-hovered');
-      };
-      card.addEventListener('mousemove', onMove);
-      card.addEventListener('mouseleave', onLeave);
-      cleanups.push(() => {
-        card.removeEventListener('mousemove', onMove);
-        card.removeEventListener('mouseleave', onLeave);
-      });
-    });
-    return () => cleanups.forEach((fn) => fn());
-  }, [projectItems]);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 960px)');
-
-    const syncViewport = (event) => {
-      const nextIsMobile = Boolean(event.matches);
-      setIsMobile((prevIsMobile) => {
-        if (prevIsMobile !== nextIsMobile) {
-          setShowAllMobileProjects(!nextIsMobile);
-        }
-
-        return nextIsMobile;
-      });
-    };
-
-    syncViewport(mediaQuery);
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', syncViewport);
-    } else {
-      mediaQuery.addListener(syncViewport);
-    }
-
-    return () => {
-      if (mediaQuery.removeEventListener) {
-        mediaQuery.removeEventListener('change', syncViewport);
-      } else {
-        mediaQuery.removeListener(syncViewport);
-      }
-    };
-  }, []);
-
   useEffect(() => {
     if (!selectedProject) return undefined;
 
@@ -675,13 +569,6 @@ const Portfolio = () => {
     };
   }, [selectedProject, closeModal]);
 
-  const handleCardKeyDown = (event, project) => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      openModal(project);
-    }
-  };
-
   return (
     <section className="s-portfolio" id="portfolio">
       <motion.div
@@ -708,52 +595,7 @@ const Portfolio = () => {
           Real projects across web apps, dashboards, backend systems, automation, and deployment.
         </motion.p>
 
-        <motion.div
-          className="port-grid"
-          variants={staggerGrid}
-        >
-          {visibleProjects.map((p) => (
-            <motion.div
-              key={p.id}
-              className={`port-card ${p.bento}`}
-              onClick={() => openModal(p)}
-              onKeyDown={(event) => handleCardKeyDown(event, p)}
-              role="button"
-              tabIndex="0"
-              aria-haspopup="dialog"
-              aria-label={`Open project details for ${p.title}`}
-              variants={reduceMotion ? portCardZoomStill : portCardZoom}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, amount: 0.15 }}
-            >
-              <div className="port-card-num">{p.num}</div>
-              {p.year && <div className="port-year">{p.year}</div>}
-              {p.cat && <div className="port-cat">{p.cat}</div>}
-              <h3 className="port-name">{p.title}</h3>
-              <p className="port-desc">{p.desc}</p>
-              <div className="port-scope">Scope</div>
-              <div className="port-stack">
-                {p.scope.slice(0, visibleScopeLimit).map(s => (
-                  <span key={s} className="port-tag">{s}</span>
-                ))}
-              </div>
-              <span className="port-link" aria-hidden="true">Open Case ↗</span>
-            </motion.div>
-          ))}
-        </motion.div>
-        {isMobile && projectItems.length > MOBILE_PROJECT_LIMIT && (
-          <motion.button
-            type="button"
-            className="port-mobile-toggle"
-            onClick={() => setShowAllMobileProjects((prev) => !prev)}
-            variants={sectionItem}
-          >
-            {showAllMobileProjects
-              ? 'Show Less'
-              : `View More Projects (${projectItems.length - MOBILE_PROJECT_LIMIT})`}
-          </motion.button>
-        )}
+        <ProjectCoverflow projects={projectItems} onOpen={openModal} />
       </motion.div>
 
       <AnimatePresence>
