@@ -1,8 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { buildReadmeMarkdown } from '../lib/readmeTemplate';
-
-const DEFAULT_SKILLS =
-  'git,babel,docker,bash,bitbucket,bootstrap,bun,css,express,gatsby,github,gitlab,go,graphql,heroku,html,js,jest,laravel,linux,md,mongodb,mysql,nestjs,netlify,nextjs,nodejs,notion,npm,php,postgres,postman,powershell,prisma,redis,sentry,sequelize,tailwind,ts,ubuntu,vscode,yarn';
+import { DEFAULT_SKILL_IDS, SKILL_GROUPS, skillIconUrl } from '../lib/skillIcons';
 
 // `label` is the form field caption; `linkLabel` is the shorter text shown
 // on the actual README link. `toUrl` turns whatever the field collects (a
@@ -36,7 +34,7 @@ const ReadmeGenerator = () => {
   const [showVisitorCounter, setShowVisitorCounter] = useState(false);
   const [taglineText, setTaglineText] = useState('Hello, There! 👋\nNice to meet you!');
   const [bioText, setBioText] = useState('');
-  const [skillsText, setSkillsText] = useState(DEFAULT_SKILLS);
+  const [skillIds, setSkillIds] = useState(DEFAULT_SKILL_IDS);
   const [socials, setSocials] = useState(() => Object.fromEntries(SOCIAL_FIELDS.map((f) => [f.key, ''])));
   const [previewTab, setPreviewTab] = useState('preview');
   const [copied, setCopied] = useState(false);
@@ -50,7 +48,7 @@ const ReadmeGenerator = () => {
         showVisitorCounter,
         taglineLines: taglineText.split('\n').map((line) => line.trim()),
         bio: bioText.split('\n').map((line) => line.trim()),
-        skills: skillsText.split(',').map((code) => code.trim()),
+        skills: skillIds,
         socialLinks: SOCIAL_FIELDS.map((field) => {
           const value = socials[field.key].trim();
           return { label: field.linkLabel, url: value ? field.toUrl(value) : '' };
@@ -58,7 +56,10 @@ const ReadmeGenerator = () => {
       },
       { origin }
     );
-  }, [username, pinnedReposText, showVisitorCounter, taglineText, bioText, skillsText, socials]);
+  }, [username, pinnedReposText, showVisitorCounter, taglineText, bioText, skillIds, socials]);
+
+  const toggleSkill = (id) =>
+    setSkillIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const handleCopy = async () => {
     try {
@@ -136,10 +137,31 @@ const ReadmeGenerator = () => {
                   </label>
                 ))}
               </fieldset>
-              <label>
-                Skill icons (comma-separated)
-                <textarea rows={3} value={skillsText} onChange={(e) => setSkillsText(e.target.value)} />
-              </label>
+              <fieldset className="rg-social-fields">
+                <legend>Skill icons</legend>
+                {SKILL_GROUPS.map((group) => (
+                  <div key={group.label} className="rg-skill-group">
+                    <span className="rg-skill-group-label">{group.label}</span>
+                    <div className="rg-skill-grid">
+                      {group.icons.map((icon) => {
+                        const selected = skillIds.includes(icon.id);
+                        return (
+                          <button
+                            type="button"
+                            key={icon.id}
+                            className={`rg-skill ${selected ? 'is-selected' : ''}`}
+                            aria-pressed={selected}
+                            onClick={() => toggleSkill(icon.id)}
+                          >
+                            <img src={skillIconUrl(icon.id)} alt="" loading="lazy" />
+                            <span>{icon.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </fieldset>
             </div>
           )}
 

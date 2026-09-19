@@ -14,7 +14,7 @@ test('buildReadmeMarkdown: username alone renders only the stats section', () =>
   assert.match(markdown, /api\/github\/streak\?username=awahids/);
   assert.match(markdown, /api\/github\/stats\?username=awahids/);
   assert.doesNotMatch(markdown, /api\/typing/);
-  assert.doesNotMatch(markdown, /api\/icons/);
+  assert.doesNotMatch(markdown, /skillicons\.dev/);
 });
 
 test('buildReadmeMarkdown: drops an unsafe (javascript:) social link but keeps a safe one', () => {
@@ -46,11 +46,22 @@ test('buildReadmeMarkdown: typing lines are URL-encoded and joined with ";"', ()
   assert.match(markdown, /api\/typing\?lines=Hello%2C\+There/);
 });
 
-test('buildReadmeMarkdown: renders one separate <img> per skill so they wrap naturally', () => {
-  const markdown = buildReadmeMarkdown({ skills: ['git', 'go', 'php'] }, { origin: ORIGIN });
-  const iconImgCount = (markdown.match(/api\/icons\?i=/g) || []).length;
-  assert.equal(iconImgCount, 3);
-  assert.doesNotMatch(markdown, /i=git%2Cgo%2Cphp/);
+test('buildReadmeMarkdown: renders every skill in one skillicons.dev image, in the chosen order', () => {
+  const markdown = buildReadmeMarkdown({ skills: ['nestjs', 'ts', 'docker'] }, { origin: ORIGIN });
+  assert.match(markdown, /https:\/\/skillicons\.dev\/icons\?i=nestjs,ts,docker&perline=10/);
+  assert.equal((markdown.match(/<img /g) || []).length, 1);
+  assert.doesNotMatch(markdown, /api\/icons|raw\.githubusercontent\.com/);
+});
+
+test('buildReadmeMarkdown: unknown skill ids are dropped', () => {
+  const markdown = buildReadmeMarkdown({ skills: ['not-a-real-icon', 'react'] }, { origin: ORIGIN });
+  assert.match(markdown, /icons\?i=react&perline/);
+  assert.doesNotMatch(markdown, /not-a-real-icon/);
+});
+
+test('buildReadmeMarkdown: only unknown skills means no skills section at all', () => {
+  const markdown = buildReadmeMarkdown({ skills: ['nope'] }, { origin: ORIGIN });
+  assert.equal(markdown, '');
 });
 
 test('buildReadmeMarkdown: visitor counter only appears when opted in with a username', () => {

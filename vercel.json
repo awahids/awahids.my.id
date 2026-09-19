@@ -3,11 +3,6 @@
   "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "functions": {
-    "api/icons.js": {
-      "includeFiles": "node_modules/simple-icons/{icons,data}/**"
-    }
-  },
   "routes": [
     {
       "handle": "filesystem"

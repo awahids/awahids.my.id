@@ -8,7 +8,6 @@ import githubTopLangsHandler from './api/github/top-langs.js'
 import githubStreakHandler from './api/github/streak.js'
 import githubActivityGraphHandler from './api/github/activity-graph.js'
 import githubStarsBadgeHandler from './api/github/stars-badge.js'
-import iconsHandler from './api/icons.js'
 import typingHandler from './api/typing.js'
 import visitorCountHandler from './api/visitor-count.js'
 
@@ -101,7 +100,6 @@ const devApiMiddleware = () => ({
       ['/api/github/activity-graph', githubActivityGraphHandler],
       ['/api/github/stars-badge', githubStarsBadgeHandler],
       ['/api/visitor-count', visitorCountHandler],
-      ['/api/icons', iconsHandler],
       ['/api/typing', typingHandler],
     ])
 

@@ -1,3 +1,5 @@
+import { isSkillIcon, skillIconsBannerUrl } from './skillIcons.js';
+
 const escapeHtml = (value) =>
   String(value ?? '').replace(/[&<>"']/g, (char) => ({
     '&': '&amp;',
@@ -34,7 +36,7 @@ export const buildReadmeMarkdown = (values, { origin }) => {
   const socialLinks = (values.socialLinks || []).filter(
     (link) => link.label && link.url && isSafeLinkUrl(link.url)
   );
-  const skills = (values.skills || []).filter(Boolean);
+  const skills = (values.skills || []).filter(isSkillIcon);
   const pinnedRepos = (values.pinnedRepos || []).map((repo) => repo.trim()).filter(Boolean);
 
   const topBadges = [
@@ -69,15 +71,14 @@ ${socialLinks.map((link) => `  <code><a href="${escapeHtml(link.url)}" title="${
 </p>\n\n`
     : '';
 
-  // One <img> per icon (not one combined image) — GitHub strips `style=`
-  // attributes from README HTML, so a real flexbox wrapper never survives
-  // there. Separate inline images wrap on their own via normal HTML flow.
+  // skillicons.dev lays the icons out itself (`perline`), so one image is enough.
+  // GitHub strips `style=` from README HTML, so a CSS flex row would not survive anyway.
   const skillsSection = skills.length
     ? `<hr>
 <h2 align="center">🔥 Languages & Frameworks & Tools & Abilities 🔥</h2>
 <br>
 <p align="center">
-  ${skills.map((code) => `<img src="${cardUrl(origin, '/api/icons', { i: code })}" title="${escapeHtml(code)}" />`).join('\n  ')}
+  <img src="${skillIconsBannerUrl(skills)}" alt="Skills" />
 </p>\n\n`
     : '';
 
