@@ -49,6 +49,12 @@ Beberapa keputusan desain yang tidak terlihat dari kodenya:
   menelan semua error, sama seperti `sendN8nEventSafe()`. Kalau
   `SUPABASE_SERVICE_ROLE_KEY` tidak diset, arsipnya dilewati diam-diam dan
   assistant tetap berjalan normal.
+- **Tapi kegagalannya dicatat.** Error ditelan, bukan disembunyikan: tanpa log,
+  key yang salah terlihat persis sama dengan fitur yang sengaja dimatikan —
+  sama-sama tabel kosong dan endpoint sehat. `recordQaSafe()` menulis
+  `console.warn` berisi nama tabel dan alasannya saja; Vercel menangkapnya di
+  function logs. Isi pertanyaan dan jawaban pengunjung **tidak pernah** ikut
+  di-log.
 - **Retensi 90 hari dijalankan berbarengan dengan insert**, bukan lewat
   `pg_cron`, supaya tidak butuh extension apa pun. Pindahkan ke `pg_cron`
   kalau trafiknya naik. Atur lewat `ASSISTANT_QA_RETENTION_DAYS`.

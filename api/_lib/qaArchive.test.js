@@ -101,6 +101,56 @@ test('recordQaSafe: never rejects when Supabase returns a non-ok response', asyn
   await assert.doesNotReject(() => recordQaSafe(sampleQa));
 });
 
+// A rejected write is the symptom of a misconfigured service role key, and the
+// archive is meant to be invisible — without a log line, a wrong key looks
+// exactly like the feature being switched off.
+test('recordQaSafe: warns with the status when Supabase rejects the insert', async (t) => {
+  setEnv();
+  const warnings = [];
+  t.mock.method(console, 'warn', (...args) => { warnings.push(args.join(' ')); });
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 401, json: async () => ({}) }));
+
+  await recordQaSafe(sampleQa);
+
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /assistant_qa/);
+  assert.match(warnings[0], /401/);
+});
+
+test('recordQaSafe: warns when the request throws', async (t) => {
+  setEnv();
+  const warnings = [];
+  t.mock.method(console, 'warn', (...args) => { warnings.push(args.join(' ')); });
+  t.mock.method(global, 'fetch', async () => { throw new Error('network down'); });
+
+  await recordQaSafe(sampleQa);
+
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /network down/);
+});
+
+test('recordQaSafe: never logs the visitor question or answer', async (t) => {
+  setEnv();
+  const warnings = [];
+  t.mock.method(console, 'warn', (...args) => { warnings.push(args.join(' ')); });
+  t.mock.method(global, 'fetch', async () => ({ ok: false, status: 500, json: async () => ({}) }));
+
+  await recordQaSafe(sampleQa);
+
+  assert.doesNotMatch(warnings.join('\n'), /kerja di mana|Rasa Group/);
+});
+
+test('recordQaSafe: stays quiet on success', async (t) => {
+  setEnv();
+  const warnings = [];
+  t.mock.method(console, 'warn', (...args) => { warnings.push(args.join(' ')); });
+  t.mock.method(global, 'fetch', async () => ok);
+
+  await recordQaSafe(sampleQa);
+
+  assert.equal(warnings.length, 0);
+});
+
 test('recordQaSafe: skips rows with an empty question or answer', async (t) => {
   setEnv();
   let called = 0;

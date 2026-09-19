@@ -42,10 +42,12 @@ const pruneExpired = async (url, key) => {
   const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
   const query = new URLSearchParams({ created_at: `lt.${cutoff}` });
 
-  await fetch(`${url}/rest/v1/assistant_qa?${query.toString()}`, {
+  const response = await fetch(`${url}/rest/v1/assistant_qa?${query.toString()}`, {
     method: 'DELETE',
     headers: authHeaders(key),
   });
+
+  if (!response.ok) throw new Error(`prune failed with status ${response.status}`);
 };
 
 const recordQa = async ({ route, question, answer, language = '' }) => {
@@ -57,7 +59,7 @@ const recordQa = async ({ route, question, answer, language = '' }) => {
   const key = serviceRoleKey();
   if (!url || !key) return;
 
-  await fetch(`${url}/rest/v1/assistant_qa`, {
+  const response = await fetch(`${url}/rest/v1/assistant_qa`, {
     method: 'POST',
     headers: { ...authHeaders(key), Prefer: 'return=minimal' },
     body: JSON.stringify({
@@ -67,6 +69,8 @@ const recordQa = async ({ route, question, answer, language = '' }) => {
       language: String(language || ''),
     }),
   });
+
+  if (!response.ok) throw new Error(`insert failed with status ${response.status}`);
 
   await pruneExpired(url, key);
 };
@@ -78,11 +82,18 @@ const recordQa = async ({ route, question, answer, language = '' }) => {
  *
  * Callers skip questions the scope guard refused — those are not real questions
  * about Wahid and would only pollute the corpus that phase 2 retrieves from.
+ *
+ * Failures are swallowed but not hidden: a wrong SUPABASE_SERVICE_ROLE_KEY
+ * would otherwise look exactly like the feature being switched off, since both
+ * produce an empty table and a perfectly healthy endpoint. The warning names
+ * the table and the reason only — never the visitor's question or answer, which
+ * do not belong in a log.
  */
 export const recordQaSafe = async (params) => {
   try {
     await recordQa(params);
-  } catch {
-    // The Q&A archive must never break primary API responses.
+  } catch (error) {
+    // Warn, but never rethrow: the archive must not break primary responses.
+    console.warn(`[assistant_qa] archive write skipped: ${error?.message || error}`);
   }
 };
