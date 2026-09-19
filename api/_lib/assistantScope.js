@@ -18,6 +18,10 @@ Never invent facts about Wahid that are not in the data. Never output code block
 
 const INJECTION = /\b(ignore|disregard|forget)\b.{0,30}\b(previous|above|prior|all|your)\b.{0,20}\b(instructions?|rules?|prompts?)\b|\b(abaikan|lupakan)\b.{0,30}\b(instruksi|perintah|aturan)\b|\b(system|developer)\s+prompt\b|\byou are now\b|\bkamu sekarang adalah\b|\bjailbreak\b|\bDAN mode\b/i;
 
+// Exposed so other assistants can reuse the injection detection without
+// inheriting SCOPE_RULES, which is specific to the CV assistant.
+export const hasInjectionAttempt = (value) => INJECTION.test(String(value || ''));
+
 const TECH_ARTIFACT =
   '(?:code|coding|kode|script|snippet|function|fungsi|endpoint|query|component|komponen|program|algorit[hm]m?a?|tutorial|unit test|regex|auth|authentication|autentikasi|login|crud|middleware|dockerfile|schema|migration)';
 
