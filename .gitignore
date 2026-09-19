@@ -4,6 +4,8 @@ node_modules
 .env.*
 !.env.example
 supabase/*
+# Hand-written schema is part of the repo; only the CLI's local artifacts are not.
+!supabase/*.sql
 
 .claude/skills/*
 .superpowers/
