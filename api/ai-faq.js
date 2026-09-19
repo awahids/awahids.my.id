@@ -1,5 +1,5 @@
 import { callSumopodChat, readJsonBody } from './_lib/sumopod.js';
-import { buildPortfolioAssistantContext } from './_lib/cmsFaqContext.js';
+import { CV_FAQ_CONTEXT } from './_lib/cvFaqContext.js';
 import {
   createRateLimiter,
   ensureMethod,
@@ -31,10 +31,7 @@ const BASE_FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi
 ${SCOPE_RULES}
 `;
 
-const buildFaqSystemPrompt = async () => {
-  const resolvedContext = await buildPortfolioAssistantContext();
-  return `${BASE_FAQ_SYSTEM_PROMPT}\n\n${resolvedContext}`;
-};
+const FAQ_SYSTEM_PROMPT = `${BASE_FAQ_SYSTEM_PROMPT}\n\nCV Context:\n${CV_FAQ_CONTEXT}`;
 
 const buildFaqPrompt = (question, languageHint = '') => {
   const resolvedLanguageHint =
@@ -97,11 +94,10 @@ export default async function handler(req, res) {
       });
     }
 
-    const faqSystemPrompt = await buildFaqSystemPrompt();
     const apiMessages = [
       {
         role: 'system',
-        content: faqSystemPrompt,
+        content: FAQ_SYSTEM_PROMPT,
       },
       ...(history || []),
       {

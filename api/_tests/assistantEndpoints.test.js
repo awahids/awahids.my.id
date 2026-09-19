@@ -30,8 +30,6 @@ const setEnv = () => {
   process.env.HERMES_WEBHOOK_ENABLED = 'true';
   process.env.HERMES_WEBHOOK_URL = 'https://n8n.test/webhook';
   delete process.env.N8N_WEBHOOK_ENABLED;
-  delete process.env.SUPABASE_URL;
-  delete process.env.VITE_SUPABASE_URL;
 };
 
 test('ai-faq: refuses the screenshot request without ever calling the model', async (t) => {

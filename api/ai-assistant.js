@@ -7,7 +7,7 @@
  */
 
 import { callSumopodChat, readJsonBody } from './_lib/sumopod.js';
-import { buildPortfolioAssistantContext } from './_lib/cmsFaqContext.js';
+import { CV_FAQ_CONTEXT } from './_lib/cvFaqContext.js';
 import {
   createRateLimiter,
   ensureMethod,
@@ -65,10 +65,7 @@ Kamu membantu menjawab pertanyaan tentang background, pengalaman, project, dan s
 ${SCOPE_RULES}
 `;
 
-const buildHermesSystemPrompt = async () => {
-  const context = await buildPortfolioAssistantContext();
-  return `${HERMES_BASE_SYSTEM_PROMPT}\n\n## DATA PROFIL:\n${context}`;
-};
+const HERMES_SYSTEM_PROMPT = `${HERMES_BASE_SYSTEM_PROMPT}\n\n## DATA PROFIL:\nCV Context:\n${CV_FAQ_CONTEXT}`;
 
 // Rate limiter
 const ASSISTANT_RATE_WINDOW_MS = parseInt(process.env.AI_ASSISTANT_RATE_WINDOW_MS || '60000', 10);
@@ -244,7 +241,7 @@ export default async function handler(req, res) {
       });
     }
 
-    const systemPrompt = await buildHermesSystemPrompt();
+    const systemPrompt = HERMES_SYSTEM_PROMPT;
 
     // Build context for Hermes
     const context = {
