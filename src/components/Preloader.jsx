@@ -5,6 +5,9 @@ const Preloader = ({ onComplete }) => {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    const prefersReducedMotion =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     let current = 0;
     const interval = setInterval(() => {
       current += Math.random() * 15;
@@ -13,9 +16,10 @@ const Preloader = ({ onComplete }) => {
         clearInterval(interval);
         setTimeout(() => {
           gsap.to('.preloader', {
-            y: '-100%',
-            duration: 1,
-            ease: 'expo.inOut',
+            autoAlpha: prefersReducedMotion ? 0 : 1,
+            y: prefersReducedMotion ? '0%' : '-100%',
+            duration: prefersReducedMotion ? 0.2 : 1,
+            ease: prefersReducedMotion ? 'none' : 'expo.inOut',
             onComplete: onComplete
           });
         }, 500);

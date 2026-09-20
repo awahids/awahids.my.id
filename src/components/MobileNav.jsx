@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 
 
 const navItems = [
@@ -19,6 +19,7 @@ const navItems = [
 
 const MobileNav = () => {
   const [activeSection, setActiveSection] = useState(navItems[0].id);
+  const reduced = useReducedMotion();
 
   useEffect(() => {
     const syncActiveSection = () => {
@@ -49,9 +50,13 @@ const MobileNav = () => {
     <>
       <motion.div 
         className="mobile-tab-bar"
-        initial={{ y: 100, x: '-50%' }}
-        animate={{ y: 0, x: '-50%' }}
-        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+        initial={{ y: reduced ? 0 : 100, x: '-50%', opacity: reduced ? 0 : 1 }}
+        animate={{ y: 0, x: '-50%', opacity: 1 }}
+        transition={
+          reduced
+            ? { duration: 0.2, ease: [0.16, 1, 0.3, 1] }
+            : { type: 'spring', damping: 20, stiffness: 100 }
+        }
         role="navigation"
         aria-label="Mobile section navigation"
       >

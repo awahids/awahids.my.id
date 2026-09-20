@@ -26,10 +26,15 @@ export function Waves({
     const noiseRef = useRef(null);
     const rafRef = useRef(null);
     const boundingRef = useRef(null);
+    const reducedMotionRef = useRef(false);
 
     // Initialization
     useEffect(() => {
         if (!containerRef.current || !svgRef.current) return;
+
+        const prefersReducedMotion =
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        reducedMotionRef.current = prefersReducedMotion;
 
         // Initialize noise generator
         noiseRef.current = createNoise2D();
@@ -40,12 +45,17 @@ export function Waves({
 
         // Bind events
         window.addEventListener('resize', onResize);
-        window.addEventListener('mousemove', onMouseMove);
         const containerElt = containerRef.current;
-        containerElt.addEventListener('touchmove', onTouchMove, { passive: false });
 
         // Start animation
-        rafRef.current = requestAnimationFrame(tick);
+        if (prefersReducedMotion) {
+            movePoints(0);
+            drawLines();
+        } else {
+            window.addEventListener('mousemove', onMouseMove);
+            containerElt.addEventListener('touchmove', onTouchMove, { passive: false });
+            rafRef.current = requestAnimationFrame(tick);
+        }
 
         return () => {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -131,6 +141,11 @@ export function Waves({
     function onResize() {
         setSize();
         setLines();
+
+        if (reducedMotionRef.current) {
+            movePoints(0);
+            drawLines();
+        }
     };
 
     // Mouse handler

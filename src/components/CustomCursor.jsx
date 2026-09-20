@@ -18,9 +18,12 @@ const CustomCursor = () => {
     const hasFinePointer = window.matchMedia(
       '(hover: hover) and (pointer: fine)'
     ).matches;
-    if (!hasFinePointer) {
+    const prefersReducedMotion =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!hasFinePointer || prefersReducedMotion) {
       dot.style.display = 'none';
       ring.style.display = 'none';
+      document.documentElement.style.cursor = '';
       return undefined;
     }
 

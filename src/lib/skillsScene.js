@@ -8,6 +8,9 @@ import * as THREE from 'three';
 export const createSkillsScene = (canvas) => {
   if (!canvas || typeof window === 'undefined') return { dispose: () => {} };
 
+  const prefersReducedMotion =
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   const W = canvas.clientWidth || canvas.offsetWidth || 800;
   const H = canvas.clientHeight || canvas.offsetHeight || 600;
 
@@ -139,7 +142,11 @@ export const createSkillsScene = (canvas) => {
     renderer.render(scene, camera);
   };
 
-  tick();
+  if (prefersReducedMotion) {
+    renderer.render(scene, camera);
+  } else {
+    tick();
+  }
 
   const dispose = () => {
     alive = false;

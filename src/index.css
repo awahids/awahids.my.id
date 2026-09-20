@@ -4719,3 +4719,27 @@ footer {
 @media (max-width:768px) {
   .s-prd-generator { padding:100px var(--section-pad-x-mobile) 60px; }
 }
+
+/* The per-element `cursor: none` declarations above only make sense while the
+   custom cursor is actually drawn. CustomCursor.jsx returns early — and never
+   adds .has-custom-cursor — for coarse pointers and for prefers-reduced-motion,
+   so without this reset those users would have no visible pointer at all. */
+body:not(.has-custom-cursor) .nav-cta,
+body:not(.has-custom-cursor) .ai-submit:not(:disabled),
+body:not(.has-custom-cursor) .ai-send,
+body:not(.has-custom-cursor) .ai-quick-btn,
+body:not(.has-custom-cursor) .journey-item,
+body:not(.has-custom-cursor) .pcf-nav,
+body:not(.has-custom-cursor) .pcf-dot,
+body:not(.has-custom-cursor) .cvm-submit:not(:disabled),
+body:not(.has-custom-cursor) .cvm-plain,
+body:not(.has-custom-cursor) .cf-submit:not(:disabled),
+body:not(.has-custom-cursor) .floating-top-btn,
+body:not(.has-custom-cursor) .floating-faq-notification,
+body:not(.has-custom-cursor) .ff-notification-close,
+body:not(.has-custom-cursor) .floating-faq-toggle,
+body:not(.has-custom-cursor) .ffh-close,
+body:not(.has-custom-cursor) .ff-suggestion-btn,
+body:not(.has-custom-cursor) .floating-faq-footer button {
+  cursor: pointer;
+}
