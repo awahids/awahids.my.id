@@ -62,26 +62,41 @@ body.is-preloading #cursor-ring { opacity:0; }
 body.is-preloading .scroll-progress { opacity:0; }
 
 /* CURSOR */
+/* Registered so the scale can be transitioned as a number. The elements keep a
+   fixed layout box; state classes change the scale, never width/height. */
+@property --cursor-scale-x { syntax: "<number>"; inherits: false; initial-value: 1; }
+@property --cursor-scale-y { syntax: "<number>"; inherits: false; initial-value: 1; }
+
 #cursor {
   width: 10px; height: 10px; background: var(--lime); border-radius: 50%;
   position: fixed; top:0; left:0; pointer-events:none; z-index:20000;
-  transform: translate3d(-100px, -100px, 0) translate(-50%,-50%);
-  will-change: transform, width, height, background, opacity;
-  transition: width .25s, height .25s, background .25s;
+  transform: translate3d(-100px, -100px, 0) translate(-50%,-50%) scale(var(--cursor-scale-x), var(--cursor-scale-y));
+  will-change: transform, opacity;
+  transition: --cursor-scale-x .18s var(--ease-standard),
+              --cursor-scale-y .18s var(--ease-standard),
+              background .25s var(--ease-standard),
+              opacity .18s var(--ease-standard);
   mix-blend-mode: difference;
 }
 #cursor-ring {
   width: 34px; height: 34px; border: 1px solid rgba(200,255,0,.5); border-radius:50%;
   position:fixed; top:0; left:0; pointer-events:none; z-index:19999;
-  transform: translate3d(-100px, -100px, 0) translate(-50%,-50%);
-  will-change: transform, width, height, opacity, border-color;
-  transition: width .25s, height .25s, opacity .25s, border-color .25s;
+  transform: translate3d(-100px, -100px, 0) translate(-50%,-50%) scale(var(--cursor-scale-x), var(--cursor-scale-y));
+  will-change: transform, opacity;
+  transition: --cursor-scale-x .22s var(--ease-standard),
+              --cursor-scale-y .22s var(--ease-standard),
+              opacity .25s var(--ease-standard),
+              border-color .25s var(--ease-standard),
+              border-width .18s var(--ease-standard);
 }
-body.cursor-hover #cursor { width:20px; height:20px; background:var(--lime); mix-blend-mode:normal; }
-body.cursor-hover #cursor-ring { width:72px; height:72px; opacity:.55; border-color:rgba(200,255,0,.7); border-width:1.5px; }
-body.cursor-text #cursor { width:3px; height:24px; border-radius:2px; background:var(--lime); }
-body.cursor-magnet #cursor { width:24px; height:24px; }
-body.cursor-magnet #cursor-ring { width:90px; height:90px; opacity:.75; border-color:var(--lime); border-width:2px; box-shadow:0 0 20px rgba(200,255,0,0.25); }
+/* Scale factors are state_size / base_size. Dot base 10px, ring base 34px.
+   Ring border-width / box-shadow are divided by the scale so they render at
+   the same visual thickness as the old fixed-size rules. */
+body.cursor-hover #cursor { --cursor-scale-x:2; --cursor-scale-y:2; background:var(--lime); mix-blend-mode:normal; }           /* 20/10 */
+body.cursor-hover #cursor-ring { --cursor-scale-x:2.1176471; --cursor-scale-y:2.1176471; opacity:.55; border-color:rgba(200,255,0,.7); border-width:0.7083333px; } /* 72/34, 1.5/2.1176471 */
+body.cursor-text #cursor { --cursor-scale-x:0.3; --cursor-scale-y:2.4; background:var(--lime); }                                /* 3/10, 24/10 */
+body.cursor-magnet #cursor { --cursor-scale-x:2.4; --cursor-scale-y:2.4; }                                                     /* 24/10 */
+body.cursor-magnet #cursor-ring { --cursor-scale-x:2.6470588; --cursor-scale-y:2.6470588; opacity:.75; border-color:var(--lime); border-width:0.7555556px; box-shadow:0 0 7.5555556px rgba(200,255,0,0.25); } /* 90/34, 2/2.6470588, 20/2.6470588 */
 
 /* SPOTLIGHT GLOW */
 .spotlight-glow {
@@ -1664,8 +1679,9 @@ body.is-on-light-section .spotlight-glow {
   display:flex; align-items:center; justify-content:center; gap:6px;
 }
 .pcf-tab .pcf-tile-num::before { display:none; }
-.pcf-tab-arrow { color:var(--lime); font-size:12px; max-width:0; overflow:hidden; opacity:0; transition:max-width .3s ease, opacity .3s ease; }
-.pcf-tile.is-active .pcf-tab-arrow { max-width:14px; opacity:1; }
+/* Fixed 14px slot reserved in both states so the tab text never shifts. */
+.pcf-tab-arrow { color:var(--lime); font-size:12px; width:14px; flex:none; text-align:center; opacity:0; transform:translateX(-4px); transition:transform .25s var(--ease-standard), opacity .25s var(--ease-standard); }
+.pcf-tile.is-active .pcf-tab-arrow { opacity:1; transform:translateX(0); }
 
 .pcf-corner { position:absolute; width:16px; height:16px; border:0 solid var(--lime); opacity:.3; transition:opacity var(--tr-base) ease; pointer-events:none; }
 .pcf-corner-br { bottom:10px; right:10px; border-bottom-width:1px; border-right-width:1px; }
@@ -3917,16 +3933,21 @@ footer {
     z-index: 5;
   }
 
+  /* Box is the ACTIVE width; the resting dot is scaled down (6/18 = .3333) so the
+     row never reflows. The negative margin cancels the extra box width and keeps
+     the original 13px dot pitch (18px box - 12px margin + 7px gap). */
   .pswap-dots--mobile .pswap-dot {
-    width: 6px;
+    width: 18px;
     height: 6px;
-    transition: width .3s var(--ease-standard), background .3s, box-shadow .3s;
+    margin: 0 -6px;
+    transform: scaleX(0.3333);
+    transform-origin: center;
+    transition: transform .3s var(--ease-standard), background .3s, box-shadow .3s;
   }
 
   .pswap-dots--mobile .pswap-dot.is-active {
-    width: 18px;
     border-radius: 3px;
-    transform: none;
+    transform: scaleX(1);
     background: var(--lime);
     box-shadow: 0 0 8px rgba(200,255,0,.5);
   }
@@ -4138,21 +4159,6 @@ footer {
 /* ── Navbar underline smoothness ── */
 .nav-underline {
   will-change: transform, width, opacity;
-}
-
-/* ── Cursor magnetic transition ── */
-#cursor-ring {
-  transition: width 0.22s var(--ease-standard),
-              height 0.22s var(--ease-standard),
-              opacity 0.22s,
-              border-color 0.22s,
-              border-width 0.18s;
-}
-#cursor {
-  transition: width 0.18s var(--ease-standard),
-              height 0.18s var(--ease-standard),
-              background 0.18s,
-              border-radius 0.18s;
 }
 
 /* ── Stagger reveal: build cards have perspective for depth ── */

@@ -37,8 +37,11 @@ const CustomCursor = () => {
     let currentMagnet = null;
     let magnetStrength = 0;
 
+    // The scale lives in --cursor-scale-x/y (set by the body state classes in
+    // index.css) and is composed here, because this inline transform replaces
+    // the stylesheet's transform entirely.
     const setPos = (el, x, y) => {
-      el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%)`;
+      el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(var(--cursor-scale-x, 1), var(--cursor-scale-y, 1))`;
     };
 
     const moveCursor = (e) => {
