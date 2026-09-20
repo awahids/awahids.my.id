@@ -1,6 +1,6 @@
 # 010 — Keep feedback under reduced motion, and gate the two loose loops
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: MEDIUM
 - **Category**: Accessibility (§6)

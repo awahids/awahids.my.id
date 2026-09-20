@@ -1,6 +1,6 @@
 # 014 — Make the coverflow keyboard instant and its swipe velocity-aware
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: MEDIUM
 - **Category**: Purpose & frequency (§1), Interruptibility (§4)

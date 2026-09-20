@@ -1,6 +1,6 @@
 # 006 — Raise the two entrance scale floors above 0.9
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: HIGH (badge) / MEDIUM (cards)
 - **Category**: Physicality & origin (§3)

@@ -1,6 +1,6 @@
 # 007 — Remove `ease-in` from every exit animation
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: MEDIUM
 - **Category**: Easing & duration (§2)

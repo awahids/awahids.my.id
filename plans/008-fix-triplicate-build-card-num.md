@@ -1,6 +1,6 @@
 # 008 — Delete the duplicate `.build-card-num` rule that overrides the GSAP opt-out
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: MEDIUM
 - **Category**: Cohesion & tokens (§7) — a correctness bug, not a taste call

@@ -1,6 +1,6 @@
 # 013 — Consolidate the duplicate curves and the over-budget interactive durations
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: MEDIUM
 - **Category**: Easing & duration (§2), Cohesion & tokens (§7)

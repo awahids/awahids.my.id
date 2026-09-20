@@ -67,15 +67,15 @@ fix pattern. Written against commit `b132b95`.
 
 | # | Title | Severity | Category | Files | Status |
 | --- | --- | --- | --- | --- | --- |
-| [006](006-raise-entrance-scale-floors.md) | Raise the two entrance scale floors above 0.9 | HIGH | Physicality | 2 | TODO |
-| [007](007-remove-ease-in-from-exits.md) | Remove `ease-in` from every exit animation | MEDIUM | Easing | 2 | TODO |
-| [008](008-fix-triplicate-build-card-num.md) | Delete the duplicate `.build-card-num` overriding the GSAP opt-out | MEDIUM | Correctness | 1 | TODO |
-| [009](009-stop-animating-layout-properties.md) | Stop animating layout properties in CSS | HIGH | Performance | 2 | TODO |
-| [010](010-reduced-motion-keep-feedback.md) | Keep feedback under reduced motion, gate the two loose loops | MEDIUM | Accessibility | 1 | TODO |
-| [011](011-waves-direct-transform.md) | Write the Waves cursor transform directly | MEDIUM | Performance | 1 | TODO |
-| [012](012-fix-wrong-keyframe-primitives.md) | Replace two keyframes with the right primitive | LOW | Interruptibility | 2 | TODO |
-| [013](013-consolidate-curves-and-durations.md) | Consolidate duplicate curves and over-budget durations | MEDIUM | Cohesion | 2 | TODO |
-| [014](014-coverflow-keyboard-and-velocity.md) | Make the coverflow keyboard instant and its swipe velocity-aware | MEDIUM | Purpose / Interruptibility | 1 | TODO |
+| [006](006-raise-entrance-scale-floors.md) | Raise the two entrance scale floors above 0.9 | HIGH | Physicality | 2 | DONE `03fa084` |
+| [007](007-remove-ease-in-from-exits.md) | Remove `ease-in` from every exit animation | MEDIUM | Easing | 2 | DONE `3d33f9c` |
+| [008](008-fix-triplicate-build-card-num.md) | Delete the duplicate `.build-card-num` overriding the GSAP opt-out | MEDIUM | Correctness | 1 | DONE `aba7b6d` |
+| [009](009-stop-animating-layout-properties.md) | Stop animating layout properties in CSS | HIGH | Performance | 2 | DONE `f62ebec` |
+| [010](010-reduced-motion-keep-feedback.md) | Keep feedback under reduced motion, gate the two loose loops | MEDIUM | Accessibility | 1 | DONE `d0fa953` |
+| [011](011-waves-direct-transform.md) | Write the Waves cursor transform directly | MEDIUM | Performance | 1 | DONE `31b09df` |
+| [012](012-fix-wrong-keyframe-primitives.md) | Replace two keyframes with the right primitive | LOW | Interruptibility | 2 | DONE `59c674e` |
+| [013](013-consolidate-curves-and-durations.md) | Consolidate duplicate curves and over-budget durations | MEDIUM | Cohesion | 2 | DONE `70f7ede` |
+| [014](014-coverflow-keyboard-and-velocity.md) | Make the coverflow keyboard instant and its swipe velocity-aware | MEDIUM | Purpose / Interruptibility | 1 | DONE `961629a` |
 
 ### Execution order for batch 2
 

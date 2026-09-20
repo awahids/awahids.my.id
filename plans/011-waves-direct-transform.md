@@ -1,6 +1,6 @@
 # 011 — Write the Waves cursor transform directly instead of through a parent variable
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: MEDIUM
 - **Category**: Performance (§5)

@@ -1,6 +1,6 @@
 # 012 — Replace two keyframes with the right primitive
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: LOW
 - **Category**: Interruptibility (§4)

@@ -1,6 +1,6 @@
 # 009 — Stop animating layout properties in CSS
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: b132b95
 - **Severity**: HIGH (cursor) / MEDIUM (dots, tab arrow)
 - **Category**: Performance (§5)
