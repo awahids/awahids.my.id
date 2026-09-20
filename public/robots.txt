@@ -1,0 +1,3 @@
+# https://awahids.my.id
+User-agent: *
+Allow: /

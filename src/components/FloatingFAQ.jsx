@@ -517,12 +517,13 @@ const FloatingFAQ = () => {
             </div>
             <button
               className="ff-notification-close"
+              aria-label="Dismiss notification"
               onClick={(e) => {
                 e.stopPropagation();
                 setShowNotification(false);
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
@@ -563,8 +564,8 @@ const FloatingFAQ = () => {
               >
                 {useHermes ? '🤖' : '💬'}
               </button> */}
-              <button className="ffh-close" onClick={closeChat}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <button className="ffh-close" aria-label="Close AI assistant" onClick={closeChat}>
+                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18"></line>
                   <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
@@ -631,8 +632,8 @@ const FloatingFAQ = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
               />
-              <button type="submit" disabled={!input.trim() || loading}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <button type="submit" aria-label="Send message" disabled={!input.trim() || loading}>
+                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="22" y1="2" x2="11" y2="13"></line>
                   <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
                 </svg>
@@ -644,12 +645,21 @@ const FloatingFAQ = () => {
 
       <button
         className={`floating-faq-toggle ${isOpen ? 'is-active' : ''}`}
+        aria-label={
+          isOpen
+            ? 'Close AI assistant'
+            : unreadCount > 0
+              ? `Open AI assistant, ${unreadCount} unread`
+              : 'Open AI assistant'
+        }
+        aria-expanded={isOpen}
         onClick={toggleChat}
       >
         <AnimatePresence>
           {unreadCount > 0 && !isOpen && (
             <motion.div
               className="ff-unread-badge"
+              aria-hidden="true"
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
@@ -663,6 +673,7 @@ const FloatingFAQ = () => {
           {isOpen ? (
             <motion.svg
               key="close"
+              aria-hidden="true"
               initial={{ rotate: -90, opacity: 0 }}
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: 90, opacity: 0 }}
@@ -675,6 +686,7 @@ const FloatingFAQ = () => {
           ) : (
             <motion.svg
               key="open"
+              aria-hidden="true"
               initial={{ rotate: 90, opacity: 0 }}
               animate={{ rotate: 0, opacity: 1 }}
               exit={{ rotate: -90, opacity: 0 }}

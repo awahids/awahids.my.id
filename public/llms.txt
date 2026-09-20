@@ -1,0 +1,18 @@
+# A Wahid Safhadi
+
+> Backend-first fullstack developer based in Cikarang, Bekasi, Indonesia.
+> Builds web applications, admin dashboards, REST APIs, automation and
+> deployment for systems that run in production.
+
+## Pages
+
+- [Portfolio](https://awahids.my.id/): Work, experience, selected projects and contact.
+- [AI Lab](https://awahids.my.id/ai-lab): Experiments in AI-assisted delivery and documentation.
+- [README Generator](https://awahids.my.id/readme-generator): Builds a styled GitHub profile README.
+- [PRD Generator](https://awahids.my.id/prd-generator): Turns a rough idea into a product requirements document.
+
+## Elsewhere
+
+- [GitHub](https://github.com/awahids)
+- [LinkedIn](https://www.linkedin.com/in/awahids)
+- [Blog](https://blog.awahids.my.id)
