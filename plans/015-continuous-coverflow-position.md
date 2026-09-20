@@ -1,6 +1,6 @@
 # 015 — Make the coverflow position continuous instead of a rounded index
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 5b91023
 - **Severity**: —
 - **Category**: Apple-style fluidity — response (§1), behavior over animation (§4), frame-level smoothness (§11)
