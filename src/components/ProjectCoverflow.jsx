@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
 const SWIPE_PX = 48;
+const SWIPE_VELOCITY = 0.11; // px per ms
 const STICKY_TOP = 72;
 
 const tileTransform = (offset, reduced) => {
@@ -32,17 +33,17 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
   const count = projects.length;
   const pinned = !reduced && count > 1;
 
-  const scrollToIndex = useCallback((index) => {
+  const scrollToIndex = useCallback((index, behavior = 'smooth') => {
     const wrap = pinRef.current && wrapRef.current;
     if (!wrap) return;
     const travel = wrapRef.current.offsetHeight - pinRef.current.offsetHeight;
     const top = wrapRef.current.getBoundingClientRect().top + window.scrollY - STICKY_TOP + (index / (count - 1)) * travel;
-    window.scrollTo({ top, behavior: 'smooth' });
+    window.scrollTo({ top, behavior });
   }, [count]);
 
-  const goTo = useCallback((index) => {
+  const goTo = useCallback((index, animate = true) => {
     const i = Math.max(0, Math.min(count - 1, index));
-    if (pinned) scrollToIndex(i);
+    if (pinned) scrollToIndex(i, animate ? 'smooth' : 'auto');
     else setActiveIndex(i);
   }, [count, pinned, scrollToIndex]);
   const prev = useCallback(() => goTo(activeIndex - 1), [goTo, activeIndex]);
@@ -94,15 +95,15 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
     const stage = stageRef.current;
     if (!stage) return undefined;
     const onKeyDown = (event) => {
-      if (event.key === 'ArrowLeft') { event.preventDefault(); prev(); }
-      if (event.key === 'ArrowRight') { event.preventDefault(); next(); }
+      if (event.key === 'ArrowLeft') { event.preventDefault(); goTo(activeIndex - 1, false); }
+      if (event.key === 'ArrowRight') { event.preventDefault(); goTo(activeIndex + 1, false); }
     };
     stage.addEventListener('keydown', onKeyDown);
     return () => stage.removeEventListener('keydown', onKeyDown);
-  }, [prev, next]);
+  }, [goTo, activeIndex]);
 
   const onPointerDown = (event) => {
-    drag.current = { startX: event.clientX, active: true, moved: false };
+    drag.current = { startX: event.clientX, startT: event.timeStamp, active: true, moved: false };
   };
   const onPointerMove = (event) => {
     if (!drag.current.active) return;
@@ -111,8 +112,12 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
   const endDrag = (event) => {
     if (!drag.current.active) return;
     const dx = event.clientX - drag.current.startX;
+    const dt = Math.max(1, event.timeStamp - drag.current.startT);
+    const velocity = Math.abs(dx) / dt;
     drag.current.active = false;
-    if (Math.abs(dx) >= SWIPE_PX) (dx < 0 ? next : prev)();
+    if (Math.abs(dx) >= SWIPE_PX || (velocity > SWIPE_VELOCITY && Math.abs(dx) > 8)) {
+      (dx < 0 ? next : prev)();
+    }
   };
   const onClickCapture = (event) => {
     if (drag.current.moved) {
