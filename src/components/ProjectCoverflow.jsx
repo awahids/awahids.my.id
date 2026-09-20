@@ -10,14 +10,15 @@ const tileTransform = (offset, reduced) => {
   const clamped = Math.max(-3, Math.min(3, offset));
   const abs = Math.abs(clamped);
   const dir = Math.sign(clamped);
-  const x = dir * (abs === 0 ? 0 : 170 + (abs - 1) * 70);
+  const x = dir * (abs <= 1 ? 170 * abs : 170 + (abs - 1) * 70);
   const z = -abs * 120;
   const rotate = -dir * Math.min(58, abs * 42);
-  const opacity = abs >= 3 ? 0 : 1 - abs * 0.22;
+  const fade = abs >= 3 ? 0 : Math.min(1, (3 - abs) / 0.5);
+  const opacity = Math.max(0, 1 - abs * 0.22) * fade;
   return {
     transform: `translateX(${x}px) translateZ(${z}px) rotateY(${rotate}deg)`,
     opacity,
-    zIndex: 10 - abs,
+    zIndex: Math.round(10 - abs),
     pointerEvents: abs >= 3 ? 'none' : 'auto',
   };
 };
@@ -29,9 +30,25 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
   const pinRef = useRef(null);
   const stageRef = useRef(null);
   const drag = useRef({ startX: 0, active: false, moved: false });
+  const positionRef = useRef(0);
+  const activeIndexRef = useRef(0);
+  const tileRefs = useRef([]);
 
   const count = projects.length;
   const pinned = !reduced && count > 1;
+
+  // While pinned the rAF handler owns transform/opacity/zIndex/pointerEvents so
+  // the position can be a float; React must not also write them.
+  const applyTiles = useCallback((pos) => {
+    tileRefs.current.forEach((el, i) => {
+      if (!el) return;
+      const s = tileTransform(i - pos, false);
+      el.style.transform = s.transform;
+      el.style.opacity = String(s.opacity);
+      el.style.zIndex = String(s.zIndex);
+      el.style.pointerEvents = s.pointerEvents;
+    });
+  }, []);
 
   const scrollToIndex = useCallback((index, behavior = 'smooth') => {
     const wrap = pinRef.current && wrapRef.current;
@@ -59,9 +76,17 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
       if (!wrap || !pin) return;
       const travel = wrap.offsetHeight - pin.offsetHeight;
       const progress = Math.max(0, Math.min(1, (STICKY_TOP - wrap.getBoundingClientRect().top) / travel));
-      setActiveIndex(Math.round(progress * (count - 1)));
+      const pos = progress * (count - 1);
+      positionRef.current = pos;
+      applyTiles(pos);
+      const rounded = Math.round(pos);
+      if (rounded !== activeIndexRef.current) {
+        activeIndexRef.current = rounded;
+        setActiveIndex(rounded);
+      }
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    applyTiles(positionRef.current);
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
@@ -70,7 +95,7 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
       window.removeEventListener('resize', onScroll);
       cancelAnimationFrame(raf);
     };
-  }, [pinned, count]);
+  }, [pinned, count, applyTiles]);
 
   // The pinned coverflow fills the mobile viewport and .pcf-caption runs right
   // under the fixed floating controls. Flag the body while the pin is on screen
@@ -163,7 +188,8 @@ const ProjectCoverflow = ({ projects, onOpen }) => {
               type="button"
               key={p.id}
               className={`notch-surface pcf-tile ${isActive ? 'is-active' : ''}`}
-              style={tileTransform(offset, reduced)}
+              style={pinned ? undefined : tileTransform(offset, reduced)}
+              ref={(el) => { tileRefs.current[i] = el; }}
               onClick={() => (isActive ? onOpen(p) : goTo(i))}
               aria-current={isActive}
               aria-label={isActive ? `Open project details for ${p.title}` : `Show ${p.title}`}

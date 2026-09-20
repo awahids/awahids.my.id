@@ -1654,9 +1654,7 @@ body.is-on-light-section .spotlight-glow {
   overflow:hidden;
   cursor:inherit;
   backface-visibility:hidden;
-  transition:transform var(--tr-base) var(--ease-standard),
-             opacity var(--tr-base) ease,
-             filter var(--tr-base) ease;
+  transition:filter var(--tr-base) ease;
 }
 /* Surface for the coverflow tile — dark blueprint grid. */
 .pcf-tile::before {
