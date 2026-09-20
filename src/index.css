@@ -1506,7 +1506,7 @@ body.is-on-light-section .spotlight-glow {
   box-shadow: 0 0 8px rgba(200,255,0,.55);
 }
 @media (prefers-reduced-motion: reduce) {
-  .skills-relay-dot { transition: none; }
+  .skills-relay-dot { transition: background .3s var(--ease-standard), box-shadow .3s; }
 }
 
 /* PORTFOLIO */
@@ -1740,7 +1740,7 @@ body.is-on-light-section .spotlight-glow {
 }
 @media (prefers-reduced-motion: reduce) {
   .pcf-mask > * { transform:none !important; transition:none !important; }
-  .pcf-tile { transition:none; }
+  .pcf-tile { transition:opacity .6s ease, filter .6s ease; }
   .pcf-caption { animation:none; }
 }
 
@@ -2978,7 +2978,7 @@ footer {
   .hero-eyebrow-dot,
   .term-cursor,
   .journey-cursor { animation:none !important; }
-  .floating-top-btn { transition:none; }
+  .floating-top-btn { transition:opacity .26s var(--ease-standard), background .22s var(--ease-standard), color .22s var(--ease-standard), box-shadow .22s var(--ease-standard), border-color .22s var(--ease-standard); }
   .term-body .tl { animation:none; opacity:1; transform:none; }
   .section-fallback-line { animation:none; }
 }
@@ -3754,7 +3754,7 @@ footer {
 
 @media (prefers-reduced-motion: reduce) {
   .pswap-progress-fill { transition: none; }
-  .pswap-dot { transition: none; }
+  .pswap-dot { transition: background .3s var(--ease-standard), box-shadow .3s; }
   [data-gsap-reveal] { opacity: 1 !important; transform: none !important; }
 }
 
@@ -4027,12 +4027,10 @@ footer {
 
 /* ── Reduced-motion overrides for new animations ── */
 @media (prefers-reduced-motion: reduce) {
-  .nav-underline { transition: none; }
   .build-card, .build-card-num { will-change: auto; }
-  .cc-copied-badge { transition: none; }
+  .cc-copied-badge { transition: opacity 0.22s var(--ease-standard); }
   .hero-badge { will-change: auto; }
   .floating-top-btn { will-change: auto; }
-  .cc-email-copy { transition: none; }
   .cert-card { will-change: auto; }
   .build-card::after { display: none; }
 }
@@ -4259,8 +4257,8 @@ footer {
   .hero-left, .hero-right { will-change: auto; }
   .contact-top-link { will-change: auto; }
   .contact-card, .journey-console { will-change: auto; }
-  #cursor, #cursor-ring { transition: none; }
   .status-pulse::after { animation: none; }
+  .journey-glyph { animation: none; }
 }
 
 /* ── Mobile tweaks ── */
