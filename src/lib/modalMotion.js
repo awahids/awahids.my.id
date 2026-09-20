@@ -11,7 +11,7 @@ export const modalOverlayMotion = (reduceMotion) => ({
   exit: {
     opacity: 0,
     backdropFilter: reduceMotion ? 'blur(14px)' : 'blur(0px)',
-    transition: { duration: reduceMotion ? 0.12 : 0.18, ease: [0.4, 0, 1, 1] },
+    transition: { duration: reduceMotion ? 0.12 : 0.18, ease: [0.16, 1, 0.3, 1] },
   },
 });
 
@@ -43,7 +43,7 @@ export const modalCardVariants = (reduceMotion) => ({
         y: 26,
         scale: 0.97,
         filter: 'blur(6px)',
-        transition: { duration: 0.18, ease: [0.4, 0, 1, 1] },
+        transition: { duration: 0.18, ease: [0.16, 1, 0.3, 1] },
       },
 });
 
@@ -57,6 +57,6 @@ export const modalChildVariants = {
   exit: {
     opacity: 0,
     y: 8,
-    transition: { duration: 0.12, ease: [0.4, 0, 1, 1] },
+    transition: { duration: 0.12, ease: [0.16, 1, 0.3, 1] },
   },
 };

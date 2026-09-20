@@ -90,8 +90,8 @@ const PortfolioScrollSwap = ({
 
     // Mobile: slide vertically; Desktop: slide horizontally
     const outProps = isMobile
-      ? { y: -20, opacity: 0, duration: 0.18, ease: 'power2.in', stagger: 0.02 }
-      : { x: -36, opacity: 0, duration: 0.20, ease: 'power2.in', stagger: 0.025 };
+      ? { y: -20, opacity: 0, duration: 0.18, ease: 'power2.out', stagger: 0.02 }
+      : { x: -36, opacity: 0, duration: 0.20, ease: 'power2.out', stagger: 0.025 };
 
     const inFrom = isMobile ? { y: 24, opacity: 0 } : { x: 36, opacity: 0 };
     const inTo = isMobile
