@@ -41,11 +41,22 @@
   pointer-events: none;
 }
 
+@keyframes fup {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .anomaly-inner {
   max-width: 800px;
   padding: 0 1rem;
   opacity: 0;
-  animation: fup 1.5s ease forwards 0.5s;
+  animation: fup 0.5s var(--ease-standard) forwards 0.15s;
   pointer-events: auto; /* allow clicks on backlink */
 }
 
@@ -107,5 +118,12 @@
   
   .ai-page-back-link-anomaly {
     margin-bottom: 1.5rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anomaly-inner {
+    animation: none;
+    opacity: 1;
   }
 }
