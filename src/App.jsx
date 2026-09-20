@@ -83,36 +83,36 @@ const getAboutTitleParts = (title = '') => {
 };
 
 const DEFAULT_SITE_SETTINGS = {
-  siteTitle: 'A Wahid Safhadi — Fullstack Developer with Backend-First Strength',
+  siteTitle: 'A Wahid Saphadi — Fullstack Developer with Backend-First Strength',
   seoDescription:
     'Fullstack developer building web apps, dashboards, APIs, automation, and scalable business systems from frontend to deployment.',
   ogImage: '/img/aw-pixel.png',
 };
 
 const AI_LAB_SETTINGS = {
-  siteTitle: 'AI Lab — Architecture Brief Generator | A Wahid Safhadi',
+  siteTitle: 'AI Lab — Architecture Brief Generator | A Wahid Saphadi',
   seoDescription:
-    'Generate a technical architecture brief for your web product. A free AI-powered planning tool by fullstack developer A Wahid Safhadi.',
+    'Generate a technical architecture brief for your web product. A free AI-powered planning tool by fullstack developer A Wahid Saphadi.',
   ogImage: '/img/aw-pixel.png',
 };
 
 const README_GENERATOR_SETTINGS = {
-  siteTitle: 'GitHub README Generator | A Wahid Safhadi',
+  siteTitle: 'GitHub README Generator | A Wahid Saphadi',
   seoDescription:
     'Generate a GitHub profile README with self-hosted stats, streak, top-languages, activity graph, typing animation and skill icon cards.',
   ogImage: '/img/aw-pixel.png',
 };
 
 const PRD_GENERATOR_SETTINGS = {
-  siteTitle: 'PRD Generator | A Wahid Safhadi',
+  siteTitle: 'PRD Generator | A Wahid Saphadi',
   seoDescription:
     'Turn a raw app idea into a feature structure, a full PRD and ready-to-build tasks.',
   ogImage: DEFAULT_SITE_SETTINGS.ogImage,
 };
 
 const NOT_FOUND_SETTINGS = {
-  siteTitle: '404 — Page Not Found | A Wahid Safhadi',
-  seoDescription: 'The requested page could not be found on A Wahid Safhadi portfolio.',
+  siteTitle: '404 — Page Not Found | A Wahid Saphadi',
+  seoDescription: 'The requested page could not be found on A Wahid Saphadi portfolio.',
   ogImage: DEFAULT_SITE_SETTINGS.ogImage,
 };
 

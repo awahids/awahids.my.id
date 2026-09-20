@@ -16,7 +16,7 @@ import {
   outOfScopeReply,
 } from './_lib/assistantScope.js';
 
-const BASE_FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Safhadi portfolio.
+const BASE_FAQ_SYSTEM_PROMPT = `You are the AI FAQ assistant for A Wahid Saphadi portfolio.
 
 - Answer only from the CV context provided below.
 - If the question is about Wahid's specific experience, pricing, or personal details not found in the CV context, politely say that you don't have that specific information.

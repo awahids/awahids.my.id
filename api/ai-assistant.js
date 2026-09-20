@@ -53,7 +53,7 @@ const createAssistantError = ({
   });
 
 // System prompt for Hermes
-const HERMES_BASE_SYSTEM_PROMPT = `Kamu adalah AI Assistant untuk portfolio website A Wahid Safhadi (awahids.my.id).
+const HERMES_BASE_SYSTEM_PROMPT = `Kamu adalah AI Assistant untuk portfolio website A Wahid Saphadi (awahids.my.id).
 Kamu membantu menjawab pertanyaan tentang background, pengalaman, project, dan skills Wahid.
 
 ## INSTRUKSI:

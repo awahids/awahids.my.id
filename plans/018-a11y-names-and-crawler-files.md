@@ -113,7 +113,7 @@ that does not exist trades one broken reference for another.
 summary, then link sections:
 
 ```markdown
-# A Wahid Safhadi
+# A Wahid Saphadi
 
 > Backend-first fullstack developer based in Cikarang, Bekasi, Indonesia.
 > Builds web applications, admin dashboards, REST APIs, automation and
@@ -172,13 +172,13 @@ those permalinks were retired in `2393f12` and now return 404.
   - `npm run lint`, `npm run build`, `npm test` — clean, 77 pass.
   - `ls dist/robots.txt dist/llms.txt` after the build — both must exist, proving
     Vite copies them to the output root.
-  - `head -1 dist/llms.txt` — must be `# A Wahid Safhadi`.
+  - `head -1 dist/llms.txt` — must be `# A Wahid Saphadi`.
   - `grep -c "aria-label" src/components/FloatingFAQ.jsx` — expect **4**.
 - **Feel check**: run `npm run dev`, then:
   - Fetch `http://localhost:<port>/robots.txt` and confirm the response is the
     three-line text file, not HTML. This is the headline check — it is what the
     audit actually failed on.
-  - Fetch `/llms.txt` and confirm Markdown starting with `# A Wahid Safhadi`.
+  - Fetch `/llms.txt` and confirm Markdown starting with `# A Wahid Saphadi`.
   - Open the FAQ widget. In DevTools → Elements → Accessibility pane, select each
     of the four buttons and confirm the computed name is the label, not empty and
     not the bare unread number.

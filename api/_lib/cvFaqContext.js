@@ -1,6 +1,6 @@
 export const CV_FAQ_CONTEXT = `
 Identity:
-- Name: A Wahid Safhadi
+- Name: A Wahid Saphadi
 - Role: Senior IT Developer (backend and fullstack engineer)
 - Experience: 4+ years total in software engineering, across fintech, e-commerce, and logistics/warehouse
 - Current company: Rasa Group

@@ -5,7 +5,7 @@ import { onCvDownloadOpen } from '../lib/cvDownload';
 import { modalCardVariants, modalOverlayMotion } from '../lib/modalMotion';
 
 const EMPTY_FORM = { name: '', email: '', note: '', website: '' };
-const DOWNLOAD_NAME = 'CV_A_Wahid_Safhadi.pdf';
+const DOWNLOAD_NAME = 'CV_A_Wahid_Saphadi.pdf';
 
 const startDownload = (url) => {
   const link = document.createElement('a');

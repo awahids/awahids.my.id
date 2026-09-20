@@ -1,4 +1,4 @@
-# A Wahid Safhadi
+# A Wahid Saphadi
 
 > Backend-first fullstack developer based in Cikarang, Bekasi, Indonesia.
 > Builds web applications, admin dashboards, REST APIs, automation and

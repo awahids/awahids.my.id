@@ -313,7 +313,7 @@ a ceiling. The draft call is the only expensive one in this feature.
 ### Scope guard
 
 `api/_lib/assistantScope.js` **must not be reused**. Its `SCOPE_RULES` restrict
-the assistant to discussing A Wahid Safhadi and explicitly forbid architecture
+the assistant to discussing A Wahid Saphadi and explicitly forbid architecture
 advice, schemas, migrations and code blocks; its `TECH_ARTIFACT` pattern flags
 `endpoint`, `schema`, `crud`, `auth` and `migration` as out of scope. Those are
 ordinary vocabulary in a PRD description, so reusing that guard would reject

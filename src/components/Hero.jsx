@@ -41,7 +41,7 @@ const PORTAL_WORD = 'WAHID';
 const PORTAL_FONT_TIMEOUT_MS = 2500;
 
 const PROFILE = {
-  name: 'A Wahid Safhadi',
+  name: 'A Wahid Saphadi',
   role: 'Fullstack Developer · Backend-First Engineer',
   eyebrow: 'Available for Fullstack Projects',
   summary: 'I build web apps, dashboards, APIs, and business systems from frontend to deployment.',
@@ -208,7 +208,7 @@ const Hero = () => {
             <div className="hero-photo-frame">
               <img
                 src={`${import.meta.env.BASE_URL}img/aw.png`}
-                alt="A Wahid Safhadi"
+                alt="A Wahid Saphadi"
                 className="hero-photo-img"
                 draggable="false"
               />

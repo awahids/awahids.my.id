@@ -41,7 +41,7 @@ const Footer = ({ isAiLabPage = false }) => {
     >
       <div className="footer-top">
         <div className="fc">
-          &copy; {year} — CREATED BY <b>A WAHID SAFHADI</b>
+          &copy; {year} — CREATED BY <b>A WAHID SAPHADI</b>
         </div>
         <div className="footer-actions">
           <div className="fc">
