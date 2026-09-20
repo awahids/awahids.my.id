@@ -340,7 +340,7 @@ const projects = [
   },
 ];
 
-const Portfolio = () => {
+const Portfolio = ({ lenisRef }) => {
   const [selectedProject, setSelectedProject] = useState(null);
   const sectionRef = useRef(null);
   const modalRef = useRef(null);
@@ -441,7 +441,7 @@ const Portfolio = () => {
           Real projects across web apps, dashboards, backend systems, automation, and deployment.
         </motion.p>
 
-        <ProjectCoverflow projects={projects} onOpen={openModal} />
+        <ProjectCoverflow projects={projects} onOpen={openModal} lenisRef={lenisRef} />
       </motion.div>
 
       <AnimatePresence>

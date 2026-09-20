@@ -480,7 +480,7 @@ function App() {
               </motion.div>
             </motion.section>
 
-            <Portfolio />
+            <Portfolio lenisRef={lenisRef} />
             <Skills lenisRef={lenisRef} />
             <Experience />
             <Certificates />
