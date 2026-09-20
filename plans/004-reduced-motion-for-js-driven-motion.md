@@ -1,6 +1,6 @@
 # 004 — Add reduced-motion handling to the five JS-driven motion files
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 30da02f
 - **Severity**: HIGH
 - **Category**: Accessibility (§6) — movement with no `prefers-reduced-motion` handling

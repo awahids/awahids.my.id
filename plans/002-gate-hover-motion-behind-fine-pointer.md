@@ -1,6 +1,6 @@
 # 002 — Gate hover-only motion behind a fine-pointer media query
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 30da02f
 - **Severity**: HIGH
 - **Category**: Accessibility (§6) — ungated `:hover` motion

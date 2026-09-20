@@ -12,11 +12,52 @@ in the audit playbook.
 
 | # | Title | Severity | Category | Files | Status |
 | --- | --- | --- | --- | --- | --- |
-| [001](001-fix-missing-fup-keyframe.md) | Fix the missing `fup` keyframe that hides the AI Lab hero | HIGH | Rendering bug | 1 | TODO |
-| [002](002-gate-hover-motion-behind-fine-pointer.md) | Gate hover-only motion behind a fine-pointer media query | HIGH | Accessibility | 1 | TODO |
-| [003](003-add-press-feedback.md) | Add press feedback to pressable elements | HIGH | Physicality | 1 | TODO |
-| [004](004-reduced-motion-for-js-driven-motion.md) | Add reduced-motion handling to the five JS-driven motion files | HIGH | Accessibility | 5 | TODO |
-| [005](005-replace-transition-all.md) | Replace the two `transition: all` declarations | HIGH | Performance | 1 | TODO |
+| [001](001-fix-missing-fup-keyframe.md) | Fix the missing `fup` keyframe that hides the AI Lab hero | HIGH | Rendering bug | 1 | DONE `cf66317` |
+| [002](002-gate-hover-motion-behind-fine-pointer.md) | Gate hover-only motion behind a fine-pointer media query | HIGH | Accessibility | 1 | DONE `f26dac7` |
+| [003](003-add-press-feedback.md) | Add press feedback to pressable elements | HIGH | Physicality | 1 | DONE `2960e53` |
+| [004](004-reduced-motion-for-js-driven-motion.md) | Add reduced-motion handling to the five JS-driven motion files | HIGH | Accessibility | 5 | DONE `7bb977f` |
+| [005](005-replace-transition-all.md) | Replace the two `transition: all` declarations | HIGH | Performance | 1 | DONE `98f82c1` |
+
+## Status
+
+All five plans are implemented and committed on branch `rebranding`, executed in
+the order below. `npm test` 77/77, `npm run lint` clean, `npm run build` passes
+at every commit.
+
+### Verified in a browser
+
+- **001** — the AI Lab hero is visible. Computed `animation-name` now resolves
+  to `fup`, computed `opacity` is `1`, transform settled to `translateY(0)`. The
+  eyebrow, `<h1>` and description all render. All three were invisible before.
+- **002** — on a fine pointer the gate evaluates true and `.nav-cta` still lifts
+  (`matrix(1, 0, 0, 1, 0, -1)`). Under mobile emulation the gate evaluates false
+  and the same element reports `transform: none`. Crucially,
+  `.cert-card-view` reports `opacity: 1` / `transform: none` on touch, so the
+  "view" affordance survives — the failure mode this plan was written to avoid.
+  14 gated media blocks live in the CSSOM.
+- **003** — the press rule is present in the CSSOM with all seven selectors and
+  `transform: scale(0.97)`. `.btn-prime` computes
+  `transform 0.16s cubic-bezier(0.16, 1, 0.3, 1)`.
+- **004, CSS half** — removing `body.has-custom-cursor` at runtime flips all six
+  testable elements from `cursor: none` to `cursor: pointer`, confirming the
+  reset that keeps a pointer visible for reduced-motion users.
+
+No console errors on either viewport.
+
+### NOT verified, and needs a human
+
+**Plan 004's reduced-motion branches.** Toggling `prefers-reduced-motion` is not
+available through the tooling used here, so the actual reduced-motion behaviour
+of the five JS files was never exercised. What was confirmed is textual: the
+Preloader's `onComplete` sits outside every ternary and therefore fires in both
+branches. That is the specific thing that, if wrong, makes the site never appear
+for reduced-motion users only.
+
+Please run the full pass once with DevTools → Rendering →
+"Emulate CSS prefers-reduced-motion: reduce" and confirm: the preloader fades
+and the site appears, a native cursor is visible, the Contact line field is
+drawn but static, the skills particles are present but do not drift, and the
+mobile tab bar fades in without rising.
 
 ## Recommended execution order
 

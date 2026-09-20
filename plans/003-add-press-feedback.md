@@ -1,6 +1,6 @@
 # 003 — Add press feedback to pressable elements
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 30da02f
 - **Severity**: HIGH
 - **Category**: Physicality & origin (§3) — press feedback

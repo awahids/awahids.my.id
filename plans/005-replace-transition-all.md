@@ -1,6 +1,6 @@
 # 005 — Replace the two `transition: all` declarations with named properties
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 30da02f
 - **Severity**: HIGH
 - **Category**: Performance (§5) — `transition: all`

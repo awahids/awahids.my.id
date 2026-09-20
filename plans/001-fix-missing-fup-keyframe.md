@@ -1,6 +1,6 @@
 # 001 — Fix the missing `fup` keyframe that hides the AI Lab hero
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 30da02f
 - **Severity**: HIGH
 - **Category**: Not an animation-polish item — a rendering bug caused by animation code
