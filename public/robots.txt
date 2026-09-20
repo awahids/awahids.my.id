@@ -1,3 +1,5 @@
 # https://awahids.my.id
 User-agent: *
 Allow: /
+
+Sitemap: https://awahids.my.id/sitemap.xml
