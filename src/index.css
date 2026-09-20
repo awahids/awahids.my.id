@@ -227,7 +227,7 @@ body.is-on-light-section .spotlight-glow {
   animation: btn-shimmer 3.8s linear infinite;
   color:var(--dark); padding:9px 20px; border:none; cursor:none;
   font-weight:500; text-decoration:none;
-  transition: transform var(--tr-fast), box-shadow var(--tr-fast);
+  transition: transform 160ms var(--ease-standard), box-shadow var(--tr-fast);
 }
 @media (hover: hover) and (pointer: fine) {
   .nav-cta:hover { transform:translateY(-1px); box-shadow: 2px 2px 0 var(--dark); }
@@ -405,7 +405,7 @@ body.is-on-light-section .spotlight-glow {
   background-size: 250% auto;
   animation: btn-shimmer 3.8s linear infinite;
   color:var(--dark); padding:13px 26px; text-decoration:none;
-  transition:box-shadow var(--tr-fast); display:inline-block;
+  transition:box-shadow var(--tr-fast), transform 160ms var(--ease-standard); display:inline-block;
   will-change:transform;
 }
 /* Framer Motion handles transform on .btn-prime — CSS hover intentionally avoids transform */
@@ -414,10 +414,21 @@ body.is-on-light-section .spotlight-glow {
 .btn-ghost {
   font-family:'DM Mono',monospace; font-size:12px; letter-spacing:.1em; text-transform:uppercase;
   background:none; border:1px solid rgba(255,255,255,.18); color:var(--white); padding:13px 26px;
-  text-decoration:none; transition:border-color var(--tr-fast), color var(--tr-fast);
+  text-decoration:none; transition:border-color var(--tr-fast), color var(--tr-fast), transform 160ms var(--ease-standard);
+  will-change: transform;
 }
 .btn-ghost:hover { border-color:var(--lime); color:var(--lime); }
 .btn-ghost:focus-visible { border-color:var(--lime); color:var(--lime); }
+/* press feedback. Hero's .btn-prime/.btn-ghost carry Framer whileTap, whose inline transform wins the cascade — these rules govern the plain buttons. */
+.btn-prime:active,
+.btn-ghost:active,
+.nav-cta:active,
+.floating-faq-toggle:active,
+.floating-faq-footer button:active,
+.ff-suggestion-btn:active,
+.rg-btn-primary:active {
+  transform: scale(0.97);
+}
 .btn-inline {
   font-family:'DM Mono',monospace;
   font-size:12px;
@@ -3178,7 +3189,7 @@ footer {
   justify-content: center;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
   cursor: none;
-  transition: transform var(--tr-base), background var(--tr-base);
+  transition: transform 160ms var(--ease-standard), background var(--tr-base);
 }
 
 .floating-faq-toggle:hover {
@@ -3398,7 +3409,7 @@ footer {
   align-items: center;
   justify-content: center;
   cursor: none;
-  transition: background var(--tr-fast);
+  transition: background var(--tr-fast), transform 160ms var(--ease-standard);
 }
 
 .floating-faq-footer button:hover:not(:disabled) {
@@ -4190,12 +4201,6 @@ footer {
   box-shadow: 0 0 12px rgba(200,255,0,0.5);
 }
 
-/* ── Smooth btn-ghost hover transition ── */
-.btn-ghost {
-  will-change: transform;
-  transition: border-color 0.22s ease, color 0.22s ease;
-}
-
 /* ── Section ghost background labels ── */
 .s-build { position: relative; overflow: hidden; }
 .s-build-bg-label {
@@ -4606,6 +4611,7 @@ footer {
   background: var(--lime);
   color: var(--dark);
   font-weight: 700;
+  transition: transform 160ms var(--ease-standard);
 }
 .rg-btn-primary:hover { box-shadow: 3px 3px 0 0 var(--white); }
 
