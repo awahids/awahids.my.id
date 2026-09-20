@@ -592,7 +592,7 @@ const FloatingFAQ = () => {
                     transition={{ duration: 0.2 }}
                   >
                     <div className="ff-msg-content">
-                      <span className="dot-typing"></span>
+                      <span className="dot-typing"><span>.</span><span>.</span><span>.</span></span>
                     </div>
                   </motion.div>
                 )}
