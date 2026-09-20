@@ -1,6 +1,6 @@
 # 017 — Convert every font-size from px to rem
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 6fa4837
 - **Severity**: —
 - **Category**: Typography (§15) — respect the user's text-size setting
