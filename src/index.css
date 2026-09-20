@@ -1705,8 +1705,8 @@ body.is-on-light-section .spotlight-glow {
 .pcf-mask { display:block; overflow:hidden; }
 .pcf-mask > * { display:block; transform:translateY(110%); transition:transform var(--tr-base) var(--ease-standard); }
 .pcf-tile.is-active .pcf-mask > * { transform:translateY(0); transition-duration:var(--tr-base); }
-.pcf-tile.is-active .pcf-mask-late > * { transition-delay:.1s; }
-.pcf-tile.is-active .pcf-mask-later > * { transition-delay:.2s; }
+.pcf-tile.is-active .pcf-mask-late > * { transition-delay:.04s; }
+.pcf-tile.is-active .pcf-mask-later > * { transition-delay:.08s; }
 .pcf-tile:not(.is-active) .pcf-mask-late > *,
 .pcf-tile:not(.is-active) .pcf-mask-later > * { transform:translateY(0); }
 .pcf-tile:not(.is-active) .pcf-mask-later { display:none; }
