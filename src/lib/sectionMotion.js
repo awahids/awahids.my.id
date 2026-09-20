@@ -113,7 +113,7 @@ const cardPopByDevice = (reduceMotion) => {
     hidden: {
       opacity: 0,
       y: 60,
-      scale: 0.82,
+      scale: 0.95,
     },
     visible: {
       opacity: 1,

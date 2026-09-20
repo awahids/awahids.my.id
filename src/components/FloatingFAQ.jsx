@@ -650,9 +650,9 @@ const FloatingFAQ = () => {
           {unreadCount > 0 && !isOpen && (
             <motion.div
               className="ff-unread-badge"
-              initial={{ scale: 0, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
+              exit={{ scale: 0.9, opacity: 0 }}
             >
               {unreadCount}
             </motion.div>
