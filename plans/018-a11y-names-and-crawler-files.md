@@ -1,6 +1,6 @@
 # 018 — Name the icon-only buttons, and stop serving HTML as robots.txt
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: fee5aa5
 - **Severity**: —
 - **Category**: Accessibility, crawlability
