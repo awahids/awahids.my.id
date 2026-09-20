@@ -1,6 +1,6 @@
 # 016 — Give the coverflow a real spring gesture
 
-- **Status**: TODO
+- **Status**: DONE
 - **Commit**: 571037c
 - **Severity**: —
 - **Category**: Apple fluid interfaces — response (§1), direct manipulation (§2), interruptibility (§3), springs (§4), velocity handoff (§5), momentum projection (§6), rubber-banding (§9), gesture details (§10)
