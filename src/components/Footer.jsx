@@ -3,13 +3,17 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { useSectionMotion } from '../lib/sectionMotion';
 
+const FOOTER_LINKS = [
+  { href: '/', label: 'Portfolio' },
+  { href: '/ai-lab', label: 'AI Lab' },
+  { href: '/readme-generator', label: 'README Generator' },
+  { href: '/prd-generator', label: 'PRD Generator' },
+];
+
 const Footer = ({ isAiLabPage = false }) => {
   const { sectionItem } = useSectionMotion();
   const year = new Date().getFullYear();
   const topBtnRef = useRef(null);
-  const secondaryLink = isAiLabPage
-    ? { href: '/', label: 'Back to Portfolio' }
-    : { href: '/ai-lab', label: 'AI Lab' };
 
   useEffect(() => {
     const btn = topBtnRef.current;
@@ -43,13 +47,21 @@ const Footer = ({ isAiLabPage = false }) => {
           <div className="fc">
             FULLSTACK DEVELOPER · BACKEND-FIRST ENGINEER
           </div>
-          <a
-            href={secondaryLink.href}
-            className="footer-link"
-            aria-current={isAiLabPage ? 'page' : undefined}
-          >
-            {secondaryLink.label}
-          </a>
+          <nav className="footer-links" aria-label="More from this site">
+            {FOOTER_LINKS.map(({ href, label }) => {
+              const current = href === (isAiLabPage ? '/ai-lab' : '/');
+              return (
+                <a
+                  key={href}
+                  href={href}
+                  className="footer-link"
+                  aria-current={current ? 'page' : undefined}
+                >
+                  {label}
+                </a>
+              );
+            })}
+          </nav>
         </div>
       </div>
       <div className="footer-wordmark-wrap" aria-hidden="true">

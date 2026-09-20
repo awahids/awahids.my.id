@@ -2408,6 +2408,13 @@ footer {
   display:flex;
   align-items:center;
   gap:12px;
+  flex-wrap:wrap;
+}
+.footer-links {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
 }
 .fc { font-size:0.6875rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gray); }
 .fc b { color:var(--lime); font-weight:400; }
@@ -4379,6 +4386,16 @@ footer {
   margin-bottom: 24px;
 }
 .rg-back:hover { color: var(--lime); }
+
+.prd-back {
+  display: inline-block;
+  color: rgba(255,255,255,.4);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  text-decoration: none;
+  margin-bottom: 24px;
+}
+.prd-back:hover { color: var(--lime); }
 
 .rg-title {
   font-family: 'Unbounded', sans-serif;

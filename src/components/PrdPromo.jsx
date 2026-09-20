@@ -10,6 +10,7 @@ const FLOW = [
 
 const PrdPromo = () => (
   <section className="s-prd-generator">
+    <a href="/" className="prd-back">← Back to portfolio</a>
     <header className="prd-head">
       <p className="s-eyebrow">{'// PRD_GENERATOR'}</p>
       <h1>Dari ide ke PRD dan task.</h1>
