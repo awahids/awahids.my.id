@@ -4085,12 +4085,6 @@ footer {
   will-change: transform;
 }
 
-/* ── WhatIBuild card number glow on hover ── */
-.build-card-num {
-  will-change: color, transform;
-  transition: color 0.22s ease;
-}
-
 /* ── Contact CTA primary label — typographic polish ── */
 /* (contact-headline size is intentionally large in original declaration — no override) */
 
