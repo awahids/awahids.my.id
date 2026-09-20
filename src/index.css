@@ -27,7 +27,6 @@
   --ease-standard: cubic-bezier(.16,1,.3,1);
   --tr-fast: .2s;
   --tr-base: .28s;
-  --tr-slow: .55s;
   --blue: #0076FF;
 }
 html {
@@ -187,7 +186,8 @@ body.is-on-light-section .spotlight-glow {
   position:fixed; top:0; left:0; right:0; z-index:200;
   padding:18px 48px;
   display:flex; align-items:center; justify-content:space-between;
-  transition: background .4s, border-color .4s;
+  transition: background var(--tr-base) var(--ease-standard),
+              border-color var(--tr-base) var(--ease-standard);
   border-bottom: 1px solid transparent;
 }
 .main-nav.scrolled { background:rgba(10,10,10,.94); backdrop-filter:blur(14px); border-color:var(--border); }
@@ -629,7 +629,8 @@ body.is-on-light-section .spotlight-glow {
   background-size:200% 200%;
   background-position:200% 200%;
   opacity:0;
-  transition:opacity .38s, background-position .6s;
+  transition:opacity var(--tr-base) var(--ease-standard),
+             background-position var(--tr-base) var(--ease-standard);
   pointer-events:none;
 }
 /* drop-shadow, not box-shadow: the offset block and the lime glow must follow
@@ -1638,7 +1639,9 @@ body.is-on-light-section .spotlight-glow {
   overflow:hidden;
   cursor:inherit;
   backface-visibility:hidden;
-  transition:transform .7s var(--ease-standard), opacity .6s ease, filter .6s ease;
+  transition:transform var(--tr-base) var(--ease-standard),
+             opacity var(--tr-base) ease,
+             filter var(--tr-base) ease;
 }
 /* Surface for the coverflow tile — dark blueprint grid. */
 .pcf-tile::before {
@@ -1649,7 +1652,7 @@ body.is-on-light-section .spotlight-glow {
     linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px) 0 0 / 34px 34px,
     linear-gradient(170deg, #161616 0%, #0a0a0a 70%);
   border:1px solid rgba(255,255,255,.12);
-  transition:border-color .4s ease;
+  transition:border-color var(--tr-base) ease;
 }
 .pcf-tile:focus-visible { outline:2px solid var(--lime); outline-offset:3px; }
 .pcf-tile.is-active { filter:drop-shadow(0 30px 40px rgba(0,0,0,.6)) drop-shadow(0 0 30px rgba(200,255,0,.3)); }
@@ -1664,7 +1667,7 @@ body.is-on-light-section .spotlight-glow {
 .pcf-tab-arrow { color:var(--lime); font-size:12px; max-width:0; overflow:hidden; opacity:0; transition:max-width .3s ease, opacity .3s ease; }
 .pcf-tile.is-active .pcf-tab-arrow { max-width:14px; opacity:1; }
 
-.pcf-corner { position:absolute; width:16px; height:16px; border:0 solid var(--lime); opacity:.3; transition:opacity .4s ease; pointer-events:none; }
+.pcf-corner { position:absolute; width:16px; height:16px; border:0 solid var(--lime); opacity:.3; transition:opacity var(--tr-base) ease; pointer-events:none; }
 .pcf-corner-br { bottom:10px; right:10px; border-bottom-width:1px; border-right-width:1px; }
 .pcf-tile.is-active .pcf-corner { opacity:1; }
 
@@ -1684,8 +1687,8 @@ body.is-on-light-section .spotlight-glow {
 
 .pcf-tile-body { position:relative; display:flex; flex-direction:column; gap:12px; }
 .pcf-mask { display:block; overflow:hidden; }
-.pcf-mask > * { display:block; transform:translateY(110%); transition:transform .5s var(--ease-standard); }
-.pcf-tile.is-active .pcf-mask > * { transform:translateY(0); transition-duration:.75s; }
+.pcf-mask > * { display:block; transform:translateY(110%); transition:transform var(--tr-base) var(--ease-standard); }
+.pcf-tile.is-active .pcf-mask > * { transform:translateY(0); transition-duration:var(--tr-base); }
 .pcf-tile.is-active .pcf-mask-late > * { transition-delay:.1s; }
 .pcf-tile.is-active .pcf-mask-later > * { transition-delay:.2s; }
 .pcf-tile:not(.is-active) .pcf-mask-late > *,
@@ -3593,7 +3596,7 @@ footer {
   background: linear-gradient(90deg, var(--lime), #e8ff80);
   transform-origin: left center;
   transform: scaleX(0.143);
-  transition: transform 0.5s cubic-bezier(.16,1,.3,1);
+  transition: transform 0.5s var(--ease-standard);
 }
 
 .pswap-project-num {
@@ -4134,15 +4137,15 @@ footer {
 
 /* ── Cursor magnetic transition ── */
 #cursor-ring {
-  transition: width 0.22s cubic-bezier(0.22,1,0.36,1),
-              height 0.22s cubic-bezier(0.22,1,0.36,1),
+  transition: width 0.22s var(--ease-standard),
+              height 0.22s var(--ease-standard),
               opacity 0.22s,
               border-color 0.22s,
               border-width 0.18s;
 }
 #cursor {
-  transition: width 0.18s cubic-bezier(0.22,1,0.36,1),
-              height 0.18s cubic-bezier(0.22,1,0.36,1),
+  transition: width 0.18s var(--ease-standard),
+              height 0.18s var(--ease-standard),
               background 0.18s,
               border-radius 0.18s;
 }

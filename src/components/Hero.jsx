@@ -12,7 +12,7 @@ const heroLeftContainer = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
 };
 
 const chipContainer = {
@@ -22,14 +22,14 @@ const chipContainer = {
 
 const chipItem = {
   hidden: { opacity: 0, x: -14 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.38, ease: [0.22, 1, 0.36, 1] } },
+  visible: { opacity: 1, x: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } },
 };
 
 const photoVariant = {
   hidden: { opacity: 0, x: 32, scale: 0.96 },
   visible: {
     opacity: 1, x: 0, scale: 1,
-    transition: { duration: 0.78, ease: [0.22, 1, 0.36, 1], delay: 0.3 },
+    transition: { duration: 0.78, ease: [0.16, 1, 0.3, 1], delay: 0.3 },
   },
 };
 
