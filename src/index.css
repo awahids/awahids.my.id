@@ -229,7 +229,9 @@ body.is-on-light-section .spotlight-glow {
   font-weight:500; text-decoration:none;
   transition: transform var(--tr-fast), box-shadow var(--tr-fast);
 }
-.nav-cta:hover { transform:translateY(-1px); box-shadow: 2px 2px 0 var(--dark); }
+@media (hover: hover) and (pointer: fine) {
+  .nav-cta:hover { transform:translateY(-1px); box-shadow: 2px 2px 0 var(--dark); }
+}
 
 /* SOCIAL RAIL */
 .social-rail {
@@ -274,10 +276,12 @@ body.is-on-light-section .spotlight-glow {
   stroke-linejoin:round;
 }
 .social-rail-link:hover {
-  transform:translateY(-2px);
   background:rgba(200,255,0,.14);
   border-color:rgba(200,255,0,.58);
   color:var(--lime);
+}
+@media (hover: hover) and (pointer: fine) {
+  .social-rail-link:hover { transform:translateY(-2px); }
 }
 .social-rail-link:focus-visible {
   background:rgba(200,255,0,.14);
@@ -1154,9 +1158,11 @@ body.is-on-light-section .spotlight-glow {
   border:1px solid rgba(255,255,255,.18);
   background:rgba(255,255,255,.03);
 }
-.not-found-primary:hover,
-.not-found-secondary:hover {
-  transform:translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .not-found-primary:hover,
+  .not-found-secondary:hover {
+    transform:translateY(-1px);
+  }
 }
 .not-found-secondary:hover {
   border-color:rgba(200,255,0,.5);
@@ -1252,7 +1258,10 @@ body.is-on-light-section .spotlight-glow {
   display:flex; align-items:center; justify-content:space-between; gap:16px;
   transition:background var(--tr-base) ease,color var(--tr-base) ease,border-color var(--tr-base) ease, transform var(--tr-base) ease;
 }
-.journey-item:hover { background:rgba(255,255,255,.75); transform:translateY(-2px); }
+.journey-item:hover { background:rgba(255,255,255,.75); }
+@media (hover: hover) and (pointer: fine) {
+  .journey-item:hover { transform:translateY(-2px); }
+}
 .journey-item.active {
   background:var(--dark); color:var(--white); border-color:var(--dark);
 }
@@ -1784,7 +1793,10 @@ body.is-on-light-section .spotlight-glow {
   border-radius:50%; z-index:10;
   transition:transform var(--tr-base), color var(--tr-fast), background var(--tr-fast), border-color var(--tr-fast);
 }
-.modal-close:hover { transform:rotate(90deg); color:var(--lime); background:rgba(200,255,0,.08); border-color:var(--lime); }
+.modal-close:hover { color:var(--lime); background:rgba(200,255,0,.08); border-color:var(--lime); }
+@media (hover: hover) and (pointer: fine) {
+  .modal-close:hover { transform:rotate(90deg); }
+}
 
 .modal-header { padding:46px 52px 30px; border-bottom:1px solid var(--stroke-soft); }
 .mh-cat {
@@ -2002,7 +2014,10 @@ body.is-on-light-section .spotlight-glow {
   border:none; border-radius:12px;
   transition: transform var(--tr-base) var(--ease-standard);
 }
-.cert-card:hover .cert-icon { transform: rotate(10deg) scale(1.1); background: var(--dark); }
+.cert-card:hover .cert-icon { background: var(--dark); }
+@media (hover: hover) and (pointer: fine) {
+  .cert-card:hover .cert-icon { transform: rotate(10deg) scale(1.1); }
+}
 .cert-icon svg { width:20px; height:20px; stroke:var(--dark); fill:none; stroke-width:1.5; transition: stroke var(--tr-base); }
 .cert-card:hover .cert-icon svg { stroke: var(--white); }
 
@@ -2023,13 +2038,16 @@ body.is-on-light-section .spotlight-glow {
 }
 .cert-card-view {
   margin-top: 24px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-  color: var(--dark); opacity: 0; transform: translateY(10px);
+  color: var(--dark); opacity: 1; transform: none;
   transition: opacity var(--tr-base) var(--ease-standard),
               transform var(--tr-base) var(--ease-standard);
   display: flex; align-items: center; gap: 6px;
   font-family:'DM Mono',monospace;
 }
-.cert-card:hover .cert-card-view { opacity: 1; transform: translateY(0); }
+@media (hover: hover) and (pointer: fine) {
+  .cert-card-view { opacity: 0; transform: translateY(10px); }
+  .cert-card:hover .cert-card-view { opacity: 1; transform: translateY(0); }
+}
 .cert-mobile-toggle {
   margin-top:20px;
   border:1px solid rgba(10,10,10,.3);
@@ -2137,7 +2155,10 @@ body.is-on-light-section .spotlight-glow {
   background:rgba(255,255,255,.06);
   color:var(--white);
   border-color:rgba(255,255,255,.4);
-  transform:translateY(-1px);
+}
+.contact-top-link:focus-visible { transform:translateY(-1px); }
+@media (hover: hover) and (pointer: fine) {
+  .contact-top-link:hover { transform:translateY(-1px); }
 }
 .contact-top-link:not(.is-prime):hover,
 .contact-top-link:not(.is-prime):focus-visible {
@@ -2201,7 +2222,9 @@ body.is-on-light-section .spotlight-glow {
   border:1px solid var(--border);
   transition:border-color var(--tr-base) ease, background var(--tr-base) ease;
 }
-.contact-card:hover { transform:translateY(-4px); }
+@media (hover: hover) and (pointer: fine) {
+  .contact-card:hover { transform:translateY(-4px); }
+}
 .contact-card:hover::before { border-color:rgba(200,255,0,.4); background:#151515; }
 /* The icon chip sits in the notch, becoming the card's tab. */
 .cc-icon {
@@ -2270,7 +2293,10 @@ body.is-on-light-section .spotlight-glow {
   transition:color 0.22s ease, transform 0.22s ease;
   display:inline-block;
 }
-.cc-soc-link:hover span { color:var(--lime); transform:translateX(4px); }
+.cc-soc-link:hover span { color:var(--lime); }
+@media (hover: hover) and (pointer: fine) {
+  .cc-soc-link:hover span { transform:translateX(4px); }
+}
 .contact-form {
   grid-column:span 12; background:var(--surface-card);
   border:1px solid var(--border); padding:30px 28px;
@@ -3156,8 +3182,10 @@ footer {
 }
 
 .floating-faq-toggle:hover {
-  transform: scale(1.05);
   background: var(--white);
+}
+@media (hover: hover) and (pointer: fine) {
+  .floating-faq-toggle:hover { transform: scale(1.05); }
 }
 
 .floating-faq-toggle.is-active {
@@ -3331,7 +3359,9 @@ footer {
   background: rgba(200, 255, 0, 0.08);
   border-color: rgba(200, 255, 0, 0.4);
   color: var(--lime);
-  transform: translateY(-1px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .ff-suggestion-btn:hover { transform: translateY(-1px); }
 }
 
 .floating-faq-footer {
@@ -4245,9 +4275,11 @@ footer {
    ════════════════════════════════════════════════════════ */
 
 /* ── Flat offset shadow system — editorial print aesthetic ── */
-.build-card:hover,
-.cert-card:hover {
-  transform: translateY(-2px);
+@media (hover: hover) and (pointer: fine) {
+  .build-card:hover,
+  .cert-card:hover {
+    transform: translateY(-2px);
+  }
 }
 
 /* ── Section transition bars defined at declaration sites ── */
