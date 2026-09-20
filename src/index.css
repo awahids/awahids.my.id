@@ -2024,7 +2024,8 @@ body.is-on-light-section .spotlight-glow {
 .cert-card-view {
   margin-top: 24px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
   color: var(--dark); opacity: 0; transform: translateY(10px);
-  transition: all var(--tr-base) var(--ease-standard);
+  transition: opacity var(--tr-base) var(--ease-standard),
+              transform var(--tr-base) var(--ease-standard);
   display: flex; align-items: center; gap: 6px;
   font-family:'DM Mono',monospace;
 }
@@ -3319,7 +3320,10 @@ footer {
   text-transform: uppercase;
   white-space: nowrap;
   cursor: none;
-  transition: all var(--tr-fast);
+  transition: background var(--tr-fast) var(--ease-standard),
+              border-color var(--tr-fast) var(--ease-standard),
+              color var(--tr-fast) var(--ease-standard),
+              transform 160ms var(--ease-standard);
   flex-shrink: 0;
 }
 
