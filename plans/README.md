@@ -60,6 +60,50 @@ drawn but static, the skills particles are present but do not drift, and the
 mobile tab bar fades in without rising.
 
 
+## Measured: the px→rem spacing conversion is not needed
+
+After `14efe8a` converted every font-size to rem, the obvious follow-up was to
+convert the 321 px `padding`/`margin`/`gap` declarations too, so the layout would
+grow with the text (§15, "scale layout with the text"). That work was measured
+before it was written, and the measurement says **do not do it**.
+
+Method: render the site, snapshot every text-bearing element's clipped overflow
+at a 16px root, then again at larger roots, and report only elements that clip
+*more* than they already did.
+
+| Viewport | Root | Page horizontal overflow | Newly clipped text |
+| --- | --- | --- | --- |
+| desktop | 20px | 0 | 2 of 457 |
+| desktop | 24px | 0 | 3 of 457 |
+| desktop | 28px | 0 | 3 of 457 |
+| 375px | 20px | 0 | 5 of 497 |
+| 375px | 24px | 0 | 7 of 497 |
+
+The page never overflows horizontally, even at 175% text. And every flagged
+element turned out to be intentional rather than broken:
+
+- `.s-title`, `.journey-title`, `.contact-headline` — large headings whose
+  `overflow: hidden` trims a few pixels of descender. Already true at 16px.
+- `.journey-item-title` — declares
+  `white-space: nowrap; overflow: hidden; text-overflow: ellipsis` and already
+  steps its size down at three breakpoints. Larger text truncates sooner and
+  shows the ellipsis, which is exactly what that declaration is for.
+
+The layout absorbs the growth because `clamp()` caps the display sizes, the grid
+and flex containers size automatically, and the padding is generous. Converting
+321 declarations would have risked a pixel-tuned design to fix damage that does
+not exist.
+
+Also measured and rejected, in the same pass: tokenizing `letter-spacing` and
+`line-height`. The full distribution is 32 tracking and 34 leading values, and
+the direction is already correct per §15 — negative tracking on display type,
+positive on small uppercase labels. Collapsing them into a 6-token scale is not
+possible without visible drift, and naming six near-identical positive values
+`--track-label-s/m/l/xl/2xl` is aliasing, not a system: it gives none of the
+three things a token earns its place with. The outliers that looked like drift
+turned out to be signature elements — `.24em` is `.s-eyebrow`, which appears
+once in CSS and on every section of the site.
+
 ## Batch 2 — findings 6-20
 
 Nine plans covering the fifteen remaining vetted findings, grouped by file and
