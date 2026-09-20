@@ -59,7 +59,59 @@ and the site appears, a native cursor is visible, the Contact line field is
 drawn but static, the skills particles are present but do not drift, and the
 mobile tab bar fades in without rising.
 
-## Recommended execution order
+
+## Batch 2 — findings 6-20
+
+Nine plans covering the fifteen remaining vetted findings, grouped by file and
+fix pattern. Written against commit `b132b95`.
+
+| # | Title | Severity | Category | Files | Status |
+| --- | --- | --- | --- | --- | --- |
+| [006](006-raise-entrance-scale-floors.md) | Raise the two entrance scale floors above 0.9 | HIGH | Physicality | 2 | TODO |
+| [007](007-remove-ease-in-from-exits.md) | Remove `ease-in` from every exit animation | MEDIUM | Easing | 2 | TODO |
+| [008](008-fix-triplicate-build-card-num.md) | Delete the duplicate `.build-card-num` overriding the GSAP opt-out | MEDIUM | Correctness | 1 | TODO |
+| [009](009-stop-animating-layout-properties.md) | Stop animating layout properties in CSS | HIGH | Performance | 2 | TODO |
+| [010](010-reduced-motion-keep-feedback.md) | Keep feedback under reduced motion, gate the two loose loops | MEDIUM | Accessibility | 1 | TODO |
+| [011](011-waves-direct-transform.md) | Write the Waves cursor transform directly | MEDIUM | Performance | 1 | TODO |
+| [012](012-fix-wrong-keyframe-primitives.md) | Replace two keyframes with the right primitive | LOW | Interruptibility | 2 | TODO |
+| [013](013-consolidate-curves-and-durations.md) | Consolidate duplicate curves and over-budget durations | MEDIUM | Cohesion | 2 | TODO |
+| [014](014-coverflow-keyboard-and-velocity.md) | Make the coverflow keyboard instant and its swipe velocity-aware | MEDIUM | Purpose / Interruptibility | 1 | TODO |
+
+### Execution order for batch 2
+
+Five of the nine touch `src/index.css`, so those must run sequentially. The rest
+are independent.
+
+**Parallel first:** 007, 011, 014 — no shared files with anything.
+**Then the `index.css` chain:** 008 → 010 → 013 → 012.
+**Then:** 006, which must precede 012 (both touch `FloatingFAQ.jsx`).
+**Last, alone:** 009.
+
+009 goes last and by itself because it is the only plan that rewrites how
+`CustomCursor.jsx` composes its transform. The cursor is written every frame by
+`setPos`; an inline transform replaces the stylesheet's, so the scale has to be
+threaded through a custom property that the JS transform string includes. The
+plan carries an explicit instruction to stop and revert rather than half-apply
+it. If the cursor stops tracking the pointer, that is the cause.
+
+### Two corrections to the audit, found while writing these
+
+- `.build-card-num` is declared **three** times, not twice. The audit reported
+  two.
+- `btn-shimmer` is already gated for reduced motion at `src/index.css:2976-2977`.
+  The audit listed it as ungated. The genuinely ungated movement loops are
+  `journeyFloat` and `sectionLoading`.
+- Finding 8 claimed "54 bare `ease` against 24 `var(--ease-standard)`" was a
+  cohesion problem. It mostly is not: the playbook assigns bare `ease` to hover
+  and colour changes, which is what most of those 54 are. Plan 013 therefore
+  scopes the bare-`ease` sweep out entirely and handles only the duplicate
+  curves, the dead `--tr-slow` token, and the six over-budget durations.
+
+Also now dead: `#cursor, #cursor-ring { transition: none; }` in the
+reduced-motion block, since commit `7bb977f` stops the cursor from rendering at
+all in that state. Plan 010 removes it.
+
+## Recommended execution order (batch 1)
 
 **001 → 005 → 002 → 003 → 004**
 
