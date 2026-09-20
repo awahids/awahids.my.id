@@ -27,6 +27,7 @@ export function Waves({
     const rafRef = useRef(null);
     const boundingRef = useRef(null);
     const reducedMotionRef = useRef(false);
+    const cursorRef = useRef(null);
 
     // Initialization
     useEffect(() => {
@@ -177,10 +178,10 @@ export function Waves({
             mouse.set = true;
         }
 
-        // Update CSS variables
-        if (containerRef.current) {
-            containerRef.current.style.setProperty('--x', mouse.sx + 'px');
-            containerRef.current.style.setProperty('--y', mouse.sy + 'px');
+        // Write the follower transform directly
+        if (cursorRef.current) {
+            cursorRef.current.style.transform =
+                `translate3d(${mouse.sx}px, ${mouse.sy}px, 0) translate(-50%, -50%)`;
         }
     };
 
@@ -287,9 +288,9 @@ export function Waves({
         mouse.a = Math.atan2(dy, dx);
 
         // Animation
-        if (containerRef.current) {
-            containerRef.current.style.setProperty('--x', mouse.sx + 'px');
-            containerRef.current.style.setProperty('--y', mouse.sy + 'px');
+        if (cursorRef.current) {
+            cursorRef.current.style.transform =
+                `translate3d(${mouse.sx}px, ${mouse.sy}px, 0) translate(-50%, -50%)`;
         }
 
         movePoints(time);
@@ -312,8 +313,6 @@ export function Waves({
                 width: '100%',
                 height: '100%',
                 overflow: 'hidden',
-                '--x': '-0.5rem',
-                '--y': '50%',
             }}
         >
             <svg
@@ -323,6 +322,7 @@ export function Waves({
                 xmlns="http://www.w3.org/2000/svg"
             />
             <div
+                ref={cursorRef}
                 className="pointer-dot"
                 style={{
                     position: 'absolute',
@@ -332,7 +332,7 @@ export function Waves({
                     height: pointerSize + 'rem',
                     background: strokeColor,
                     borderRadius: '50%',
-                    transform: 'translate3d(calc(var(--x) - 50%), calc(var(--y) - 50%), 0)',
+                    transform: 'translate3d(-0.5rem, 50%, 0) translate(-50%, -50%)',
                     willChange: 'transform',
                 }}
             />
