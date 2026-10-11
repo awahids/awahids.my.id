@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { gsap, ScrollTrigger, DUR, prefersReducedMotion, useIsoLayoutEffect } from './lib/motion';
+import { gsap, ScrollTrigger, DUR, prefersReducedMotion, useIsoLayoutEffect, useScrollTriggerAutoRefresh } from './lib/motion';
 import { useLenis } from './lib/useLenis';
 
 import Preloader from './components/Preloader';
@@ -204,6 +204,7 @@ function App() {
 
   const lenisEnabled = !effectiveLoading && !toolPage && !notFoundPage;
   const lenisRef = useLenis({ enabled: lenisEnabled });
+  useScrollTriggerAutoRefresh(lenisEnabled);
 
   const aboutSectionRef = React.useRef(null);
   useGsapReveal(aboutSectionRef);

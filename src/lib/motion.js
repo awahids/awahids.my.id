@@ -123,4 +123,38 @@ export const usePresence = (open, ref, { enter, exit } = {}) => {
   return open || closing;
 };
 
+/**
+ * ScrollTrigger only re-measures on window resize. Content that changes the
+ * page height later (the hero portal mounting once its font loads, lazy
+ * sections) leaves every trigger below it measured at the wrong position, so
+ * re-measure whenever the document height actually changes (debounced).
+ */
+export const useScrollTriggerAutoRefresh = (enabled = true) => {
+  useEffect(() => {
+    if (!enabled || typeof ResizeObserver === 'undefined') return undefined;
+    const doc = document.documentElement;
+    let measured = doc.scrollHeight;
+    let timer = 0;
+
+    const onRefresh = () => { measured = doc.scrollHeight; };
+    ScrollTrigger.addEventListener('refresh', onRefresh);
+
+    const observer = new ResizeObserver(() => {
+      if (Math.abs(doc.scrollHeight - measured) < 2) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        ScrollTrigger.sort();
+        ScrollTrigger.refresh();
+      }, 200);
+    });
+    observer.observe(document.body);
+
+    return () => {
+      window.clearTimeout(timer);
+      observer.disconnect();
+      ScrollTrigger.removeEventListener('refresh', onRefresh);
+    };
+  }, [enabled]);
+};
+
 export { gsap, ScrollTrigger, SplitText, Flip, Draggable, InertiaPlugin, MorphSVGPlugin };
