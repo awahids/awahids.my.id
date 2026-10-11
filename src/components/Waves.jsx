@@ -1,0 +1,367 @@
+import React, { useEffect, useRef } from 'react';
+import { createNoise2D } from 'simplex-noise';
+
+const round = (n) => Math.round(n * 10) / 10;
+
+export function Waves({
+    className = "",
+    strokeColor = "#ffffff",  // White lines
+    backgroundColor = "#000000",  // Black background
+    pointerSize = 0.5
+}) {
+    const containerRef = useRef(null);
+    const svgRef = useRef(null);
+    const mouseRef = useRef({
+        x: -10,
+        y: 0,
+        lx: 0,
+        ly: 0,
+        sx: 0,
+        sy: 0,
+        v: 0,
+        vs: 0,
+        a: 0,
+        set: false,
+    });
+    const pathsRef = useRef([]);
+    const linesRef = useRef([]);
+    const noiseRef = useRef(null);
+    const rafRef = useRef(null);
+    const boundingRef = useRef(null);
+    const reducedMotionRef = useRef(false);
+    const inViewRef = useRef(false);
+    const cursorRef = useRef(null);
+
+    // Initialization
+    useEffect(() => {
+        if (!containerRef.current || !svgRef.current) return;
+
+        const prefersReducedMotion =
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        reducedMotionRef.current = prefersReducedMotion;
+
+        // Initialize noise generator
+        noiseRef.current = createNoise2D();
+
+        // Initialize size and lines
+        setSize();
+        setLines();
+
+        // Bind events
+        window.addEventListener('resize', onResize);
+        const containerElt = containerRef.current;
+
+        // Start animation
+        if (prefersReducedMotion) {
+            movePoints(0);
+            drawLines();
+            return () => window.removeEventListener('resize', onResize);
+        }
+
+        // Only run the loop while the section is on screen and the tab is visible.
+        const sync = () => {
+            const shouldRun = inViewRef.current && !document.hidden;
+            if (shouldRun && !rafRef.current) {
+                rafRef.current = requestAnimationFrame(tick);
+            } else if (!shouldRun && rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+        };
+        const observer = new IntersectionObserver(([entry]) => {
+            inViewRef.current = entry.isIntersecting;
+            sync();
+        });
+        observer.observe(containerElt);
+        document.addEventListener('visibilitychange', sync);
+
+        window.addEventListener('mousemove', onMouseMove, { passive: true });
+        containerElt.addEventListener('touchmove', onTouchMove, { passive: false });
+
+        return () => {
+            observer.disconnect();
+            document.removeEventListener('visibilitychange', sync);
+            if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
+            window.removeEventListener('resize', onResize);
+            window.removeEventListener('mousemove', onMouseMove);
+            containerElt.removeEventListener('touchmove', onTouchMove);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Set SVG size
+    function setSize() {
+        if (!containerRef.current || !svgRef.current) return;
+
+        boundingRef.current = containerRef.current.getBoundingClientRect();
+        const { width, height } = boundingRef.current;
+
+        svgRef.current.style.width = width + 'px';
+        svgRef.current.style.height = height + 'px';
+    };
+
+    // Setup lines - more points for smoother curves
+    function setLines() {
+        if (!svgRef.current || !boundingRef.current) return;
+
+        const { width, height } = boundingRef.current;
+        linesRef.current = [];
+
+        // Clear existing paths
+        pathsRef.current.forEach(path => {
+            path.remove();
+        });
+        pathsRef.current = [];
+
+        // Line spacing sets the look; point spacing along a line only needs to be
+        // fine enough for the smooth noise, so it's looser (and looser on phones).
+        const xGap = 8;
+        const yGap = width < 768 ? 16 : 12;
+
+        const oWidth = width + 200;
+        const oHeight = height + 30;
+
+        const totalLines = Math.ceil(oWidth / xGap);
+        const totalPoints = Math.ceil(oHeight / yGap);
+
+        const xStart = (width - xGap * totalLines) / 2;
+        const yStart = (height - yGap * totalPoints) / 2;
+
+        // Create vertical lines
+        for (let i = 0; i < totalLines; i++) {
+            const points = [];
+
+            for (let j = 0; j < totalPoints; j++) {
+                const point = {
+                    x: xStart + xGap * i,
+                    y: yStart + yGap * j,
+                    wave: { x: 0, y: 0 },
+                    cursor: { x: 0, y: 0, vx: 0, vy: 0 },
+                };
+
+                points.push(point);
+            }
+
+            // Create SVG path
+            const path = document.createElementNS(
+                'http://www.w3.org/2000/svg',
+                'path'
+            );
+            path.classList.add('a__line');
+            path.classList.add('js-line');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', strokeColor);
+            path.setAttribute('stroke-width', '1');
+
+            svgRef.current.appendChild(path);
+            pathsRef.current.push(path);
+
+            // Add points
+            linesRef.current.push(points);
+        }
+    };
+
+    // Resize handler
+    function onResize() {
+        setSize();
+        setLines();
+
+        if (reducedMotionRef.current) {
+            movePoints(0);
+            drawLines();
+        }
+    };
+
+    // Mouse handler
+    function onMouseMove(e) {
+        updateMousePosition(e.clientX, e.clientY);
+    };
+
+    // Touch handler
+    function onTouchMove(e) {
+        const touch = e.touches[0];
+        updateMousePosition(touch.clientX, touch.clientY);
+    };
+
+    // Update mouse position
+    function updateMousePosition(clientX, clientY) {
+        // Paused (offscreen or hidden tab): skip the layout read entirely.
+        if (!containerRef.current || !rafRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const mouse = mouseRef.current;
+        mouse.x = clientX - rect.left;
+        mouse.y = clientY - rect.top;
+
+        if (!mouse.set) {
+            mouse.sx = mouse.x;
+            mouse.sy = mouse.y;
+            mouse.lx = mouse.x;
+            mouse.ly = mouse.y;
+
+            mouse.set = true;
+        }
+
+        // Write the follower transform directly
+        if (cursorRef.current) {
+            cursorRef.current.style.transform =
+                `translate3d(${mouse.sx}px, ${mouse.sy}px, 0) translate(-50%, -50%)`;
+        }
+    };
+
+    // Move points - smoother wave motion
+    function movePoints(time) {
+        const { current: lines } = linesRef;
+        const { current: mouse } = mouseRef;
+        const { current: noise } = noiseRef;
+
+        if (!noise) return;
+
+        lines.forEach((points) => {
+            points.forEach((p) => {
+                // Wave movement - reduced amplitude for smoother waves
+                const move = noise(
+                    (p.x + time * 0.008) * 0.003,  // Adjusted frequency
+                    (p.y + time * 0.003) * 0.002   // Adjusted frequency
+                ) * 8;  // Reduced amplitude for smoother waves
+
+                p.wave.x = Math.cos(move) * 12;  // Reduced horizontal amplitude
+                p.wave.y = Math.sin(move) * 6;   // Reduced vertical amplitude
+
+                // Mouse effect - smoother response
+                const dx = p.x - mouse.sx;
+                const dy = p.y - mouse.sy;
+                const d = Math.hypot(dx, dy);
+                const l = Math.max(175, mouse.vs);
+
+                if (d < l) {
+                    const s = 1 - d / l;
+                    const f = Math.cos(d * 0.001) * s;
+
+                    p.cursor.vx += Math.cos(mouse.a) * f * l * mouse.vs * 0.00035;  // Reduced influence
+                    p.cursor.vy += Math.sin(mouse.a) * f * l * mouse.vs * 0.00035;  // Reduced influence
+                }
+
+                p.cursor.vx += (0 - p.cursor.x) * 0.01;   // Increased restoration force
+                p.cursor.vy += (0 - p.cursor.y) * 0.01;   // Increased restoration force
+
+                p.cursor.vx *= 0.95;  // Increased smoothness
+                p.cursor.vy *= 0.95;  // Increased smoothness
+
+                p.cursor.x += p.cursor.vx;
+                p.cursor.y += p.cursor.vy;
+
+                p.cursor.x = Math.min(50, Math.max(-50, p.cursor.x));  // Limited deformation range
+                p.cursor.y = Math.min(50, Math.max(-50, p.cursor.y));  // Limited deformation range
+            });
+        });
+    };
+
+    // Get moved point coordinates
+    function moved(point, withCursorForce = true) {
+        return {
+            x: point.x + point.wave.x + (withCursorForce ? point.cursor.x : 0),
+            y: point.y + point.wave.y + (withCursorForce ? point.cursor.y : 0),
+        };
+    };
+
+    // Draw lines - using line segments
+    function drawLines() {
+        const { current: lines } = linesRef;
+        const { current: paths } = pathsRef;
+
+        lines.forEach((points, lIndex) => {
+            if (points.length < 2 || !paths[lIndex]) return;
+
+            // First point
+            // Coordinates rounded to 0.1px keep the path string short to build and parse.
+            const firstPoint = moved(points[0], false);
+            let d = "M" + round(firstPoint.x) + " " + round(firstPoint.y);
+
+            // Connect points with lines
+            for (let i = 1; i < points.length; i++) {
+                const current = moved(points[i]);
+                d += "L" + round(current.x) + " " + round(current.y);
+            }
+
+            paths[lIndex].setAttribute('d', d);
+        });
+    };
+
+    // Animation logic
+    function tick(time) {
+        const { current: mouse } = mouseRef;
+
+        // Smooth mouse movement
+        mouse.sx += (mouse.x - mouse.sx) * 0.1;
+        mouse.sy += (mouse.y - mouse.sy) * 0.1;
+
+        // Mouse velocity
+        const dx = mouse.x - mouse.lx;
+        const dy = mouse.y - mouse.ly;
+        const d = Math.hypot(dx, dy);
+
+        mouse.v = d;
+        mouse.vs += (d - mouse.vs) * 0.1;
+        mouse.vs = Math.min(100, mouse.vs);
+
+        // Previous mouse position
+        mouse.lx = mouse.x;
+        mouse.ly = mouse.y;
+
+        // Mouse angle
+        mouse.a = Math.atan2(dy, dx);
+
+        // Animation
+        if (cursorRef.current) {
+            cursorRef.current.style.transform =
+                `translate3d(${mouse.sx}px, ${mouse.sy}px, 0) translate(-50%, -50%)`;
+        }
+
+        movePoints(time);
+        drawLines();
+
+        rafRef.current = requestAnimationFrame(tick);
+    };
+
+    return (
+        <div
+            ref={containerRef}
+            className={"waves-component relative overflow-hidden " + className}
+            style={{
+                backgroundColor,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                margin: 0,
+                padding: 0,
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+            }}
+        >
+            <svg
+                ref={svgRef}
+                style={{ display: 'block', width: '100%', height: '100%' }}
+                className="js-svg"
+                xmlns="http://www.w3.org/2000/svg"
+            />
+            <div
+                ref={cursorRef}
+                className="pointer-dot"
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: pointerSize + 'rem',
+                    height: pointerSize + 'rem',
+                    background: strokeColor,
+                    borderRadius: '50%',
+                    transform: 'translate3d(-0.5rem, 50%, 0) translate(-50%, -50%)',
+                    willChange: 'transform',
+                }}
+            />
+        </div>
+    );
+}

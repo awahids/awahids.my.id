@@ -1,0 +1,7 @@
+{
+  "name": "github-stats-card",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Self-hosted SVG GitHub stats / top-langs / streak cards for README embeds."
+}
