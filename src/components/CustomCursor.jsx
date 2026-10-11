@@ -36,6 +36,11 @@ const CustomCursor = () => {
     let rafId = 0;
     let currentMagnet = null;
     let magnetStrength = 0;
+    // Magnet geometry is measured once per hover (and again after scroll/resize),
+    // not on every pointermove. Stored untransformed: centre + reach.
+    let magnetBox = null;
+    let magnetOffsetX = 0;
+    let magnetOffsetY = 0;
 
     // The scale lives in --cursor-scale-x/y (set by the body state classes in
     // index.css) and is composed here, because this inline transform replaces
@@ -44,28 +49,74 @@ const CustomCursor = () => {
       el.style.transform = `translate3d(${x}px, ${y}px, 0) translate(-50%, -50%) scale(var(--cursor-scale-x, 1), var(--cursor-scale-y, 1))`;
     };
 
+    const measureMagnet = () => {
+      const rect = currentMagnet.getBoundingClientRect();
+      // Remove the pull we applied ourselves so the box stays put.
+      magnetBox = {
+        x: rect.left + rect.width / 2 - magnetOffsetX,
+        y: rect.top + rect.height / 2 - magnetOffsetY,
+        threshold: Math.max(rect.width, rect.height) * 0.85,
+      };
+    };
+
+    const invalidateMagnet = () => {
+      magnetBox = null;
+    };
+
+    const releaseMagnet = () => {
+      if (currentMagnet) currentMagnet.style.transform = '';
+      currentMagnet = null;
+      magnetBox = null;
+      magnetOffsetX = 0;
+      magnetOffsetY = 0;
+      magnetStrength = 0;
+    };
+
+    // Runs only while something is moving; parks itself once the ring settles.
+    const loop = () => {
+      setPos(dot, mx, my);
+      // Ring lerp: faster when magnetStrength is high
+      const lerpFactor = 0.14 + magnetStrength * 0.06;
+      rx += (mx - rx) * lerpFactor;
+      ry += (my - ry) * lerpFactor;
+      if (Math.abs(mx - rx) < 0.1 && Math.abs(my - ry) < 0.1) {
+        rx = mx;
+        ry = my;
+        setPos(ring, rx, ry);
+        rafId = 0;
+        return;
+      }
+      setPos(ring, rx, ry);
+      rafId = window.requestAnimationFrame(loop);
+    };
+
+    const kick = () => {
+      if (!rafId) rafId = window.requestAnimationFrame(loop);
+    };
+
     const moveCursor = (e) => {
       mx = e.clientX;
       my = e.clientY;
+      kick();
 
       // Magnetic effect for primary buttons
       if (currentMagnet) {
-        const rect = currentMagnet.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-        const dx = e.clientX - centerX;
-        const dy = e.clientY - centerY;
+        if (!magnetBox) measureMagnet();
+        const dx = e.clientX - magnetBox.x;
+        const dy = e.clientY - magnetBox.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const threshold = Math.max(rect.width, rect.height) * 0.85;
+        const { threshold } = magnetBox;
 
         if (dist < threshold) {
           const pull = 1 - dist / threshold;
           magnetStrength = pull;
-          const offsetX = dx * pull * 0.28;
-          const offsetY = dy * pull * 0.22;
-          currentMagnet.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+          magnetOffsetX = dx * pull * 0.28;
+          magnetOffsetY = dy * pull * 0.22;
+          currentMagnet.style.transform = `translate(${magnetOffsetX}px, ${magnetOffsetY}px)`;
         } else {
           magnetStrength = 0;
+          magnetOffsetX = 0;
+          magnetOffsetY = 0;
           currentMagnet.style.transform = '';
         }
       }
@@ -83,7 +134,8 @@ const CustomCursor = () => {
 
         // Magnetic
         const magnet = e.target.closest(MAGNETIC_SELECTOR);
-        if (magnet) {
+        if (magnet && magnet !== currentMagnet) {
+          releaseMagnet();
           currentMagnet = magnet;
           document.body.classList.add('cursor-magnet');
         }
@@ -105,11 +157,7 @@ const CustomCursor = () => {
         const toMagnet = e.relatedTarget?.closest?.(MAGNETIC_SELECTOR);
         if (!toMagnet) {
           document.body.classList.remove('cursor-magnet');
-          if (currentMagnet) {
-            currentMagnet.style.transform = '';
-            currentMagnet = null;
-          }
-          magnetStrength = 0;
+          releaseMagnet();
         }
       }
     };
@@ -118,26 +166,15 @@ const CustomCursor = () => {
       document.body.classList.remove('cursor-hover');
       document.body.classList.remove('cursor-text');
       document.body.classList.remove('cursor-magnet');
-      if (currentMagnet) {
-        currentMagnet.style.transform = '';
-        currentMagnet = null;
-      }
-      magnetStrength = 0;
+      releaseMagnet();
     };
 
-    const loop = () => {
-      setPos(dot, mx, my);
-      // Ring lerp: faster when magnetStrength is high
-      const lerpFactor = 0.14 + magnetStrength * 0.06;
-      rx += (mx - rx) * lerpFactor;
-      ry += (my - ry) * lerpFactor;
-      setPos(ring, rx, ry);
-      rafId = window.requestAnimationFrame(loop);
-    };
-
-    loop();
+    setPos(dot, mx, my);
+    setPos(ring, rx, ry);
 
     window.addEventListener('pointermove', moveCursor, { passive: true });
+    window.addEventListener('scroll', invalidateMagnet, { passive: true });
+    window.addEventListener('resize', invalidateMagnet, { passive: true });
     document.addEventListener('pointerover', hoverOn, { passive: true });
     document.addEventListener('pointerout', hoverOff, { passive: true });
     window.addEventListener('blur', resetHover);
@@ -145,6 +182,8 @@ const CustomCursor = () => {
     return () => {
       window.cancelAnimationFrame(rafId);
       window.removeEventListener('pointermove', moveCursor);
+      window.removeEventListener('scroll', invalidateMagnet);
+      window.removeEventListener('resize', invalidateMagnet);
       document.removeEventListener('pointerover', hoverOn);
       document.removeEventListener('pointerout', hoverOff);
       window.removeEventListener('blur', resetHover);

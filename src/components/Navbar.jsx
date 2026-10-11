@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import { gsap, ScrollTrigger, EASE, DUR, prefersReducedMotion, useIsoLayoutEffect, sectionEnd } from '../lib/motion';
 import { BOOKING_URL } from '../lib/links';
 
 const mainNavItems = [
@@ -16,77 +16,102 @@ const aiLabNavItems = [
 
 const Navbar = ({ isAiLabPage = false, isNotFoundPage = false }) => {
   const navItems = isAiLabPage ? aiLabNavItems : mainNavItems;
+  const tracksSections = !isAiLabPage && !isNotFoundPage;
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState(() =>
-    isAiLabPage ? 'ai-lab' : mainNavItems[0].id
-  );
+  const [activeSection, setActiveSection] = useState('');
   const resolvedActiveSection = isNotFoundPage ? '' : isAiLabPage ? 'ai-lab' : activeSection;
 
+  const wrapRef = useRef(null);
   const navLinksRef = useRef(null);
-  const underlineRef = useRef(null);
+  const indicatorRef = useRef(null);
+  const indicatorPlaced = useRef(false);
 
   useEffect(() => {
-    if (isAiLabPage) {
-      const handleScroll = () => {
-        setScrolled(window.scrollY > 50);
-      };
+    const trigger = ScrollTrigger.create({
+      start: 50,
+      end: 'max',
+      onToggle: (self) => setScrolled(self.isActive),
+    });
+    return () => trigger.kill();
+  }, []);
 
-      handleScroll();
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-    }
-
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-
-      let current = mainNavItems[0].id;
-
-      mainNavItems.forEach((item) => {
-        const section = document.getElementById(item.id);
-        if (!section) return;
-
-        const sectionTop = section.offsetTop - 180;
-        if (window.scrollY >= sectionTop) {
-          current = item.id;
-        }
-      });
-
-      setActiveSection(current);
-    };
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isAiLabPage]);
-
-  // Sliding underline follows active nav link
+  // One trigger per linked section: toggles the active link and scrubs its progress bar.
   useEffect(() => {
     const nav = navLinksRef.current;
-    const line = underlineRef.current;
-    if (!nav || !line || isNotFoundPage) return;
+    if (!tracksSections || !nav) return undefined;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const activeLink = nav.querySelector('a.is-active');
-    if (!activeLink) {
-      gsap.set(line, { opacity: 0 });
-      return;
-    }
+    const ctx = gsap.context(() => {
+      mainNavItems.forEach(({ id }) => {
+        const section = document.getElementById(id);
+        const bar = nav.querySelector(`[data-progress="${id}"]`);
+        if (!section || !bar) return;
 
-    const navRect = nav.getBoundingClientRect();
-    const linkRect = activeLink.getBoundingClientRect();
-
-    if (prefersReducedMotion) {
-      gsap.set(line, { x: linkRect.left - navRect.left, width: linkRect.width, opacity: 1 });
-    } else {
-      gsap.to(line, {
-        x: linkRect.left - navRect.left,
-        width: linkRect.width,
-        opacity: 1,
-        duration: 0.38,
-        ease: 'power3.out',
+        gsap.fromTo(
+          bar,
+          { scaleX: 0 },
+          {
+            scaleX: 1,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: section,
+              start: 'top 50%',
+              end: sectionEnd(section),
+              scrub: true,
+              // Sections above may pin; measure after them.
+              refreshPriority: -1,
+              onToggle: (self) =>
+                setActiveSection((prev) => (self.isActive ? id : prev === id ? '' : prev)),
+            },
+          }
+        );
       });
-    }
-  }, [resolvedActiveSection, scrolled, isNotFoundPage]);
+    }, nav);
+
+    return () => ctx.revert();
+  }, [tracksSections]);
+
+  // The indicator slides to the active link: x plus scaleX over a fixed base width.
+  useIsoLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const line = indicatorRef.current;
+    if (!wrap || !line) return undefined;
+
+    const place = (animate) => {
+      const link = wrap.querySelector('a.is-active');
+      // Hidden nav (mobile layout) has nothing to measure.
+      if (!line.offsetWidth) return;
+      if (!link) {
+        indicatorPlaced.current = false;
+        gsap.to(line, { opacity: 0, duration: animate ? DUR.fast : 0, overwrite: 'auto' });
+        return;
+      }
+      const target = {
+        x: link.getBoundingClientRect().left - wrap.getBoundingClientRect().left,
+        scaleX: link.offsetWidth / line.offsetWidth,
+        opacity: 1,
+      };
+      // First placement fades in on the spot instead of sliding from the left edge.
+      if (!animate || !indicatorPlaced.current) {
+        gsap.set(line, { x: target.x, scaleX: target.scaleX, overwrite: 'auto' });
+        gsap.to(line, { opacity: 1, duration: animate ? DUR.fast : 0, overwrite: 'auto' });
+      } else {
+        gsap.to(line, { ...target, duration: DUR.base, ease: EASE, overwrite: 'auto' });
+      }
+      indicatorPlaced.current = true;
+    };
+
+    place(!prefersReducedMotion());
+
+    // Layout shifts (fonts, resize) arrive with ScrollTrigger's refresh.
+    const onRefresh = () => place(false);
+    ScrollTrigger.addEventListener('refresh', onRefresh);
+    return () => ScrollTrigger.removeEventListener('refresh', onRefresh);
+  }, [resolvedActiveSection]);
+
+  useEffect(() => {
+    const line = indicatorRef.current;
+    return () => gsap.killTweensOf(line);
+  }, []);
 
   return (
     <nav className={`main-nav ${scrolled ? 'scrolled' : ''}`.trim()}>
@@ -98,27 +123,34 @@ const Navbar = ({ isAiLabPage = false, isNotFoundPage = false }) => {
         A<b>.</b>W<b>.</b>S<b>.</b>
       </a>
       <div className="nav-right">
-        <div className="nav-links-wrap">
+        <div className="nav-links-wrap" ref={wrapRef}>
           <ul className="nav-links" ref={navLinksRef}>
-            {navItems.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={isNotFoundPage ? `/#${item.id}` : item.href || `#${item.id}`}
-                  data-scroll-target={
-                    isNotFoundPage
-                      ? undefined
-                      : isAiLabPage
-                      ? (item.isSection ? item.href : undefined)
-                      : `#${item.id}`
-                  }
-                  className={resolvedActiveSection === item.id ? 'is-active' : ''}
-                >
-                  <span>{item.num}</span> {item.label.toUpperCase()}
-                </a>
-              </li>
-            ))}
+            {navItems.map((item) => {
+              const isActive = resolvedActiveSection === item.id;
+              return (
+                <li key={item.id}>
+                  <a
+                    href={isNotFoundPage ? `/#${item.id}` : item.href || `#${item.id}`}
+                    data-scroll-target={
+                      isNotFoundPage
+                        ? undefined
+                        : isAiLabPage
+                        ? (item.isSection ? item.href : undefined)
+                        : `#${item.id}`
+                    }
+                    className={isActive ? 'is-active' : ''}
+                    aria-current={isActive ? 'location' : undefined}
+                  >
+                    <span>{item.num}</span> {item.label.toUpperCase()}
+                    {tracksSections && (
+                      <i className="nav-progress" data-progress={item.id} aria-hidden="true" />
+                    )}
+                  </a>
+                </li>
+              );
+            })}
           </ul>
-          <div className="nav-underline" ref={underlineRef} aria-hidden="true" />
+          <div className="nav-indicator" ref={indicatorRef} aria-hidden="true" />
         </div>
       </div>
       <a

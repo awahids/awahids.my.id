@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from 'framer-motion';
+import { useReducedMotion } from '../lib/motion';
 
 const SWIPE_PX = 48;
 const SWIPE_VELOCITY = 0.11; // px per ms
@@ -78,6 +78,7 @@ const ProjectCoverflow = ({ projects, onOpen, lenisRef }) => {
   // The single writer for the presentation position: tiles every frame, React
   // only when the rounded index actually changes.
   const setPosition = useCallback((pos) => {
+    if (pos === positionRef.current) return; // clamped at either end: nothing to write
     positionRef.current = pos;
     applyTiles(pos);
     const rounded = Math.max(0, Math.min(count - 1, Math.round(pos)));
@@ -154,6 +155,7 @@ const ProjectCoverflow = ({ projects, onOpen, lenisRef }) => {
   useEffect(() => {
     if (!pinned) return undefined;
     let raf = 0;
+    let onscreen = true;
     const update = () => {
       raf = 0;
       if (modeRef.current !== 'scroll') return; // the gesture owns the position
@@ -164,14 +166,24 @@ const ProjectCoverflow = ({ projects, onOpen, lenisRef }) => {
       const progress = Math.max(0, Math.min(1, (STICKY_TOP - wrap.getBoundingClientRect().top) / travel));
       setPosition(progress * (count - 1));
     };
-    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update); };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(update); };
+    // Skip the layout reads entirely while the carousel is off screen.
+    const onScroll = () => { if (onscreen) schedule(); };
+    const observer = typeof IntersectionObserver === 'undefined'
+      ? null
+      : new IntersectionObserver(([entry]) => {
+        onscreen = entry.isIntersecting;
+        schedule(); // one last read on the way out, so it lands clamped
+      });
+    observer?.observe(wrapRef.current);
     applyTiles(positionRef.current);
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll);
+    window.addEventListener('resize', schedule);
     return () => {
+      observer?.disconnect();
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+      window.removeEventListener('resize', schedule);
       cancelAnimationFrame(raf);
     };
   }, [pinned, count, applyTiles, setPosition]);
@@ -211,11 +223,6 @@ const ProjectCoverflow = ({ projects, onOpen, lenisRef }) => {
       drag.current = { startX: event.clientX, startT: event.timeStamp, active: true, moved: false };
       return;
     }
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId);
-    } catch {
-      // capture is an enhancement, not a requirement
-    }
     cancelSpring(); // §3 — interrupt, do not queue
     lenisRef?.current?.stop();
     drag.current = {
@@ -250,6 +257,13 @@ const ProjectCoverflow = ({ projects, onOpen, lenisRef }) => {
       }
       if (Math.abs(dx) < DRAG_THRESHOLD_PX) return; // §10 hysteresis
       d.committed = true;
+      // Capture only once it's a real drag: capturing on press retargets the
+      // click to the stage, so a tap would never reach the tile's button.
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId);
+      } catch {
+        // capture is an enhancement, not a requirement
+      }
     }
 
     d.moved = true;
@@ -341,7 +355,7 @@ const ProjectCoverflow = ({ projects, onOpen, lenisRef }) => {
               className={`notch-surface pcf-tile ${isActive ? 'is-active' : ''}`}
               style={pinned ? undefined : tileTransform(offset, reduced)}
               ref={(el) => { tileRefs.current[i] = el; }}
-              onClick={() => (isActive ? onOpen(p) : goTo(i))}
+              onClick={(e) => (isActive ? onOpen(p, e.currentTarget) : goTo(i))}
               aria-current={isActive}
               aria-label={isActive ? `Open project details for ${p.title}` : `Show ${p.title}`}
               tabIndex={-1}

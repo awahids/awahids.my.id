@@ -1,8 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import gsap from 'gsap';
-import { useSectionMotion } from '../lib/sectionMotion';
-import { useWordSplit } from '../lib/useWordSplit';
+import React, { useEffect, useRef, useState } from 'react';
+import { gsap, prefersReducedMotion, useIsoLayoutEffect } from '../lib/motion';
 import { useGsapReveal } from '../lib/useGsapReveal';
 import { useTextScramble } from '../lib/useTextScramble';
 
@@ -33,32 +30,82 @@ const OFFERINGS = [
   },
 ];
 
+// Desktop with motion allowed: the cards become a sticky stack instead of a grid.
+const STACK_QUERY = '(min-width: 961px) and (prefers-reduced-motion: no-preference)';
+// How far the previous card shrinks and fades as the next one slides over it.
+const STACK_SCALE = 0.94;
+const STACK_DIM = 0.35;
+
+const useMediaQuery = (query) => {
+  const [matches, setMatches] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(query).matches
+  );
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const onChange = (event) => setMatches(event.matches);
+    media.addEventListener('change', onChange);
+    return () => media.removeEventListener('change', onChange);
+  }, [query]);
+  return matches;
+};
+
 const WhatIBuild = () => {
   const gridRef = useRef(null);
   const sectionRef = useRef(null);
-  const { viewport, sectionContainer, sectionItem, staggerGrid, cardPop, eyebrow } = useSectionMotion();
 
-  useWordSplit(sectionRef);
+  const stacked = useMediaQuery(STACK_QUERY);
+
   useGsapReveal(sectionRef);
   useTextScramble(sectionRef);
 
+  // Stacking: each card is CSS-sticky; as the next card slides up over it,
+  // the covered card is scrubbed down in scale and its text dims.
+  useIsoLayoutEffect(() => {
+    const grid = gridRef.current;
+    if (!grid || !stacked) return undefined;
+
+    const ctx = gsap.context(() => {
+      const cards = gsap.utils.toArray('.build-card', grid);
+      cards.forEach((card, index) => {
+        const next = cards[index + 1];
+        if (!next) return;
+        // Scrub only while the next card actually slides over this one: from
+        // when its top meets this card's stuck bottom edge until it sticks.
+        const top = (el) => parseFloat(getComputedStyle(el).top) || 0;
+        gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: next,
+            start: () => `top ${top(card) + card.offsetHeight}px`,
+            end: () => `top ${top(next)}px`,
+            scrub: 0.3,
+            invalidateOnRefresh: true,
+          },
+        })
+          .to(card, { scale: STACK_SCALE }, 0)
+          .to(card.querySelectorAll('.build-card-title, .build-card-desc'), { opacity: STACK_DIM }, 0);
+      });
+    }, grid);
+
+    return () => ctx.revert();
+  }, [stacked]);
+
   useEffect(() => {
     const grid = gridRef.current;
-    if (!grid) return;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    if (!grid || prefersReducedMotion()) return undefined;
 
     const cards = grid.querySelectorAll('.build-card');
     const cleanups = [];
 
     cards.forEach((card) => {
       const numEl = card.querySelector('.build-card-num');
+      // In the stack, scale belongs to the scroll scrub — hover only moves the number.
       const onEnter = () => {
-        gsap.to(card, { scale: 1.03, duration: 0.28, ease: 'power2.out', overwrite: 'auto' });
+        if (!stacked) gsap.to(card, { scale: 1.03, duration: 0.28, ease: 'power2.out', overwrite: 'auto' });
         if (numEl) gsap.to(numEl, { color: 'var(--lime)', x: 5, duration: 0.22, ease: 'power2.out', overwrite: 'auto' });
       };
       const onLeave = () => {
-        gsap.to(card, { scale: 1, duration: 0.35, ease: 'power3.out', overwrite: 'auto' });
+        if (!stacked) gsap.to(card, { scale: 1, duration: 0.35, ease: 'power3.out', overwrite: 'auto' });
         if (numEl) gsap.to(numEl, { color: '', x: 0, duration: 0.28, ease: 'power3.out', overwrite: 'auto' });
       };
       card.addEventListener('mouseenter', onEnter);
@@ -70,45 +117,39 @@ const WhatIBuild = () => {
     });
 
     return () => cleanups.forEach((fn) => fn());
-  }, []);
+  }, [stacked]);
 
   return (
     <section className="s-build" id="services">
-      <motion.div
-        ref={sectionRef}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionContainer}
-      >
-        <div className="s-build-bg-label" data-gsap-reveal="fade-up" data-gsap-delay="0.1" aria-hidden="true">BUILD</div>
-        <motion.div className="s-eyebrow" variants={eyebrow}>
+      <div ref={sectionRef}>
+        <div className="s-build-bg-label" data-gsap-reveal="fade-up" aria-hidden="true">BUILD</div>
+        <div className="s-eyebrow" data-gsap-reveal="left">
           // <span data-scramble="WHAT_I_BUILD">WHAT_I_BUILD</span>
-        </motion.div>
-        <motion.h2 className="s-title" variants={sectionItem} data-word-split>
+        </div>
+        <h2 className="s-title" data-gsap-reveal="split">
           End-to-End Web Product Development
-        </motion.h2>
-        <motion.div
-          className="section-lime-rule"
-          variants={{
-            hidden: { scaleX: 0, originX: 0 },
-            visible: { scaleX: 1, originX: 0, transition: { type: 'spring', stiffness: 60, damping: 18, delay: 0.2 } },
-          }}
-        />
-        <motion.p className="build-intro" variants={sectionItem}>
+        </h2>
+        <div className="section-lime-rule" data-gsap-reveal="line" />
+        <p className="build-intro" data-gsap-reveal="up">
           Full-product development across every layer — from the interface users see to the backend that keeps it running in production.
-        </motion.p>
+        </p>
 
-        <motion.div className="build-grid" variants={staggerGrid} ref={gridRef}>
+        <div className={`build-grid${stacked ? ' is-stacked' : ''}`} ref={gridRef}>
           {OFFERINGS.map((item, index) => (
-            <motion.article className="notch-surface build-card" key={item.title} variants={cardPop}>
+            <article
+              className="notch-surface build-card"
+              key={item.title}
+              // Stacked cards arrive by sliding over the previous one — no pop reveal.
+              data-gsap-reveal={stacked ? undefined : 'pop'}
+              style={stacked ? { '--stack-i': index } : undefined}
+            >
               <div className="build-card-num">{`0${index + 1}`}</div>
               <h3 className="build-card-title">{item.title}</h3>
               <p className="build-card-desc">{item.desc}</p>
-            </motion.article>
+            </article>
           ))}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 };

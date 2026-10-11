@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { createNoise2D } from 'simplex-noise';
 
+const round = (n) => Math.round(n * 10) / 10;
+
 export function Waves({
     className = "",
     strokeColor = "#ffffff",  // White lines
@@ -27,6 +29,7 @@ export function Waves({
     const rafRef = useRef(null);
     const boundingRef = useRef(null);
     const reducedMotionRef = useRef(false);
+    const inViewRef = useRef(false);
     const cursorRef = useRef(null);
 
     // Initialization
@@ -52,14 +55,34 @@ export function Waves({
         if (prefersReducedMotion) {
             movePoints(0);
             drawLines();
-        } else {
-            window.addEventListener('mousemove', onMouseMove);
-            containerElt.addEventListener('touchmove', onTouchMove, { passive: false });
-            rafRef.current = requestAnimationFrame(tick);
+            return () => window.removeEventListener('resize', onResize);
         }
 
+        // Only run the loop while the section is on screen and the tab is visible.
+        const sync = () => {
+            const shouldRun = inViewRef.current && !document.hidden;
+            if (shouldRun && !rafRef.current) {
+                rafRef.current = requestAnimationFrame(tick);
+            } else if (!shouldRun && rafRef.current) {
+                cancelAnimationFrame(rafRef.current);
+                rafRef.current = null;
+            }
+        };
+        const observer = new IntersectionObserver(([entry]) => {
+            inViewRef.current = entry.isIntersecting;
+            sync();
+        });
+        observer.observe(containerElt);
+        document.addEventListener('visibilitychange', sync);
+
+        window.addEventListener('mousemove', onMouseMove, { passive: true });
+        containerElt.addEventListener('touchmove', onTouchMove, { passive: false });
+
         return () => {
+            observer.disconnect();
+            document.removeEventListener('visibilitychange', sync);
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
+            rafRef.current = null;
             window.removeEventListener('resize', onResize);
             window.removeEventListener('mousemove', onMouseMove);
             containerElt.removeEventListener('touchmove', onTouchMove);
@@ -91,9 +114,10 @@ export function Waves({
         });
         pathsRef.current = [];
 
-        // Use smaller spacing to generate more lines and points for smoother results
-        const xGap = 8;  // Reduced horizontal spacing
-        const yGap = 8;  // Reduced vertical spacing for denser points
+        // Line spacing sets the look; point spacing along a line only needs to be
+        // fine enough for the smooth noise, so it's looser (and looser on phones).
+        const xGap = 8;
+        const yGap = width < 768 ? 16 : 12;
 
         const oWidth = width + 200;
         const oHeight = height + 30;
@@ -162,7 +186,8 @@ export function Waves({
 
     // Update mouse position
     function updateMousePosition(clientX, clientY) {
-        if (!containerRef.current) return;
+        // Paused (offscreen or hidden tab): skip the layout read entirely.
+        if (!containerRef.current || !rafRef.current) return;
 
         const rect = containerRef.current.getBoundingClientRect();
         const mouse = mouseRef.current;
@@ -250,13 +275,14 @@ export function Waves({
             if (points.length < 2 || !paths[lIndex]) return;
 
             // First point
+            // Coordinates rounded to 0.1px keep the path string short to build and parse.
             const firstPoint = moved(points[0], false);
-            let d = "M " + firstPoint.x + " " + firstPoint.y;
+            let d = "M" + round(firstPoint.x) + " " + round(firstPoint.y);
 
             // Connect points with lines
             for (let i = 1; i < points.length; i++) {
                 const current = moved(points[i]);
-                d += " L " + current.x + " " + current.y;
+                d += "L" + round(current.x) + " " + round(current.y);
             }
 
             paths[lIndex].setAttribute('d', d);

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { gsap, DUR, EASE_IN_OUT, prefersReducedMotion, useIsoLayoutEffect, usePresence } from '../lib/motion';
 
 const FAQ_WEBHOOK_URL = import.meta.env.VITE_AI_FAQ_ENDPOINT || '/api/ai-faq';
 const AI_ASSISTANT_URL = import.meta.env.VITE_AI_ASSISTANT_ENDPOINT || '/api/ai-assistant';
@@ -270,6 +270,22 @@ const loadStoredFaqState = () => {
   }
 };
 
+// Both toggle icons are single open strokes so MorphSVG maps one onto the other.
+const CHAT_ICON_D = 'M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2V15';
+const CLOSE_ICON_D = 'M6 6L12 12L18 6L12 12L18 18L12 12L6 18';
+
+const notificationEnter = (el) =>
+  gsap.fromTo(el, { opacity: 0, x: 20, scale: 0.8 }, { opacity: 1, x: 0, scale: 1, duration: DUR.base, clearProps: 'transform' });
+const notificationExit = (el) => gsap.to(el, { opacity: 0, x: 20, scale: 0.8, duration: DUR.fast });
+
+const windowEnter = (el) =>
+  gsap.fromTo(el, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: DUR.base, clearProps: 'transform' });
+const windowExit = (el) => gsap.to(el, { opacity: 0, y: 24, duration: DUR.fast });
+
+const badgeEnter = (el) =>
+  gsap.fromTo(el, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: DUR.fast, clearProps: 'transform' });
+const badgeExit = (el) => gsap.to(el, { opacity: 0, scale: 0.9, duration: DUR.fast });
+
 const FloatingFAQ = () => {
   const [initialFaqState] = useState(loadStoredFaqState);
   const [isOpen, setIsOpen] = useState(initialFaqState.isOpen);
@@ -282,9 +298,74 @@ const FloatingFAQ = () => {
   const originalTitle = useRef(typeof document !== 'undefined' ? document.title : '');
   const chatViewportRef = useRef(null);
   const isOpenRef = useRef(false);
+  const notificationRef = useRef(null);
+  const windowRef = useRef(null);
+  const badgeRef = useRef(null);
+  const suggestionsRef = useRef(null);
+  const seenMessageIds = useRef(new Set());
+  const toggleIconRef = useRef(null);
+  const toggleIconReady = useRef(false);
+
+  const notificationShown = usePresence(showNotification && !isOpen, notificationRef, {
+    enter: notificationEnter,
+    exit: notificationExit,
+  });
+  const windowShown = usePresence(isOpen, windowRef, { enter: windowEnter, exit: windowExit });
+  const badgeShown = usePresence(unreadCount > 0 && !isOpen, badgeRef, { enter: badgeEnter, exit: badgeExit });
+  const showSuggestions = !loading && messages.length <= 1;
+
+  // New messages rise in; the ones already there when the window opens ride its entrance.
+  useIsoLayoutEffect(() => {
+    const seen = seenMessageIds.current;
+    const body = chatViewportRef.current;
+    if (!isOpen || !body) {
+      seen.clear();
+      return;
+    }
+    if (!loading) seen.delete('pending');
+    const firstPass = seen.size === 0;
+    const fresh = [];
+    body.querySelectorAll('[data-msg-id]').forEach((el) => {
+      const id = el.dataset.msgId;
+      if (seen.has(id)) return;
+      seen.add(id);
+      if (!firstPass) fresh.push(el);
+    });
+    if (fresh.length && !prefersReducedMotion()) {
+      gsap.fromTo(fresh, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.3, clearProps: 'transform' });
+    }
+  }, [messages, loading, isOpen]);
+
+  useIsoLayoutEffect(() => {
+    const el = suggestionsRef.current;
+    if (!el || prefersReducedMotion()) return undefined;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        el.children,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.3, stagger: 0.05, delay: 0.2, clearProps: 'transform' }
+      );
+    }, el);
+    return () => ctx.revert();
+  }, [showSuggestions, windowShown]);
 
   useEffect(() => {
     isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  // Toggle icon morphs chat bubble <-> X; first paint and reduced motion just swap.
+  useIsoLayoutEffect(() => {
+    const path = toggleIconRef.current;
+    if (!path) return undefined;
+    const d = isOpen ? CLOSE_ICON_D : CHAT_ICON_D;
+    if (!toggleIconReady.current || prefersReducedMotion()) {
+      toggleIconReady.current = true;
+      gsap.killTweensOf(path);
+      path.setAttribute('d', d);
+      return undefined;
+    }
+    const tween = gsap.to(path, { morphSVG: d, duration: 0.35, ease: EASE_IN_OUT });
+    return () => tween.kill();
   }, [isOpen]);
 
   useEffect(() => {
@@ -503,145 +584,117 @@ const FloatingFAQ = () => {
 
   return (
     <div className="floating-faq-container">
-      <AnimatePresence>
-        {showNotification && !isOpen && (
-          <motion.div
-            className="floating-faq-notification"
-            initial={{ opacity: 0, x: 20, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: 20, scale: 0.8 }}
-            onClick={openChat}
+      {notificationShown && (
+        <div
+          ref={notificationRef}
+          className="floating-faq-notification"
+          onClick={openChat}
+        >
+          <div className="ff-notification-text">
+            {messages[0]?.text || "Need help? Ask the AI here! 🤖"}
+          </div>
+          <button
+            className="ff-notification-close"
+            aria-label="Dismiss notification"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowNotification(false);
+            }}
           >
-            <div className="ff-notification-text">
-              {messages[0]?.text || "Need help? Ask the AI here! 🤖"}
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {windowShown && (
+        <div
+          ref={windowRef}
+          className="floating-faq-window"
+          data-lenis-prevent
+          data-lenis-prevent-wheel
+          data-lenis-prevent-touch
+        >
+          <div className="floating-faq-header">
+            <div className="ffh-info">
+              <span className="ffh-title">AI Assistant</span>
+              <span className="ffh-status">{useHermes ? '🤖 Hermes' : 'Online'}</span>
             </div>
-            <button
-              className="ff-notification-close"
-              aria-label="Dismiss notification"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowNotification(false);
+            {/* <button
+              className="ffh-toggle-hermes"
+              onClick={() => setUseHermes(!useHermes)}
+              title={useHermes ? 'Switch to SumoPod AI' : 'Switch to Hermes AI'}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '16px',
+                padding: '4px',
+                opacity: 0.8
               }}
             >
+              {useHermes ? '🤖' : '💬'}
+            </button> */}
+            <button className="ffh-close" aria-label="Close AI assistant" onClick={closeChat}>
               <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18"></line>
                 <line x1="6" y1="6" x2="18" y2="18"></line>
               </svg>
             </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
 
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="floating-faq-window"
-            data-lenis-prevent
-            data-lenis-prevent-wheel
-            data-lenis-prevent-touch
-            initial={{ opacity: 0, y: 24, transformOrigin: 'bottom right' }}
-            animate={{ opacity: 1, y: 0, transformOrigin: 'bottom right' }}
-            exit={{ opacity: 0, y: 24, transformOrigin: 'bottom right' }}
-            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-          >
-            <div className="floating-faq-header">
-              <div className="ffh-info">
-                <span className="ffh-title">AI Assistant</span>
-                <span className="ffh-status">{useHermes ? '🤖 Hermes' : 'Online'}</span>
+          <div className="floating-faq-body" ref={chatViewportRef}>
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                data-msg-id={msg.id}
+                className={`ff-msg ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}
+              >
+                <div className="ff-msg-content">{msg.text}</div>
               </div>
-              {/* <button
-                className="ffh-toggle-hermes"
-                onClick={() => setUseHermes(!useHermes)}
-                title={useHermes ? 'Switch to SumoPod AI' : 'Switch to Hermes AI'}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  padding: '4px',
-                  opacity: 0.8
-                }}
-              >
-                {useHermes ? '🤖' : '💬'}
-              </button> */}
-              <button className="ffh-close" aria-label="Close AI assistant" onClick={closeChat}>
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-
-            <div className="floating-faq-body" ref={chatViewportRef}>
-              <AnimatePresence>
-                {messages.map((msg) => (
-                  <motion.div
-                    key={msg.id}
-                    className={`ff-msg ${msg.role === 'user' ? 'is-user' : 'is-assistant'}`}
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="ff-msg-content">{msg.text}</div>
-                  </motion.div>
-                ))}
-                {loading && (
-                  <motion.div
-                    className="ff-msg is-assistant is-pending"
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <div className="ff-msg-content">
-                      <span className="dot-typing"><span>.</span><span>.</span><span>.</span></span>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {!loading && messages.length <= 1 && (
-              <motion.div
-                className="floating-faq-suggestions"
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  visible: { transition: { staggerChildren: 0.05, delayChildren: 0.2 } }
-                }}
-              >
-                {QUICK_QUESTIONS.map((q) => (
-                  <motion.button
-                    key={q}
-                    className="ff-suggestion-btn"
-                    onClick={() => askFaq(q)}
-                    variants={{
-                      hidden: { opacity: 0, y: 10 },
-                      visible: { opacity: 1, y: 0 }
-                    }}
-                  >
-                    {q}
-                  </motion.button>
-                ))}
-              </motion.div>
+            ))}
+            {loading && (
+              <div className="ff-msg is-assistant is-pending" data-msg-id="pending">
+                <div className="ff-msg-content">
+                  <span className="dot-typing"><span>.</span><span>.</span><span>.</span></span>
+                </div>
+              </div>
             )}
+          </div>
 
-            <form className="floating-faq-footer" onSubmit={handleSubmit}>
-              <input
-                type="text"
-                placeholder="Ask something..."
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-              />
-              <button type="submit" aria-label="Send message" disabled={!input.trim() || loading}>
-                <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
-              </button>
-            </form>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {showSuggestions && (
+            <div className="floating-faq-suggestions" ref={suggestionsRef}>
+              {QUICK_QUESTIONS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  className="ff-suggestion-btn"
+                  onClick={() => askFaq(q)}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
+
+          <form className="floating-faq-footer" onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Ask something..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+            <button type="submit" aria-label="Send message" disabled={!input.trim() || loading}>
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </form>
+        </div>
+      )}
 
       <button
         className={`floating-faq-toggle ${isOpen ? 'is-active' : ''}`}
@@ -655,48 +708,15 @@ const FloatingFAQ = () => {
         aria-expanded={isOpen}
         onClick={toggleChat}
       >
-        <AnimatePresence>
-          {unreadCount > 0 && !isOpen && (
-            <motion.div
-              className="ff-unread-badge"
-              aria-hidden="true"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-            >
-              {unreadCount}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {badgeShown && (
+          <div className="ff-unread-badge" aria-hidden="true" ref={badgeRef}>
+            {unreadCount}
+          </div>
+        )}
 
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.svg
-              key="close"
-              aria-hidden="true"
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </motion.svg>
-          ) : (
-            <motion.svg
-              key="open"
-              aria-hidden="true"
-              initial={{ rotate: 90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: -90, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </motion.svg>
-          )}
-        </AnimatePresence>
+        <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path ref={toggleIconRef} d={initialFaqState.isOpen ? CLOSE_ICON_D : CHAT_ICON_D} />
+        </svg>
       </button>
     </div>
   );

@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import Lenis from '@studio-freight/lenis';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger } from './motion';
 
 export const useLenis = ({ enabled = true } = {}) => {
   const lenisRef = useRef(null);

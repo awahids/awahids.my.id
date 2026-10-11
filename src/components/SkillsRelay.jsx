@@ -1,74 +1,93 @@
 import React, { useRef, useState } from 'react';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useReducedMotion,
-  useMotionValueEvent,
-} from 'framer-motion';
+import { gsap, prefersReducedMotion, useIsoLayoutEffect } from '../lib/motion';
+import { SVG_SHAPES, drawIn } from '../lib/useGsapReveal';
 
 const LAYER_VH = 80;
 const LENIS_EASE = (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t));
+// Share of each layer's band spent fading in / out.
+const FADE = 0.15;
 
-const LayerPanel = ({ skill, index, total, scrollYProgress, reduceMotion }) => {
-  const band = 1 / total;
-  const start = index * band;
-  const end = start + band;
-  const fadeInEnd = start + band * 0.15;
-  const fadeOutStart = end - band * 0.15;
-
-  const opacity = useTransform(
-    scrollYProgress,
-    [start, fadeInEnd, fadeOutStart, end],
-    [0, 1, 1, 0]
-  );
-  const y = useTransform(
-    scrollYProgress,
-    [start, fadeInEnd, fadeOutStart, end],
-    reduceMotion ? ['0px', '0px', '0px', '0px'] : ['24px', '0px', '0px', '-24px']
-  );
-
-  return (
-    <motion.div className="skills-relay-layer" style={{ opacity, y }}>
-      <div className="skills-relay-icon">{skill.icon}</div>
-      <div className="skills-relay-num">
-        {skill.num} / {String(total).padStart(2, '0')}
-      </div>
-      <h3 className="skills-relay-name">{skill.name}</h3>
-      <div className="skills-relay-prof">{skill.prof}</div>
-      <div className="skills-relay-chips">
-        {skill.chips.map((chip) => (
-          <span key={chip} className="skill-chip">{chip}</span>
-        ))}
-      </div>
-    </motion.div>
-  );
-};
+const LayerPanel = ({ skill, total }) => (
+  <div className="skills-relay-layer">
+    <div className="skills-relay-icon">{skill.icon}</div>
+    <div className="skills-relay-num">
+      {skill.num} / {String(total).padStart(2, '0')}
+    </div>
+    <h3 className="skills-relay-name">{skill.name}</h3>
+    <div className="skills-relay-prof">{skill.prof}</div>
+    <div className="skills-relay-chips">
+      {skill.chips.map((chip) => (
+        <span key={chip} className="skill-chip">{chip}</span>
+      ))}
+    </div>
+  </div>
+);
 
 const SkillsRelay = ({ skillItems, lenisRef }) => {
   const outerRef = useRef(null);
-  const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const total = skillItems.length;
 
-  const { scrollYProgress } = useScroll({
-    target: outerRef,
-    offset: ['start start', 'end end'],
-    layoutEffect: false,
-  });
-  const progressScaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  // One scrubbed timeline, 1 unit long, maps scroll progress across the relay:
+  // the progress fill grows the whole way, and each layer owns a 1/total band.
+  useIsoLayoutEffect(() => {
+    const outer = outerRef.current;
+    if (!outer) return undefined;
+    const move = !prefersReducedMotion();
+    let lastIndex = -1;
 
-  useMotionValueEvent(scrollYProgress, 'change', (progress) => {
-    const index = Math.min(total - 1, Math.max(0, Math.floor(progress * total)));
-    setActiveIndex((current) => (current === index ? current : index));
-  });
+    let ctx = null;
+    // Each time a layer takes over: its icon draws itself and its chips cascade in.
+    // Runs from a scroll callback, so it goes through ctx to be reverted on unmount.
+    const activate = (layer) => ctx?.add(() => {
+      if (!move || !layer) return;
+      const icon = layer.querySelector('.skills-relay-icon');
+      if (icon) drawIn(icon.querySelectorAll(SVG_SHAPES), { overwrite: true });
+      gsap.fromTo(layer.querySelectorAll('.skill-chip'),
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.35, stagger: 0.035, delay: 0.15, overwrite: true, clearProps: 'transform' });
+    });
+
+    ctx = gsap.context(() => {
+      const layers = Array.from(outer.querySelectorAll('.skills-relay-layer'));
+      const band = 1 / total;
+      gsap.set(layers, move ? { opacity: 0, y: 24 } : { opacity: 0 });
+
+      const tl = gsap.timeline({
+        defaults: { ease: 'none' },
+        scrollTrigger: {
+          trigger: outer,
+          start: 'top top',
+          end: 'bottom bottom',
+          scrub: 0.3,
+          onUpdate: (self) => {
+            const index = Math.min(total - 1, Math.max(0, Math.floor(self.progress * total)));
+            if (index === lastIndex) return;
+            lastIndex = index;
+            setActiveIndex(index);
+            activate(layers[index]);
+          },
+        },
+      });
+
+      tl.fromTo('.skills-relay-progress-fill', { scaleX: 0 }, { scaleX: 1, duration: 1 }, 0);
+      layers.forEach((layer, index) => {
+        const start = index * band;
+        const fade = band * FADE;
+        tl.to(layer, move ? { opacity: 1, y: 0, duration: fade } : { opacity: 1, duration: fade }, start)
+          .to(layer, move ? { opacity: 0, y: -24, duration: fade } : { opacity: 0, duration: fade }, start + band - fade);
+      });
+    }, outer);
+
+    return () => ctx.revert();
+  }, [total]);
 
   const handleDotClick = (index) => {
     const outer = outerRef.current;
     if (!outer) return;
     const rect = outer.getBoundingClientRect();
     const absoluteTop = rect.top + window.scrollY;
-    // useScroll's ['start start', 'end end'] maps progress 0→1 across
+    // The trigger's 'top top' → 'bottom bottom' maps progress 0→1 across
     // (container height - viewport height), not the full container height —
     // the sticky child already fills one viewport's worth without extra scroll.
     const scrollableRange = rect.height - window.innerHeight;
@@ -99,19 +118,13 @@ const SkillsRelay = ({ skillItems, lenisRef }) => {
       >
         <div className="skills-relay-sticky">
           <div className="skills-relay-progress">
-            <motion.div
-              className="skills-relay-progress-fill"
-              style={{ scaleX: progressScaleX }}
-            />
+            <div className="skills-relay-progress-fill" />
           </div>
-          {skillItems.map((skill, index) => (
+          {skillItems.map((skill) => (
             <LayerPanel
               key={skill.name}
               skill={skill}
-              index={index}
               total={total}
-              scrollYProgress={scrollYProgress}
-              reduceMotion={reduceMotion}
             />
           ))}
           <div className="skills-relay-dots">

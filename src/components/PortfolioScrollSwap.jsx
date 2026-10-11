@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger, usePresence } from '../lib/motion';
 import { BOOKING_URL } from '../lib/links';
-import { modalCardVariants, modalChildVariants, modalOverlayMotion } from '../lib/modalMotion';
+import { modalEnter, modalExit } from '../lib/modalMotion';
 
 const FOCUSABLE_SELECTOR = [
   'a[href]',
@@ -38,6 +36,7 @@ const PortfolioScrollSwap = ({
   const containerRef = useRef(null);
   const trackRef = useRef(null);
   const stickyRef = useRef(null);
+  const overlayRef = useRef(null);
 
   const currentIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -106,17 +105,7 @@ const PortfolioScrollSwap = ({
 
     tl.call(() => {
       setDisplayedIndex(newIndex);
-      // Animate mobile accent color
-      if (accentBgRef.current) {
-        const nextColor = getAccent(newIndex);
-        gsap.to(accentBgRef.current, {
-          '--pswap-glow': nextColor,
-          duration: 0.6,
-          ease: 'power2.out',
-        });
-        // Fallback: set inline style directly for browsers that can't tween CSS vars
-        accentBgRef.current.style.setProperty('--pswap-glow', nextColor);
-      }
+      accentBgRef.current?.style.setProperty('--pswap-glow', getAccent(newIndex));
     });
 
     if (els.length) {
@@ -129,6 +118,11 @@ const PortfolioScrollSwap = ({
     if (!trackRef.current || !stickyRef.current || !projects.length) return;
 
     const ctx = gsap.context(() => {
+      // Look these up once, and only touch them when the index changes.
+      const fill = stickyRef.current.querySelector('.pswap-progress-fill');
+      const dots = stickyRef.current.querySelectorAll('.pswap-dot');
+      let lastIdx = -1;
+
       ScrollTrigger.create({
         trigger: trackRef.current,
         start: 'top top',
@@ -139,27 +133,21 @@ const PortfolioScrollSwap = ({
           const rawIdx = self.progress * projects.length;
           const idx = Math.min(Math.floor(rawIdx), projects.length - 1);
 
+          if (idx === lastIdx) return;
+          lastIdx = idx;
+
           if (idx !== currentIndexRef.current) {
             triggerProjectTransition(idx);
           }
 
-          // Progress bar fill
-          const fill = stickyRef.current?.querySelector('.pswap-progress-fill');
-          if (fill) {
-            fill.style.transform = `scaleX(${(idx + 1) / projects.length})`;
-          }
-
-          // Dots (both vertical desktop and horizontal mobile)
-          const dots = stickyRef.current?.querySelectorAll('.pswap-dot');
-          dots?.forEach((dot, i) => {
-            dot.classList.toggle('is-active', i === idx);
-          });
+          if (fill) fill.style.transform = `scaleX(${(idx + 1) / projects.length})`;
+          dots.forEach((dot, i) => dot.classList.toggle('is-active', i === idx));
         },
       });
     }, containerRef.current);
 
     return () => ctx.revert();
-  }, [projects.length, triggerProjectTransition]);
+  }, [projects.length, triggerProjectTransition, isMobile]);
 
   // Refresh when projects list changes (Supabase)
   useEffect(() => {
@@ -197,6 +185,12 @@ const PortfolioScrollSwap = ({
       document.body.style.overflow = prevOverflow;
     };
   }, [selectedProject, closeModal, closeButtonRef, modalRef]);
+
+  // Keep the last project around so the modal still has content while it exits.
+  const [shownProject, setShownProject] = useState(null);
+  if (selectedProject && selectedProject !== shownProject) setShownProject(selectedProject);
+  const modalShown = usePresence(Boolean(selectedProject), overlayRef, { enter: modalEnter, exit: modalExit });
+  const modalProject = selectedProject || shownProject;
 
   const p = projects[displayedIndex] || projects[activeIndex] || projects[0] || null;
   if (!p) return null;
@@ -333,120 +327,111 @@ const PortfolioScrollSwap = ({
       </div>
 
       {/* Modal */}
-      <AnimatePresence>
-        {selectedProject && (
-          <motion.div
-            className="modal-overlay active"
-            onClick={closeModal}
-            {...modalOverlayMotion(reduceMotion)}
+      {modalShown && modalProject && (
+        <div className="modal-overlay active" ref={overlayRef} onClick={closeModal}>
+          <div
+            className="modal-card"
+            data-modal-card
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`project-modal-title-${modalProject.id}`}
+            tabIndex="-1"
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            data-lenis-prevent-touch
+            onClick={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
           >
-            <motion.div
-              className="modal-card"
-              ref={modalRef}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={`project-modal-title-${selectedProject.id}`}
-              tabIndex="-1"
-              data-lenis-prevent
-              data-lenis-prevent-wheel
-              data-lenis-prevent-touch
-              onClick={(e) => e.stopPropagation()}
-              onWheel={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-              variants={modalCardVariants(reduceMotion)}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <button ref={closeButtonRef} className="modal-close" onClick={closeModal} aria-label="Close project details">✕</button>
-              <motion.div className="modal-header" variants={modalChildVariants}>
-                {selectedProject.cat && <div className="mh-cat">{selectedProject.cat}</div>}
-                <h2 id={`project-modal-title-${selectedProject.id}`} className="mh-title">{selectedProject.title}</h2>
-                {selectedProject.year && <div className="mh-year">Release: {selectedProject.year}</div>}
-              </motion.div>
-              <motion.div className="modal-content" variants={modalChildVariants}>
-                <div className="m-case-sections">
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Overview</div>
-                    <p className="m-body-text">{selectedProject.desc}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Problem</div>
-                    <p className="m-body-text">{selectedProject.problem}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">What I Built</div>
-                    <p className="m-body-text">{selectedProject.built}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Result</div>
-                    <p className="m-body-text">{selectedProject.result}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Business Impact</div>
-                    <p className="m-body-text">{selectedProject.impact}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Key Outcomes</div>
-                    <ul className="m-impact-list">
-                      {selectedProject.outcomes.map((outcome) => (
-                        <li key={outcome}>{outcome}</li>
-                      ))}
-                    </ul>
-                  </article>
-                </div>
-                <div className="modal-sidebar">
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Project Snapshot</div>
-                    <div className="m-meta-grid">
-                      <div className="m-meta-item"><span>Type</span><strong>{selectedProject.type}</strong></div>
-                      <div className="m-meta-item"><span>Role</span><strong>{selectedProject.role}</strong></div>
-                      <div className="m-meta-item"><span>Focus</span><strong>{selectedProject.focus.join(' · ')}</strong></div>
-                    </div>
-                  </div>
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Impact Signals</div>
-                    <div className="m-signal-grid">
-                      {selectedProject.signals.map((signal) => (
-                        <div key={signal.label} className="m-signal-item">
-                          <span className="m-signal-label">{signal.label}</span>
-                          <strong className="m-signal-value">{signal.value}</strong>
-                          <span className="m-signal-note">{signal.note}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Fullstack Scope</div>
-                    <div className="m-ss-tags">
-                      {selectedProject.scope.map((scope) => (
-                        <span key={scope} className="m-ss-tag">{scope}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Tech Stack</div>
-                    <div className="m-ss-tags">
-                      {selectedProject.stack.map((s) => (
-                        <span key={s} className="m-ss-tag">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="m-actions">
-                    <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="m-btn prime">Discuss Similar Project ↗</a>
-                    {selectedProject.live !== '#' && (
-                      <a href={selectedProject.live} target="_blank" rel="noopener noreferrer" className="m-btn ghost">View Live Product ↗</a>
-                    )}
-                    {selectedProject.case !== '#' && (
-                      <a href={selectedProject.case} target="_blank" rel="noopener noreferrer" className="m-btn ghost">Case Study ↗</a>
-                    )}
+            <button ref={closeButtonRef} className="modal-close" onClick={closeModal} aria-label="Close project details">✕</button>
+            <div className="modal-header" data-modal-child>
+              {modalProject.cat && <div className="mh-cat">{modalProject.cat}</div>}
+              <h2 id={`project-modal-title-${modalProject.id}`} className="mh-title">{modalProject.title}</h2>
+              {modalProject.year && <div className="mh-year">Release: {modalProject.year}</div>}
+            </div>
+            <div className="modal-content" data-modal-child>
+              <div className="m-case-sections">
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Overview</div>
+                  <p className="m-body-text">{modalProject.desc}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Problem</div>
+                  <p className="m-body-text">{modalProject.problem}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">What I Built</div>
+                  <p className="m-body-text">{modalProject.built}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Result</div>
+                  <p className="m-body-text">{modalProject.result}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Business Impact</div>
+                  <p className="m-body-text">{modalProject.impact}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Key Outcomes</div>
+                  <ul className="m-impact-list">
+                    {modalProject.outcomes.map((outcome) => (
+                      <li key={outcome}>{outcome}</li>
+                    ))}
+                  </ul>
+                </article>
+              </div>
+              <div className="modal-sidebar">
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Project Snapshot</div>
+                  <div className="m-meta-grid">
+                    <div className="m-meta-item"><span>Type</span><strong>{modalProject.type}</strong></div>
+                    <div className="m-meta-item"><span>Role</span><strong>{modalProject.role}</strong></div>
+                    <div className="m-meta-item"><span>Focus</span><strong>{modalProject.focus.join(' · ')}</strong></div>
                   </div>
                 </div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Impact Signals</div>
+                  <div className="m-signal-grid">
+                    {modalProject.signals.map((signal) => (
+                      <div key={signal.label} className="m-signal-item">
+                        <span className="m-signal-label">{signal.label}</span>
+                        <strong className="m-signal-value">{signal.value}</strong>
+                        <span className="m-signal-note">{signal.note}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Fullstack Scope</div>
+                  <div className="m-ss-tags">
+                    {modalProject.scope.map((scope) => (
+                      <span key={scope} className="m-ss-tag">{scope}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Tech Stack</div>
+                  <div className="m-ss-tags">
+                    {modalProject.stack.map((s) => (
+                      <span key={s} className="m-ss-tag">{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="m-actions">
+                  <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="m-btn prime">Discuss Similar Project ↗</a>
+                  {modalProject.live !== '#' && (
+                    <a href={modalProject.live} target="_blank" rel="noopener noreferrer" className="m-btn ghost">View Live Product ↗</a>
+                  )}
+                  {modalProject.case !== '#' && (
+                    <a href={modalProject.case} target="_blank" rel="noopener noreferrer" className="m-btn ghost">Case Study ↗</a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

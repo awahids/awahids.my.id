@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useSectionMotion } from '../lib/sectionMotion';
+import React, { useRef, useState } from 'react';
+import { useGsapReveal } from '../lib/useGsapReveal';
 
 const BRIEF_WEBHOOK_URL = import.meta.env.VITE_AI_BRIEF_ENDPOINT || '/api/ai-brief';
 
@@ -424,8 +423,8 @@ const postJsonWithTimeout = async (url, payload, timeoutMs = 14000) => {
 
 
 const AILab = () => {
-  const { viewport, sectionContainer, sectionItem, staggerGrid } =
-    useSectionMotion();
+  const sectionRef = useRef(null);
+  useGsapReveal(sectionRef);
 
   const [briefForm, setBriefForm] = useState({
     productType: '',
@@ -506,15 +505,10 @@ const AILab = () => {
 
 
   return (
-    <section className="s-ai-lab" id="ai-lab">
-      <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionContainer}
-      >
-        <motion.div className="ai-lab-grid" variants={staggerGrid}>
-          <motion.article className="ai-card" style={{ gridColumn: 'span 12', maxWidth: '840px', margin: '0 auto' }} variants={sectionItem}>
+    <section className="s-ai-lab" id="ai-lab" ref={sectionRef}>
+      <div>
+        <div className="ai-lab-grid">
+          <article className="ai-card" style={{ gridColumn: 'span 12', maxWidth: '840px', margin: '0 auto' }} data-gsap-reveal="up">
             <div className="ai-card-head">
               <div>
                 <div className="ai-card-kicker">Automation 01</div>
@@ -672,11 +666,9 @@ const AILab = () => {
                 </div>
               </div>
             )}
-          </motion.article>
-
-
-        </motion.div>
-      </motion.div>
+          </article>
+        </div>
+      </div>
     </section>
   );
 };

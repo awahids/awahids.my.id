@@ -1,11 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
-import { useSectionMotion } from '../lib/sectionMotion';
-
-const btnSpring = { type: 'spring', stiffness: 360, damping: 22 };
 import { BOOKING_URL } from '../lib/links';
 import { Waves } from './Waves';
 import { openCvDownload } from '../lib/cvDownload';
+import { useGsapReveal } from '../lib/useGsapReveal';
 
 
 const CONTACT = {
@@ -47,9 +44,9 @@ const Contact = () => {
   const contact = CONTACT;
   const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef(null);
-  const reduced = useReducedMotion();
-  const { viewport, sectionContainer, sectionItem, staggerGrid, clipReveal, cardPop } =
-    useSectionMotion();
+  const innerRef = useRef(null);
+
+  useGsapReveal(innerRef);
 
   const handleEmailCopy = async (e) => {
     e.preventDefault();
@@ -71,48 +68,39 @@ const Contact = () => {
         backgroundColor="transparent"
         pointerSize={0}
       />
-      <motion.div
+      <div
         className="contact-inner"
+        ref={innerRef}
         style={{ position: 'relative', zIndex: 10 }}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionContainer}
       >
-        <motion.div className="contact-top" variants={sectionItem}>
-          <motion.div variants={sectionItem}>
-            <motion.h2 className="contact-headline" variants={clipReveal}>
+        <div className="contact-top">
+          <div>
+            <h2 className="contact-headline" data-gsap-reveal="split">
               {renderContactTitle(contact.title)}
-            </motion.h2>
-            <motion.p className="contact-kicker" variants={sectionItem}>
+            </h2>
+            <p className="contact-kicker" data-gsap-reveal="up">
               {contact.summary}
-            </motion.p>
-            <motion.div className="contact-top-actions" variants={sectionItem}>
-              <motion.a
+            </p>
+            <div className="contact-top-actions" data-gsap-reveal="up">
+              <a
                 href={contact.bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-top-link is-prime"
-                whileHover={reduced ? {} : { scale: 1.04 }}
-                whileTap={reduced ? {} : { scale: 0.96 }}
-                transition={btnSpring}
                 onClick={() => window.plausible?.('BookingCTA', { props: { source: 'contact' } })}
               >
                 {contact.ctaPrimaryLabel}
-              </motion.a>
-              <motion.a
+              </a>
+              <a
                 href="#portfolio"
                 data-scroll-target="#portfolio"
                 className="contact-top-link"
-                whileHover={reduced ? {} : { x: 4 }}
-                whileTap={reduced ? {} : { scale: 0.97 }}
-                transition={btnSpring}
               >
                 {contact.ctaSecondaryLabel}
-              </motion.a>
-            </motion.div>
-          </motion.div>
-          <motion.div className="contact-badge" variants={sectionItem}>
+              </a>
+            </div>
+          </div>
+          <div className="contact-badge" data-gsap-reveal="up">
             <div className="contact-badge-icon">
               <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M14 2v6h6" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M9 13h6" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M9 17h6" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
@@ -129,11 +117,11 @@ const Contact = () => {
             >
               Download Resume ↗
             </a>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
-        <motion.div className="contact-grid" variants={staggerGrid}>
-          <motion.div className="notch-surface contact-card" variants={cardPop}>
+        <div className="contact-grid">
+          <div className="notch-surface contact-card" data-gsap-reveal="pop">
             <div className="cc-icon">
               <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" strokeWidth="2"/><path d="m3 7 12 6 9-6" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
@@ -145,9 +133,9 @@ const Contact = () => {
             <div className="cc-remote">
               <div className="status-pulse"></div> AVAILABLE FOR FULLSTACK PROJECTS
             </div>
-          </motion.div>
+          </div>
 
-          <motion.div className="notch-surface contact-card" variants={cardPop}>
+          <div className="notch-surface contact-card" data-gsap-reveal="pop">
             <div className="cc-icon">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2"/><path d="M12 7v6l4 2" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
@@ -161,9 +149,9 @@ const Contact = () => {
             <a href={contact.bookingUrl} target="_blank" rel="noopener noreferrer" className="cc-soc-link">
               <strong>DISCUSS PROJECT</strong> <span>Book a call ↗</span>
             </a>
-          </motion.div>
+          </div>
 
-          <motion.div className="notch-surface contact-card" variants={cardPop}>
+          <div className="notch-surface contact-card" data-gsap-reveal="pop">
             <div className="cc-icon">
               <svg viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" strokeWidth="2"/></svg>
             </div>
@@ -172,9 +160,9 @@ const Contact = () => {
             <div className="cc-remote">
               <div className="status-pulse"></div> {contact.remoteStatus}
             </div>
-          </motion.div>
-        </motion.div>
-      </motion.div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 };

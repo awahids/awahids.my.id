@@ -222,9 +222,19 @@ body.is-on-light-section .spotlight-glow {
 }
 .nav-links span { color:var(--text-dim); font-size:0.625rem; }
 .nav-links a:hover { color:var(--white); border-color:rgba(255,255,255,.34); }
+.nav-links a { position:relative; }
 .nav-links a.is-active {
   color:var(--lime);
-  border-color:rgba(200,255,0,.52);
+  border-color:rgba(200,255,0,.18);
+}
+/* Scroll progress through the link's section, scrubbed by ScrollTrigger. */
+.nav-progress {
+  position:absolute; left:0; right:0; bottom:-1px;
+  height:1px;
+  background:rgba(200,255,0,.55);
+  transform:scaleX(0);
+  transform-origin:left center;
+  pointer-events:none;
 }
 .nav-links a:focus-visible,
 .nav-logo:focus-visible {
@@ -421,20 +431,17 @@ body.is-on-light-section .spotlight-glow {
   animation: btn-shimmer 3.8s linear infinite;
   color:var(--dark); padding:13px 26px; text-decoration:none;
   transition:box-shadow var(--tr-fast), transform 160ms var(--ease-standard); display:inline-block;
-  will-change:transform;
 }
-/* Framer Motion handles transform on .btn-prime — CSS hover intentionally avoids transform */
 .btn-prime:hover { box-shadow:4px 4px 0 var(--dark); }
 .btn-prime:focus-visible { outline:2px solid var(--lime); outline-offset:3px; box-shadow:4px 4px 0 var(--dark); }
 .btn-ghost {
   font-family:'DM Mono',monospace; font-size:0.75rem; letter-spacing:.1em; text-transform:uppercase;
   background:none; border:1px solid rgba(255,255,255,.18); color:var(--white); padding:13px 26px;
   text-decoration:none; transition:border-color var(--tr-fast), color var(--tr-fast), transform 160ms var(--ease-standard);
-  will-change: transform;
 }
 .btn-ghost:hover { border-color:var(--lime); color:var(--lime); }
 .btn-ghost:focus-visible { border-color:var(--lime); color:var(--lime); }
-/* press feedback. Hero's .btn-prime/.btn-ghost carry Framer whileTap, whose inline transform wins the cascade — these rules govern the plain buttons. */
+/* press feedback */
 .btn-prime:active,
 .btn-ghost:active,
 .nav-cta:active,
@@ -540,7 +547,6 @@ body.is-on-light-section .spotlight-glow {
   position:absolute; bottom:18%; left:8%;
   z-index:5;
   background:var(--lime); padding:14px 20px;
-  will-change:transform,box-shadow;
 }
 /* hero-badge is no longer used — hsc-exp replaces it */
 @keyframes pfloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
@@ -562,18 +568,12 @@ body.is-on-light-section .spotlight-glow {
   padding:10px 0;
 }
 
-@keyframes tick     { from{transform:translateX(0)} to{transform:translateX(-33.333%)} }
-@keyframes tick-rev { from{transform:translateX(-33.333%)} to{transform:translateX(0)} }
-
+/* Motion is GSAP-driven (Ticker.jsx): looping x, scroll-velocity speed + skew. */
 .ticker-track {
   display:flex; width:max-content;
-  animation:tick 32s linear infinite;
+  will-change:transform;
 }
-.ticker-track-rev {
-  animation:tick-rev 44s linear infinite;
-}
-.ticker-track:hover,
-.ticker-track-rev:hover { animation-play-state:paused; }
+.ticker-track-rev { transform:translateX(-33.333%); }
 
 /* Track 1 — tech stack items */
 .t-item {
@@ -625,7 +625,6 @@ body.is-on-light-section .spotlight-glow {
   gap:16px;
   overflow:hidden;
   transition:filter var(--tr-base) var(--ease-standard);
-  will-change:transform;
   cursor:pointer;
 }
 /* Surface for the "what I build" card — flat white panel. */
@@ -681,6 +680,26 @@ body.is-on-light-section .spotlight-glow {
   font-size:0.9375rem;
   line-height:1.75;
 }
+
+/* Stacked layout (desktop, motion allowed — toggled from WhatIBuild.jsx).
+   Each card sticks a little lower than the one before, so the tabs of the
+   covered cards stay visible; GSAP scrubs the covered card's scale + dim. */
+.build-grid.is-stacked { display:block; padding-bottom:4vh; }
+.build-grid.is-stacked .build-card {
+  position:sticky;
+  top:calc(104px + var(--stack-i, 0) * 12px);
+  min-height:0;
+  margin-bottom:20px;
+  padding:calc(var(--tab-h) + 14px) 40px 30px;
+  display:grid;
+  grid-template-columns:minmax(0, 5fr) minmax(0, 7fr);
+  align-items:center;
+  gap:12px 48px;
+  transform-origin:50% 0;
+}
+.build-grid.is-stacked .build-card:last-child { margin-bottom:0; }
+.build-grid.is-stacked .build-card-title { font-size:clamp(1.5rem, 2.3vw, 2.125rem); line-height:1.05; }
+.build-grid.is-stacked .build-card-desc { margin-top:0; font-size:0.9375rem; line-height:1.7; max-width:56ch; }
 
 /* AI LAB */
 .s-ai-lab {
@@ -1375,6 +1394,115 @@ body.is-on-light-section .spotlight-glow {
 .journey-command b { color:var(--lime); font-weight:500; }
 .journey-cursor { color:var(--lime); animation:blinkc .9s step-end infinite; }
 
+/* CAREER — horizontal timeline (desktop, motion allowed; see Experience.jsx).
+   The section is one viewport tall and pinned; the track scrolls sideways. */
+.s-exp--h {
+  --jh-card: clamp(340px, 34vw, 500px);
+  --jh-gap: 28px;
+  height:100vh; height:100svh;
+  padding-top:calc(73px + 3vh); padding-bottom:4vh;
+  display:flex; flex-direction:column;
+}
+.s-exp--h > div { flex:1; min-height:0; display:flex; flex-direction:column; }
+.s-exp--h .journey-head { margin-bottom:3vh; padding-bottom:2vh; }
+.s-exp--h .journey-title { font-size:clamp(2rem, min(4.4vw, 7.4vh), 4.25rem); }
+.jh { flex:1; min-height:0; display:flex; flex-direction:column; gap:3vh; }
+.jh-rail { position:relative; height:34px; margin:0 6px; flex-shrink:0; }
+.jh-rail-line {
+  position:absolute; left:0; right:0; top:6px; height:1px;
+  background:rgba(10,10,10,.16);
+}
+.jh-rail-fill {
+  position:absolute; inset:0; background:var(--red);
+  transform:scaleX(0); transform-origin:left center;
+}
+.jh-dot {
+  position:absolute; top:0; width:13px; height:13px; margin-left:-6.5px;
+  border-radius:50%; border:1px solid rgba(10,10,10,.35); background:var(--light);
+  transition:background var(--tr-base) ease, border-color var(--tr-base) ease, transform var(--tr-base) var(--ease-standard);
+}
+.jh-dot.is-reached { background:var(--red); border-color:var(--red); }
+.jh-dot.is-active { transform:scale(1.35); }
+.jh-dot-label {
+  position:absolute; top:19px; left:50%; transform:translateX(-50%);
+  font-family:'DM Mono',monospace; font-size:0.625rem; letter-spacing:.14em;
+  color:rgba(10,10,10,.5); transition:color var(--tr-base) ease;
+}
+.jh-dot.is-active .jh-dot-label { color:var(--dark); }
+.jh-viewport {
+  flex:1; min-height:0;
+  margin:0 calc(-1 * var(--section-pad-x));
+  cursor:grab; user-select:none; -webkit-user-select:none; touch-action:pan-y;
+}
+.jh-track {
+  position:relative; height:100%; width:max-content;
+  padding:0 calc(50vw - var(--jh-card) / 2);
+  will-change:transform;
+}
+.jh-intro {
+  position:absolute; top:0; bottom:0; left:var(--section-pad-x);
+  width:calc(50vw - var(--jh-card) / 2 - var(--section-pad-x) - var(--jh-gap));
+  display:flex; flex-direction:column; justify-content:flex-end; gap:6px;
+  font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.14em;
+  color:rgba(10,10,10,.55); font-size:0.6875rem;
+}
+.jh-intro-count {
+  font-family:'Unbounded',sans-serif; font-size:clamp(3rem, 7vw, 6rem); line-height:.9;
+  letter-spacing:-.04em; color:var(--dark);
+}
+.jh-intro-hint { color:var(--red); margin-top:10px; }
+.jh-list { display:flex; align-items:center; gap:var(--jh-gap); height:100%; list-style:none; margin:0; padding:0; }
+.jh-card {
+  width:var(--jh-card); height:100%; max-height:500px; flex-shrink:0;
+  transform-origin:center center;
+}
+.jh-card-inner {
+  position:relative; height:100%; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:space-between; gap:16px;
+  padding:clamp(20px, 3vh, 32px) clamp(22px, 2.4vw, 34px);
+  background:var(--dark); color:var(--white);
+  border:1px solid var(--dark); border-radius:var(--radius-md);
+  box-shadow:0 30px 60px rgba(0,0,0,.22);
+  transition:border-color var(--tr-base) ease;
+}
+.jh-card.is-active .jh-card-inner { border-color:var(--lime); }
+.jh-card-top {
+  position:relative; z-index:1; display:flex; justify-content:space-between; align-items:center;
+  font-family:'DM Mono',monospace; font-size:0.625rem; letter-spacing:.16em; text-transform:uppercase;
+}
+.jh-num { color:rgba(255,255,255,.55); transition:color var(--tr-base) ease; }
+.jh-card.is-active .jh-num { color:var(--lime); }
+.jh-glyph { font-size:1.375rem; line-height:1; color:rgba(255,255,255,.5); }
+.jh-year {
+  position:absolute; right:-0.06em; top:50%; margin-top:-0.55em;
+  font-family:'Unbounded',sans-serif; font-size:clamp(5rem, 15vh, 9rem); line-height:1;
+  letter-spacing:-.05em; color:rgba(255,255,255,.06);
+  pointer-events:none; user-select:none;
+}
+.jh-card-body { position:relative; z-index:1; }
+.jh-role {
+  font-family:'DM Mono',monospace; font-size:0.625rem; letter-spacing:.2em;
+  text-transform:uppercase; color:var(--lime);
+}
+.jh-company {
+  font-family:'Syne',sans-serif; font-size:clamp(1.75rem, min(2.6vw, 5vh), 2.625rem);
+  line-height:.98; letter-spacing:-.03em; margin:8px 0 14px;
+}
+.jh-blurb {
+  font-family:var(--font-serif); font-style:italic;
+  font-size:clamp(0.9375rem, min(1.25vw, 2.3vh), 1.1875rem); line-height:1.45;
+  color:rgba(255,255,255,.8);
+}
+.jh-chips {
+  position:relative; z-index:1; display:flex; flex-wrap:wrap; gap:8px;
+  list-style:none; margin:0; padding:0;
+}
+.jh-chip {
+  border:1px solid rgba(255,255,255,.28); border-radius:var(--radius-xs);
+  padding:6px 10px; font-family:'DM Mono',monospace; font-size:0.625rem;
+  text-transform:uppercase; letter-spacing:.14em; color:rgba(255,255,255,.82);
+}
+
 /* SKILLS */
 .s-skills { background:var(--dark); }
 .s-skills .s-eyebrow { color:rgba(255,255,255,.52); }
@@ -1523,6 +1651,122 @@ body.is-on-light-section .spotlight-glow {
 }
 @media (prefers-reduced-motion: reduce) {
   .skills-relay-dot { transition: background .3s var(--ease-standard), box-shadow .3s; }
+}
+
+/* TECH PLAYGROUND (throwable skill balls under the relay) */
+.tech-playground {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 420px;
+  margin-top: 64px;
+  border: 1px solid rgba(255,255,255,.1);
+  background:
+    radial-gradient(80% 70% at 50% 100%, rgba(200,255,0,.05) 0%, rgba(200,255,0,0) 60%),
+    var(--dark);
+}
+.tech-playground-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.tech-playground-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: rgba(200,255,0,.8);
+  border-left: 2px solid var(--lime);
+  padding-left: 10px;
+}
+.tech-playground-hint {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6875rem;
+  color: rgba(255,255,255,.45);
+}
+.tech-playground-shuffle {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border: 1px solid rgba(200,255,0,.4);
+  background: transparent;
+  color: var(--lime);
+  transition: background .25s, color .25s;
+}
+.tech-playground-shuffle:hover,
+.tech-playground-shuffle:focus-visible {
+  background: var(--lime);
+  color: var(--dark);
+}
+.tech-playground-shuffle:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+body:not(.has-custom-cursor) .tech-playground-shuffle { cursor: pointer; }
+.tech-playground-stage {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+.tech-playground-stage.is-dom,
+.tech-playground-stage.is-gl { touch-action: pan-y; }
+.tech-playground-canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+body:not(.has-custom-cursor) .tech-playground-stage.is-over-ball { cursor: grab; }
+body:not(.has-custom-cursor) .tech-playground-stage.is-grabbing { cursor: grabbing; }
+
+/* Skill ball, DOM version (mobile / no WebGL): a shaded sphere — gloss and
+   shadow stay put while only the logo spins, so it reads as rolling. */
+.tech-ball {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--ball, 72px);
+  height: var(--ball, 72px);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,.5) 0, rgba(255,255,255,0) 30%),
+    radial-gradient(circle at 50% 45%, var(--ball-color) 52%, color-mix(in srgb, var(--ball-color) 55%, #000) 100%);
+  box-shadow:
+    inset -5px -7px 12px rgba(0,0,0,.32),
+    inset 0 0 0 1px rgba(200,255,0,.12),
+    0 8px 14px rgba(0,0,0,.4);
+  visibility: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: transform;
+}
+.tech-ball svg { width: 46%; height: 46%; display: block; }
+.tech-playground.is-static { height: auto; }
+.tech-playground.is-static .tech-playground-stage {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+}
+.tech-playground.is-static .tech-ball {
+  position: static;
+  --ball: 60px;
+  visibility: visible;
+  touch-action: auto;
+  will-change: auto;
+}
+@media (max-width: 768px) {
+  .tech-playground { height: 360px; margin-top: 40px; }
+  .tech-playground-head { flex-wrap: wrap; gap: 6px 12px; padding: 12px 14px; }
+  .tech-playground-hint { order: 3; flex-basis: 100%; }
 }
 
 /* PORTFOLIO */
@@ -1799,6 +2043,12 @@ body.is-on-light-section .spotlight-glow {
 .is-gsap-motion .modal-overlay,
 .is-gsap-motion .modal-card { transition:none !important; }
 .modal-overlay.active { opacity:1; pointer-events:all; }
+/* A separate backdrop lets the card stay visible while the dimming fades in. */
+.modal-overlay.has-backdrop { background:transparent; backdrop-filter:none; }
+.modal-backdrop {
+  position:fixed; inset:0; background:rgba(8,8,8,.82);
+  backdrop-filter: blur(14px);
+}
 .modal-card {
   background:linear-gradient(180deg, rgba(26,26,26,.98) 0%, rgba(14,14,14,.98) 100%);
   width:100%; max-width:980px; border-radius:var(--radius-lg);
@@ -1808,7 +2058,6 @@ body.is-on-light-section .spotlight-glow {
   box-shadow:0 34px 80px rgba(0,0,0,.55);
   overscroll-behavior:contain;
   transform-origin:50% 58%;
-  will-change:transform, opacity, filter;
 }
 .modal-card::before {
   content:''; position:absolute; top:0; left:0; right:0; height:2px;
@@ -2020,8 +2269,7 @@ body.is-on-light-section .spotlight-glow {
   background: linear-gradient(135deg, rgba(200,255,0,0.18) 0%, transparent 45%);
   opacity:0; transition: opacity var(--tr-base);
 }
-/* transform on .cert-card handled by GSAP — no CSS transform to avoid Framer Motion conflict */
-.cert-card { will-change:transform; }
+/* transform on .cert-card is driven by GSAP — keep CSS transform off it */
 /* drop-shadow, not box-shadow: the offset block must follow the notched
    silhouette rather than the border box. */
 .cert-card:hover { filter: drop-shadow(4px 4px 0 var(--dark)); }
@@ -2108,7 +2356,7 @@ body.is-on-light-section .spotlight-glow {
   font-size:clamp(6.25rem, 16vw, 13.75rem);
   color:rgba(255,255,255,.025); bottom:-20px; left:-20px; line-height:1;
   pointer-events:none; letter-spacing:-.04em; white-space:nowrap;
-  user-select:none; z-index:0; will-change:opacity, transform;
+  user-select:none; z-index:0; will-change:transform;
   transform-origin: left bottom;
 }
 .s-about .s-eyebrow { color:rgba(200,255,0,.65); }
@@ -2993,7 +3241,7 @@ footer {
 }
 @media (prefers-reduced-motion: reduce) {
   .ticker-track,
-  .ticker-track-rev { animation:none; transform:translateX(0); }
+  .ticker-track-rev { will-change:auto; transform:translateX(0); }
   .hero-badge,
   .pl-dot,
   .status-pulse,
@@ -3029,6 +3277,7 @@ footer {
   pointer-events:auto;
 }
 .tab-container {
+  position:relative;
   height:100%;
   display:grid;
   grid-template-columns:repeat(4, minmax(0, 1fr));
@@ -3047,11 +3296,23 @@ footer {
   border-radius:20px;
   transition:background var(--tr-fast) ease, color var(--tr-fast) ease, transform var(--tr-fast) ease;
 }
+.tab-item { position:relative; z-index:1; }
 .tab-item:hover,
-.tab-item:focus-visible,
-.tab-item.is-active {
+.tab-item:focus-visible {
   color:var(--lime);
+  background:rgba(200,255,0,.08);
+}
+.tab-item.is-active { color:var(--lime); }
+/* Sliding active pill: one column wide, moved with x by MobileNav. */
+.tab-pill {
+  position:absolute; top:0; left:0;
+  width:calc((100% - 12px) / 4);
+  height:100%;
+  border-radius:20px;
   background:rgba(200,255,0,.16);
+  opacity:0;
+  pointer-events:none;
+  will-change:transform, opacity;
 }
 .tab-item:active {
   transform:translateY(1px);
@@ -3979,18 +4240,19 @@ footer {
 .nav-links-wrap {
   position: relative;
 }
-.nav-underline {
+/* Fixed 100px base; JS sets x + scaleX to match the active link. */
+.nav-indicator {
   position: absolute;
-  bottom: -4px;
+  bottom: -5px;
   left: 0;
   height: 2px;
-  width: 60px;
+  width: 100px;
   background: var(--lime);
   opacity: 0;
   pointer-events: none;
-  border-radius: 1px;
+  transform-origin: left center;
   box-shadow: 0 0 10px rgba(200,255,0,.55);
-  will-change: transform, width;
+  will-change: transform, opacity;
 }
 
 /* ── WhatIBuild card — GSAP handles transform; CSS handles glow ── */
@@ -4049,11 +4311,6 @@ footer {
   transform: translateY(0);
 }
 
-/* ── Hero badge — GSAP drives float + glow ── */
-.hero-badge {
-  will-change: transform, box-shadow;
-}
-
 /* ── Footer scroll-to-top — GSAP drives rotate + scale ── */
 .floating-top-btn {
   will-change: transform;
@@ -4065,9 +4322,7 @@ footer {
 @media (prefers-reduced-motion: reduce) {
   .build-card, .build-card-num { will-change: auto; }
   .cc-copied-badge { transition: opacity 0.22s var(--ease-standard); }
-  .hero-badge { will-change: auto; }
   .floating-top-btn { will-change: auto; }
-  .cert-card { will-change: auto; }
   .build-card::after { display: none; }
 }
 
@@ -4113,34 +4368,17 @@ footer {
   gap: 8px;
 }
 
-/* ── Hero left/right — smooth scroll parallax ── */
-.hero-left,
-.hero-right {
-  will-change: transform;
-}
-
 /* ── Contact CTA primary label — typographic polish ── */
 /* (contact-headline size is intentionally large in original declaration — no override) */
 
-/* ── Contact CTA link spring — will-change for smooth FM scale ── */
+/* ── Contact CTA link ── */
 .contact-top-link {
-  will-change: transform;
   display: inline-block;
-}
-
-/* ── Contact card pop — will-change for FM cardPop spring ── */
-.contact-card {
-  will-change: transform;
 }
 
 /* ── Skill chip — glow on hover (dark theme) ── */
 .skill-chip {
   transition: color 0.22s, border-color 0.22s, background 0.22s, box-shadow 0.22s;
-}
-
-/* ── cert-card will-change ── */
-.cert-card {
-  will-change: transform;
 }
 
 /* ── Section items — remove overflow clip that blocks spring scale ── */
@@ -4163,19 +4401,9 @@ footer {
   transition: color 0.2s ease;
 }
 
-/* ── Navbar underline smoothness ── */
-.nav-underline {
-  will-change: transform, width, opacity;
-}
-
 /* ── Stagger reveal: build cards have perspective for depth ── */
 .build-grid {
   perspective: 800px;
-}
-
-/* ── Journey console entrance — spring scale support ── */
-.journey-console {
-  will-change: transform;
 }
 
 /* ── Bounce-in animation for status pulse ── */
@@ -4215,7 +4443,8 @@ footer {
 }
 
 /* ── Section ghost background labels ── */
-.s-build { position: relative; overflow: hidden; }
+/* clip, not hidden: hidden makes the section a scroll container and breaks the sticky card stack */
+.s-build { position: relative; overflow: clip; }
 .s-build-bg-label {
   position: absolute;
   font-family: 'Bebas Neue', sans-serif;
@@ -4248,13 +4477,17 @@ footer {
   will-change: opacity;
 }
 
-/* ── Skills WebGL ambient canvas ── */
+/* ── Skills WebGL ambient canvas ──
+   Viewport-sized and sticky: it stays behind the whole layer relay while
+   GSAP scrubs the camera, instead of a framebuffer as tall as the section. */
 .s-skills { position: relative; }
 .skills-scene-canvas {
-  position: absolute;
-  inset: 0;
+  position: sticky;
+  top: 0;
+  display: block;
   width: 100%;
-  height: 100%;
+  height: 100vh;
+  margin-bottom: -100vh;
   z-index: 0;
   pointer-events: none;
   opacity: 0.45;

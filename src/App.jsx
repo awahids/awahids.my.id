@@ -1,8 +1,5 @@
 import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { gsap, ScrollTrigger, DUR, prefersReducedMotion, useIsoLayoutEffect } from './lib/motion';
 import { useLenis } from './lib/useLenis';
 
 import Preloader from './components/Preloader';
@@ -14,7 +11,6 @@ import Footer from './components/Footer';
 import CustomCursor from './components/CustomCursor';
 import SpotlightGlow from './components/SpotlightGlow';
 import SocialRail from './components/SocialRail';
-import { useSectionMotion } from './lib/sectionMotion';
 import { useGsapReveal } from './lib/useGsapReveal';
 import Portfolio from './components/Portfolio';
 import WhatIBuild from './components/WhatIBuild';
@@ -25,9 +21,6 @@ import Contact from './components/Contact';
 import FloatingFAQ from './components/FloatingFAQ';
 import CvDownloadModal from './components/CvDownloadModal';
 import PrdPromo from './components/PrdPromo';
-
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
-import { AnomalousMatterHero } from './components/AnomalousHero';
 import {
   isAiLabRoute,
   isNotFoundRoute,
@@ -35,6 +28,10 @@ import {
   isReadmeGeneratorRoute,
 } from './lib/routes';
 const AILab = lazy(() => import('./components/AILab'));
+// The AI Lab hero pulls in three.js, so keep it out of the main bundle.
+const AnomalousMatterHero = lazy(() =>
+  import('./components/AnomalousHero').then((module) => ({ default: module.AnomalousMatterHero }))
+);
 const ReadmeGenerator = lazy(() => import('./components/ReadmeGenerator'));
 
 const BOT_USER_AGENT_PATTERN =
@@ -43,12 +40,10 @@ const BOT_USER_AGENT_PATTERN =
 const shouldBypassPreloader = () => {
   if (typeof window === 'undefined') return false;
 
-  const prefersReducedMotion =
-    window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
   const userAgent = window.navigator?.userAgent || '';
   const botLikeAgent = BOT_USER_AGENT_PATTERN.test(userAgent);
 
-  return prefersReducedMotion || botLikeAgent;
+  return prefersReducedMotion() || botLikeAgent;
 };
 
 const ABOUT = {
@@ -157,28 +152,38 @@ const applySiteSettings = (settings) => {
   });
 };
 
-const NotFoundPage = () => (
-  <section className="s-not-found" aria-labelledby="not-found-title">
-    <div className="not-found-bg" aria-hidden="true">404</div>
-    <motion.div
-      className="not-found-inner"
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <p className="s-eyebrow">// PAGE_NOT_FOUND</p>
-      <h1 id="not-found-title">This route does not exist.</h1>
-      <p>
-        The page may have moved, or the URL may be incorrect. Head back to the portfolio
-        or jump straight into the selected project work.
-      </p>
-      <div className="not-found-actions">
-        <a className="not-found-primary" href="/">Back Home</a>
-        <a className="not-found-secondary" href="/#portfolio">View Projects</a>
+const NotFoundPage = () => {
+  const innerRef = React.useRef(null);
+
+  useIsoLayoutEffect(() => {
+    if (!innerRef.current || prefersReducedMotion()) return undefined;
+    const tween = gsap.from(innerRef.current, {
+      opacity: 0,
+      y: 18,
+      duration: DUR.slow,
+      clearProps: 'transform',
+    });
+    return () => tween.revert();
+  }, []);
+
+  return (
+    <section className="s-not-found" aria-labelledby="not-found-title">
+      <div className="not-found-bg" aria-hidden="true">404</div>
+      <div className="not-found-inner" ref={innerRef}>
+        <p className="s-eyebrow">// PAGE_NOT_FOUND</p>
+        <h1 id="not-found-title">This route does not exist.</h1>
+        <p>
+          The page may have moved, or the URL may be incorrect. Head back to the portfolio
+          or jump straight into the selected project work.
+        </p>
+        <div className="not-found-actions">
+          <a className="not-found-primary" href="/">Back Home</a>
+          <a className="not-found-secondary" href="/#portfolio">View Projects</a>
+        </div>
       </div>
-    </motion.div>
-  </section>
-);
+    </section>
+  );
+};
 
 function App() {
   const [currentPathname, setCurrentPathname] = useState(() =>
@@ -194,15 +199,6 @@ function App() {
     () => !toolPage && !notFoundPage && !shouldBypassPreloader()
   );
   const effectiveLoading = toolPage || notFoundPage ? false : loading;
-  const {
-    viewport: sectionViewport,
-    sectionContainer,
-    sectionItem,
-    staggerTight,
-    eyebrow: sectionEyebrow,
-    clipReveal: sectionClipReveal,
-    cardPop: sectionCardPop,
-  } = useSectionMotion();
   const about = ABOUT;
   const aboutTitle = getAboutTitleParts(about.title);
 
@@ -212,31 +208,39 @@ function App() {
   const aboutSectionRef = React.useRef(null);
   useGsapReveal(aboutSectionRef);
 
-  const aboutReduceMotion = useReducedMotion();
-  const { scrollYProgress: aboutScrollProgress } = useScroll({
-    target: aboutSectionRef,
-    offset: ['start end', 'end start'],
-  });
-  const aboutBgScale = useTransform(
-    aboutScrollProgress,
-    [0, 1],
-    aboutReduceMotion ? [1, 1] : [0.7, 1.35]
-  );
+  const homePage = !aiLabPage && !toolPage && !notFoundPage;
+
+  // The "A.W.S" watermark grows as the about section scrolls through.
+  useIsoLayoutEffect(() => {
+    const section = aboutSectionRef.current;
+    if (!section || prefersReducedMotion()) return undefined;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        '.about-bg',
+        { scale: 0.7 },
+        {
+          scale: 1.35,
+          ease: 'none',
+          scrollTrigger: { trigger: section, start: 'top bottom', end: 'bottom top', scrub: 0.5 },
+        }
+      );
+    }, section);
+
+    return () => ctx.revert();
+  }, [homePage]);
 
   // Stat counter animation
   useEffect(() => {
-    if (effectiveLoading) return;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const section = aboutSectionRef.current;
+    if (effectiveLoading || !section || prefersReducedMotion()) return undefined;
 
     const ctx = gsap.context(() => {
-      const statEls = document.querySelectorAll('.stat-b-num');
-      statEls.forEach((el) => {
+      section.querySelectorAll('.stat-b-num').forEach((el) => {
         const raw = el.textContent.trim();
         const num = parseFloat(raw.replace(/[^0-9.]/g, ''));
         const suffix = raw.replace(/[0-9.]/g, '');
         if (isNaN(num)) return;
-
-        if (prefersReducedMotion) return;
 
         const proxy = { val: 0 };
         gsap.to(proxy, {
@@ -252,10 +256,10 @@ function App() {
           },
         });
       });
-    });
+    }, section);
 
     return () => ctx.revert();
-  }, [effectiveLoading]);
+  }, [effectiveLoading, homePage]);
 
   useEffect(() => {
     applySiteSettings(
@@ -295,7 +299,12 @@ function App() {
 
   useEffect(() => {
     if (!effectiveLoading) {
-      const id = window.setTimeout(() => ScrollTrigger.refresh(), 300);
+      // Sort by page position first: triggers created before a pin further up
+      // (Experience's horizontal track) must be measured after its spacer exists.
+      const id = window.setTimeout(() => {
+        ScrollTrigger.sort();
+        ScrollTrigger.refresh();
+      }, 300);
       return () => window.clearTimeout(id);
     }
   }, [effectiveLoading]);
@@ -401,12 +410,10 @@ function App() {
         }
       >
         {aiLabPage ? (
-          <>
+          <Suspense fallback={<section className="s-ai-lab" id="ai-lab" />}>
             <AnomalousMatterHero />
-            <Suspense fallback={<section className="s-ai-lab" id="ai-lab" />}>
-              <AILab />
-            </Suspense>
-          </>
+            <AILab />
+          </Suspense>
         ) : readmeGeneratorPage ? (
           <Suspense fallback={<section className="s-readme-generator" />}>
             <ReadmeGenerator />
@@ -422,63 +429,49 @@ function App() {
 
             <WhatIBuild />
 
-            <motion.section
-              id="about"
-              className="s-about"
-              ref={aboutSectionRef}
-              initial="hidden"
-              whileInView="visible"
-              viewport={sectionViewport}
-              variants={sectionContainer}
-            >
-              <motion.div
-                className="about-bg"
-                data-gsap-reveal="fade-up"
-                data-gsap-delay="0.1"
-                style={{ scale: aboutBgScale }}
-                aria-hidden="true"
-              >
+            <section id="about" className="s-about" ref={aboutSectionRef}>
+              <div className="about-bg" aria-hidden="true">
                 A.W.S
-              </motion.div>
-              <motion.div className="about-left" variants={sectionItem}>
-                <motion.div className="s-eyebrow" variants={sectionEyebrow}>
+              </div>
+              <div className="about-left">
+                <div className="s-eyebrow" data-gsap-reveal="left">
                   // {about.eyebrow.toUpperCase()}
-                </motion.div>
-                <motion.h2 className="s-title" variants={sectionClipReveal}>
+                </div>
+                <h2 className="s-title" data-gsap-reveal="split">
                   {aboutTitle.lead}{' '}
                   {aboutTitle.outline && <span className="s-outline">{aboutTitle.outline}</span>}
-                </motion.h2>
-                <motion.div className="about-text" variants={sectionItem}>
+                </h2>
+                <div className="about-text" data-gsap-reveal="up">
                   {about.paragraphs.map((paragraph, index) => (
                     <p key={`${index}-${paragraph}`} style={index > 0 ? { marginTop: '12px' } : undefined}>
                       {paragraph}
                     </p>
                   ))}
-                </motion.div>
-                <motion.div className="about-tags" variants={staggerTight}>
+                </div>
+                <div className="about-tags">
                   {about.tags.map((tag) => (
-                    <motion.span key={tag} className="about-tag" variants={sectionItem}>
+                    <span key={tag} className="about-tag" data-gsap-reveal="up">
                       {tag}
-                    </motion.span>
+                    </span>
                   ))}
-                </motion.div>
-              </motion.div>
-              <motion.div className="about-right" variants={sectionItem}>
-                <motion.div className="stats-2x2" variants={staggerTight}>
+                </div>
+              </div>
+              <div className="about-right">
+                <div className="stats-2x2">
                   {about.stats.map((stat) => (
-                    <motion.div key={`${stat.value}-${stat.label}`} className="stat-b" variants={sectionCardPop}>
+                    <div key={`${stat.value}-${stat.label}`} className="stat-b" data-gsap-reveal="pop">
                       <div className="stat-b-num">{stat.value}</div>
                       <div className="stat-b-lbl">{stat.label}</div>
-                    </motion.div>
+                    </div>
                   ))}
-                </motion.div>
-                <motion.div className="edu-entry" variants={sectionItem}>
+                </div>
+                <div className="edu-entry" data-gsap-reveal="up">
                   <div className="edu-school">{about.education.school}</div>
                   <div className="edu-degree">{about.education.degree}</div>
                   <div className="edu-year">{about.education.period}</div>
-                </motion.div>
-              </motion.div>
-            </motion.section>
+                </div>
+              </div>
+            </section>
 
             <Portfolio lenisRef={lenisRef} />
             <Skills lenisRef={lenisRef} />

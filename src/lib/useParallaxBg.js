@@ -4,18 +4,14 @@
  * Speed 0 = no movement, 1 = moves at scroll speed (full parallax).
  */
 import { useEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import { gsap, prefersReducedMotion } from './motion';
 
 export const useParallaxBg = (containerRef) => {
   useEffect(() => {
     const container = containerRef?.current;
     if (!container || typeof window === 'undefined') return;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    if (prefersReducedMotion()) return;
 
     const targets = Array.from(container.querySelectorAll('[data-parallax]'));
     if (!targets.length) return;

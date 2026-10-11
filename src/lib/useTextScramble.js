@@ -1,84 +1,44 @@
 /**
- * useTextScramble — On viewport enter, scrambles text through random chars
- * before revealing the final value. GSAP-powered, once per element.
+ * useTextScramble — ScrambleTextPlugin decode effect on viewport enter.
  *
- * Usage: add data-scramble attribute to any element.
- * The element's textContent is the final revealed value.
+ * Usage: add data-scramble="FINAL_TEXT" to any element. The text decodes
+ * left to right through terminal-style noise, once per element.
  */
 import { useEffect } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap, ScrollTrigger, prefersReducedMotion } from './motion';
 
-gsap.registerPlugin(ScrollTrigger);
-
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&';
-const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-const scrambleIn = (el, finalText, duration = 0.9) => {
-  const chars = CHARS.split('');
-  const len = finalText.length;
-  const startTime = { t: 0 };
-  const revealed = new Array(len).fill(false);
-
-  gsap.to(startTime, {
-    t: 1,
-    duration,
-    ease: 'power2.inOut',
-    onUpdate() {
-      const progress = startTime.t;
-      const revealCount = Math.floor(progress * len);
-
-      // Mark chars as revealed left-to-right
-      for (let i = 0; i < revealCount; i++) revealed[i] = true;
-
-      el.textContent = finalText
-        .split('')
-        .map((ch, i) => {
-          if (ch === ' ') return ' ';
-          if (revealed[i]) return ch;
-          return rand(chars);
-        })
-        .join('');
-    },
-    onComplete() {
-      el.textContent = finalText;
-    },
-  });
-};
+const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_/#$%';
 
 export const useTextScramble = (containerRef) => {
   useEffect(() => {
     const container = containerRef?.current;
-    if (!container || typeof window === 'undefined') return;
+    if (!container || prefersReducedMotion()) return undefined;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const targets = Array.from(container.querySelectorAll('[data-scramble]'));
-    if (!targets.length) return;
+    if (!targets.length) return undefined;
 
-    const triggers = [];
+    const ctx = gsap.context(() => {
+      targets.forEach((el) => {
+        const finalText = el.dataset.scramble || el.textContent.trim();
+        el.dataset.scramble = finalText;
 
-    targets.forEach((el) => {
-      const finalText = el.dataset.scramble || el.textContent.trim();
-      // Store the final text in case it's also the initial text
-      el.dataset.scramble = finalText;
+        const tween = gsap.to(el, {
+          paused: true,
+          duration: 1.1,
+          ease: 'none',
+          scrambleText: { text: finalText, chars: CHARS, speed: 0.6, revealDelay: 0.15 },
+        });
 
-      if (prefersReducedMotion) {
-        el.textContent = finalText;
-        return;
-      }
-
-      const st = ScrollTrigger.create({
-        trigger: el,
-        start: 'top 90%',
-        once: true,
-        onEnter() {
-          scrambleIn(el, finalText);
-        },
+        ScrollTrigger.create({
+          trigger: el,
+          start: 'top 90%',
+          // Also fires for elements already scrolled past on load.
+          onEnter: (self) => { tween.play(); self.kill(); },
+          onLeave: (self) => { tween.progress(1); self.kill(); },
+        });
       });
+    }, container);
 
-      triggers.push(st);
-    });
-
-    return () => triggers.forEach((st) => st.kill());
+    return () => ctx.revert();
   }, [containerRef]);
 };

@@ -1,13 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import SkillsScene from './SkillsScene';
+import React, { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import SkillsRelay from './SkillsRelay';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { useSectionMotion } from '../lib/sectionMotion';
-import { useWordSplit } from '../lib/useWordSplit';
+import { ScrollTrigger } from '../lib/motion';
 import { useParallaxBg } from '../lib/useParallaxBg';
 import { useGsapReveal } from '../lib/useGsapReveal';
 import { useTextScramble } from '../lib/useTextScramble';
+
+// three.js is heavy — only fetch it once the section is about to scroll in.
+const SkillsScene = lazy(() => import('./SkillsScene'));
+// Below the fold and carries the logo set (simple-icons): its own chunk.
+const TechPlayground = lazy(() => import('./TechPlayground'));
+const MOBILE_QUERY = '(max-width: 768px)';
 
 const skillsData = [
   {
@@ -60,18 +62,35 @@ const skillsData = [
 const Skills = ({ lenisRef }) => {
   const rootRef = useRef(null);
   const sectionRef = rootRef; // reuse same ref for wordSplit and parallaxBg
-  const [isMobile, setIsMobile] = useState(false);
-  const { viewport, sectionContainer, sectionItem, eyebrow } = useSectionMotion();
+  const sceneAnchorRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && (window.matchMedia?.(MOBILE_QUERY).matches ?? false)
+  );
+  const [sceneNear, setSceneNear] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)');
+    const mq = window.matchMedia(MOBILE_QUERY);
     const sync = (e) => setIsMobile(e.matches);
     sync(mq);
     mq.addEventListener('change', sync);
     return () => mq.removeEventListener('change', sync);
   }, []);
 
-  useWordSplit(sectionRef);
+  useEffect(() => {
+    const anchor = sceneAnchorRef.current;
+    if (isMobile || sceneNear || !anchor) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setSceneNear(true);
+        observer.disconnect();
+      },
+      { rootMargin: '200px 0px' }
+    );
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, [isMobile, sceneNear]);
+
   useParallaxBg(sectionRef);
   useGsapReveal(sectionRef);
   useTextScramble(sectionRef);
@@ -85,42 +104,36 @@ const Skills = ({ lenisRef }) => {
   }, []);
 
   return (
-    <section className="s-skills" id="skills">
-      <SkillsScene isMobile={isMobile} />
-      <motion.div
-        ref={rootRef}
-        className="skills-content"
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionContainer}
-      >
-        <div className="s-skills-bg-label" data-gsap-reveal="fade-up" data-gsap-delay="0.1" aria-hidden="true">STACK</div>
-        <motion.div className="s-eyebrow" variants={eyebrow}>
+    <section className="s-skills" id="skills" ref={sceneAnchorRef}>
+      {!isMobile && sceneNear && (
+        <Suspense fallback={null}>
+          <SkillsScene isMobile={isMobile} />
+        </Suspense>
+      )}
+      <div ref={rootRef} className="skills-content">
+        <div className="s-skills-bg-label" data-gsap-reveal="fade-up" aria-hidden="true">STACK</div>
+        <div className="s-eyebrow" data-gsap-reveal="left">
           // <span data-scramble="TECH_STACK_BY_LAYER">TECH_STACK_BY_LAYER</span>
-        </motion.div>
+        </div>
         <div className="skills-copy" data-parallax="0.18">
-          <motion.h2 className="skills-copy-title" variants={sectionItem} data-word-split>
+          <h2 className="skills-copy-title" data-gsap-reveal="split">
             Fullstack Capability by Layer.
-          </motion.h2>
-          <motion.div
-            className="section-lime-rule"
-            variants={{
-              hidden: { scaleX: 0, originX: 0 },
-              visible: { scaleX: 1, originX: 0, transition: { type: 'spring', stiffness: 60, damping: 18, delay: 0.15 } },
-            }}
-          />
-          <motion.span className="skills-copy-sub" variants={sectionItem}>
+          </h2>
+          <div className="section-lime-rule" data-gsap-reveal="line" />
+          <span className="skills-copy-sub" data-gsap-reveal="fade">
             Frontend, backend, database, deployment, and automation.
-          </motion.span>
-          <motion.p className="skills-copy-desc" variants={sectionItem}>
+          </span>
+          <p className="skills-copy-desc" data-gsap-reveal="up">
             Connected layers used to ship one working product, from UI experience and API
             architecture to data modeling, production operations, and automation workflows.
-          </motion.p>
+          </p>
         </div>
 
         <SkillsRelay skillItems={skillsData} lenisRef={lenisRef} />
-      </motion.div>
+        <Suspense fallback={<div className="tech-playground" aria-hidden="true" />}>
+          <TechPlayground />
+        </Suspense>
+      </div>
     </section>
   );
 };

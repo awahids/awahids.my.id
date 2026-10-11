@@ -1,7 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import gsap from 'gsap';
-import { useSectionMotion } from '../lib/sectionMotion';
+import { gsap, Flip, DUR, prefersReducedMotion, useIsoLayoutEffect } from '../lib/motion';
 import { useTextScramble } from '../lib/useTextScramble';
 import { useGsapReveal } from '../lib/useGsapReveal';
 
@@ -38,7 +36,7 @@ const Certificates = () => {
   const [showAllMobile, setShowAllMobile] = useState(false);
   const gridRef = useRef(null);
   const sectionRef = useRef(null);
-  const { viewport, sectionContainer, sectionItem, staggerGrid, eyebrow, cardPop } = useSectionMotion();
+  const flipStateRef = useRef(null);
 
   useTextScramble(sectionRef);
   useGsapReveal(sectionRef);
@@ -67,14 +65,13 @@ const Certificates = () => {
     };
   }, []);
 
-  // GSAP hover: lift + icon spin (avoids CSS transform conflict with FM)
+  // GSAP hover: lift + icon spin
   useEffect(() => {
     const grid = gridRef.current;
     if (!grid) return undefined;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const hasFinePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (prefersReducedMotion || !hasFinePointer) return undefined;
+    if (prefersReducedMotion() || !hasFinePointer) return undefined;
 
     const cards = Array.from(grid.querySelectorAll('.cert-card'));
     const cleanups = [];
@@ -102,45 +99,54 @@ const Certificates = () => {
     return () => cleanups.forEach((fn) => fn());
   }, [isMobile]);
 
+  // Flip: record where the cards are, let React add/remove cards, then animate
+  // from the old layout to the new one. Added cards pop in.
+  const toggleShowAll = () => {
+    if (gridRef.current && !prefersReducedMotion()) {
+      flipStateRef.current = Flip.getState(gridRef.current.querySelectorAll('.cert-card'));
+    }
+    setShowAllMobile((prev) => !prev);
+  };
+
+  useIsoLayoutEffect(() => {
+    const state = flipStateRef.current;
+    flipStateRef.current = null;
+    if (!state || !gridRef.current) return undefined;
+
+    const flip = Flip.from(state, {
+      targets: gridRef.current.querySelectorAll('.cert-card'),
+      duration: DUR.slow,
+      ease: 'power3.inOut',
+      onEnter: (cards) =>
+        gsap.fromTo(cards,
+          { opacity: 0, y: 24, scale: 0.95 },
+          { opacity: 1, y: 0, scale: 1, duration: DUR.base, stagger: 0.08, delay: 0.1, clearProps: 'transform' }),
+    });
+    return () => flip.kill();
+  }, [showAllMobile]);
+
   const visibleCerts = isMobile && !showAllMobile ? certs.slice(0, 3) : certs;
 
   return (
     <section className="s-cert" id="certificates">
-      <motion.div
-        ref={sectionRef}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionContainer}
-      >
-        <motion.div className="s-eyebrow" variants={eyebrow}>
+      <div ref={sectionRef}>
+        <div className="s-eyebrow" data-gsap-reveal="left">
           // <span data-scramble="RECOGNITIONS">RECOGNITIONS</span>
-        </motion.div>
-        <motion.h2 className="s-title" variants={sectionItem}>
+        </div>
+        <h2 className="s-title" data-gsap-reveal="split">
           Licenses & <span className="s-outline">Certificates</span>
-        </motion.h2>
-        <motion.div
-          className="section-lime-rule"
-          variants={{
-            hidden: { scaleX: 0, originX: 0 },
-            visible: { scaleX: 1, originX: 0, transition: { type: 'spring', stiffness: 60, damping: 18, delay: 0.2 } },
-          }}
-        />
-        <motion.p className="cert-intro" variants={sectionItem}>
+        </h2>
+        <div className="section-lime-rule" data-gsap-reveal="line" />
+        <p className="cert-intro" data-gsap-reveal="up">
           Supporting credentials across backend development, database systems,
           JavaScript, and cloud fundamentals.
-        </motion.p>
+        </p>
 
-        <motion.div className="cert-grid" ref={gridRef} variants={staggerGrid}>
+        <div className="cert-grid" ref={gridRef}>
           {visibleCerts.map((c, i) => (
-            <motion.div
-              key={i}
-              className="notch-surface cert-card"
-              variants={cardPop}
-              initial={false}
-            >
+            <div key={i} className="notch-surface cert-card" data-gsap-reveal="pop">
               <div className="cert-icon">
-                <svg viewBox="0 0 24 24">
+                <svg viewBox="0 0 24 24" data-gsap-reveal="draw">
                   <path d="M12 15l-2 5 2 2 2-2-2-5z" />
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
                   <circle cx="12" cy="11" r="4" />
@@ -152,21 +158,20 @@ const Certificates = () => {
               <div className="cert-card-view">
                 <span>View Details</span> ↗
               </div>
-            </motion.div>
+            </div>
           ))}
-        </motion.div>
+        </div>
 
         {isMobile && certs.length > 3 && (
-          <motion.button
+          <button
             type="button"
             className="cert-mobile-toggle"
-            onClick={() => setShowAllMobile((prev) => !prev)}
-            variants={sectionItem}
+            onClick={toggleShowAll}
           >
             {showAllMobile ? 'Show Less' : `View More (${certs.length - 3})`}
-          </motion.button>
+          </button>
         )}
-      </motion.div>
+      </div>
     </section>
   );
 };

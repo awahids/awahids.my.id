@@ -1,44 +1,14 @@
-import React, { useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import GlyphPortal from './GlyphPortal';
 import { openCvDownload } from '../lib/cvDownload';
-
-// ─── Framer Motion Variants ────────────────────────────────────────────────
-
-const heroLeftContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.2 } },
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 22 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
-};
-
-const chipContainer = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.06 } },
-};
-
-const chipItem = {
-  hidden: { opacity: 0, x: -14 },
-  visible: { opacity: 1, x: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } },
-};
-
-const photoVariant = {
-  hidden: { opacity: 0, x: 32, scale: 0.96 },
-  visible: {
-    opacity: 1, x: 0, scale: 1,
-    transition: { duration: 0.78, ease: [0.16, 1, 0.3, 1], delay: 0.3 },
-  },
-};
-
-const btnSpring = { type: 'spring', stiffness: 380, damping: 20 };
+import { gsap, SplitText, DUR, EASE_TEXT, prefersReducedMotion, useIsoLayoutEffect } from '../lib/motion';
 
 // ─── Data ─────────────────────────────────────────────────────────────────
 
 const PORTAL_WORD = 'WAHID';
 const PORTAL_FONT_TIMEOUT_MS = 2500;
+// Portal progress at which the hero content starts fading in (GlyphPortal reveals over 0.78–0.9).
+const PORTAL_REVEAL_AT = 0.8;
 
 const PROFILE = {
   name: 'A Wahid Saphadi',
@@ -67,10 +37,8 @@ const Hero = () => {
   const profile = PROFILE;
   const [fontReady, setFontReady] = useState(false);
   const profileName = splitProfileName(profile.name);
-  const reduced = useReducedMotion();
-
-  // Build reduced-motion-safe variants
-  const safe = (v) => reduced ? { hidden: {}, visible: {} } : v;
+  const rootRef = useRef(null);
+  const introRef = useRef(null);
 
   // GlyphPortal freezes its font at mount and disables the scroll effect if the face isn't loaded yet.
   useEffect(() => {
@@ -82,10 +50,59 @@ const Hero = () => {
     return () => { cancelled = true; window.clearTimeout(timer); };
   }, []);
 
+  // Entrance — built paused once the grid mounts, played when the portal
+  // actually reveals the content (playing on mount would run it unseen).
+  useIsoLayoutEffect(() => {
+    if (!fontReady || !rootRef.current || prefersReducedMotion()) return undefined;
+
+    const ctx = gsap.context(() => {
+      const name = SplitText.create('.hn-first, .hn-last', { type: 'lines,words,chars', mask: 'lines' });
+      // Chars keep their transform (SplitText owns them); everything else clears it.
+      introRef.current = gsap.timeline({ paused: true })
+        .from('.hn-sub', { opacity: 0, x: -20, duration: DUR.base, clearProps: 'transform' })
+        .from(name.chars, {
+          yPercent: 115, rotate: 6, transformOrigin: '0% 100%',
+          duration: 0.9, ease: EASE_TEXT, stagger: 0.025,
+        }, 0.05)
+        .from('.hn-ghost', { opacity: 0, x: 60, duration: 1.1, ease: EASE_TEXT, clearProps: 'transform' }, 0.25)
+        .from('.hero-left > *:not(.hero-portal-name):not(.hero-proof)', { opacity: 0, y: 22, stagger: 0.08, clearProps: 'transform' }, 0.35)
+        .from('.hero-proof-chip', { opacity: 0, x: -14, duration: DUR.fast * 1.5, stagger: 0.05, clearProps: 'transform' }, 0.55)
+        .from('.hero-right', { opacity: 0, x: 32, scale: 0.96, duration: DUR.slow, clearProps: 'transform' }, 0.2);
+    }, rootRef);
+
+    // Portal effect off (reduced motion, or its first frame came too late): the
+    // content sits in normal reading flow, so play straight away. The portal
+    // decides on its first rendered frame — it always starts out "off" — so
+    // check only after a couple of frames, and keep watching after that.
+    const portal = rootRef.current.querySelector('[data-gp-motion]');
+    const playIfStatic = () => {
+      if (portal?.dataset.gpMotion === 'off') introRef.current?.play();
+    };
+    let observer = null;
+    let frame = window.requestAnimationFrame(() => {
+      frame = window.requestAnimationFrame(() => {
+        playIfStatic();
+        observer = portal ? new MutationObserver(playIfStatic) : null;
+        observer?.observe(portal, { attributes: true, attributeFilter: ['data-gp-motion'] });
+      });
+    });
+
+    return () => {
+      observer?.disconnect();
+      window.cancelAnimationFrame(frame);
+      introRef.current = null;
+      ctx.revert();
+    };
+  }, [fontReady]);
+
+  const handlePortalProgress = useCallback((progress) => {
+    if (progress >= PORTAL_REVEAL_AT) introRef.current?.play();
+  }, []);
+
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
-    <div id="home" style={fontReady ? undefined : { minHeight: '100svh' }}>
+    <div id="home" ref={rootRef} style={fontReady ? undefined : { minHeight: '100svh' }}>
     {fontReady && <GlyphPortal
       word={PORTAL_WORD}
       className="hero-portal"
@@ -93,6 +110,7 @@ const Hero = () => {
       fontWeight={900}
       enterLabel="Enter Portfolio"
       hint="Scroll to step inside."
+      onProgress={handlePortalProgress}
       style={{
         '--gp-paper': 'var(--dark)',
         '--gp-ink': 'var(--white)',
@@ -136,74 +154,55 @@ const Hero = () => {
     >
       <div className="hero-portal-grid">
         {/* ── LEFT — orchestrated stagger entrance ── */}
-        <motion.div
-          className="hero-left"
-          variants={safe(heroLeftContainer)}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="hero-left">
           {/* Name — role + last name + ghost title (first name is shown via the portal) */}
-          <motion.h2 className="hero-portal-name" variants={safe(fadeUp)}>
+          <h2 className="hero-portal-name">
             <span className="hn-sub">{profile.role}</span>
             {profileName.first && <span className="hn-first">{profileName.first}</span>}
             {profileName.last && <span className="hn-last">{profileName.last}</span>}
             <span className="hn-ghost">{profile.ghostTitle}</span>
-          </motion.h2>
+          </h2>
 
           {/* Descriptions */}
-          <motion.p className="hero-desc" variants={safe(fadeUp)}>
+          <p className="hero-desc">
             {profile.summary}
-          </motion.p>
-          <motion.p className="hero-desc hero-desc-sub" variants={safe(fadeUp)}>
+          </p>
+          <p className="hero-desc hero-desc-sub">
             {profile.secondarySummary}
-          </motion.p>
-          <motion.p className="hero-signature" variants={safe(fadeUp)}>
+          </p>
+          <p className="hero-signature">
             {profile.signature}
-          </motion.p>
+          </p>
 
           {/* Tech stack chips — stagger left slide-in */}
-          <motion.div className="hero-proof" variants={safe(chipContainer)}>
+          <div className="hero-proof">
             {profile.proofChips.map((chip) => (
-              <motion.div className="hero-proof-chip" key={chip} variants={safe(chipItem)}>
+              <div className="hero-proof-chip" key={chip}>
                 <span className="hero-proof-dot" />
                 {chip}
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
-          {/* CTA buttons — whileHover + whileTap spring */}
-          <motion.div className="hero-btns" variants={safe(fadeUp)}>
-            <motion.a
-              href={profile.ctaPrimaryHref}
-              className="btn-prime"
-              whileHover={reduced ? {} : { scale: 1.05 }}
-              whileTap={reduced ? {} : { scale: 0.96 }}
-              transition={btnSpring}
-            >
+          {/* CTA buttons */}
+          <div className="hero-btns">
+            <a href={profile.ctaPrimaryHref} className="btn-prime">
               {profile.ctaPrimaryLabel}
-            </motion.a>
-            <motion.a
+            </a>
+            <a
               href="#"
               target="_blank"
               rel="noopener noreferrer"
               className="btn-ghost"
-              whileHover={reduced ? {} : { scale: 1.05 }}
-              whileTap={reduced ? {} : { scale: 0.96 }}
-              transition={btnSpring}
               onClick={(event) => { event.preventDefault(); openCvDownload('hero'); }}
             >
               {profile.ctaSecondaryLabel}
-            </motion.a>
-          </motion.div>
-        </motion.div>
+            </a>
+          </div>
+        </div>
 
         {/* ── RIGHT — photo ── */}
-        <motion.div
-          className="hero-right"
-          variants={safe(photoVariant)}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="hero-right">
           <div className="hero-photo-wrap">
             <div className="hero-photo-frame">
               <img
@@ -214,7 +213,7 @@ const Hero = () => {
               />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </GlyphPortal>}
     </div>

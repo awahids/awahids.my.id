@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import gsap from 'gsap';
-import { useSectionMotion } from '../lib/sectionMotion';
+import { gsap, prefersReducedMotion } from '../lib/motion';
+import { useGsapReveal } from '../lib/useGsapReveal';
 
 const FOOTER_LINKS = [
   { href: '/', label: 'Portfolio' },
@@ -11,15 +10,14 @@ const FOOTER_LINKS = [
 ];
 
 const Footer = ({ isAiLabPage = false }) => {
-  const { sectionItem } = useSectionMotion();
   const year = new Date().getFullYear();
+  const footerRef = useRef(null);
   const topBtnRef = useRef(null);
+  useGsapReveal(footerRef);
 
   useEffect(() => {
     const btn = topBtnRef.current;
-    if (!btn) return;
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
+    if (!btn || prefersReducedMotion()) return undefined;
 
     const onEnter = () => gsap.to(btn, { scale: 1.14, rotation: -20, duration: 0.25, ease: 'back.out(2)' });
     const onLeave = () => gsap.to(btn, { scale: 1, rotation: 0, duration: 0.32, ease: 'power3.out' });
@@ -33,13 +31,8 @@ const Footer = ({ isAiLabPage = false }) => {
   }, []);
 
   return (
-    <motion.footer
-      className={isAiLabPage ? 'is-ai-lab-footer' : ''}
-      initial="hidden"
-      animate="visible"
-      variants={sectionItem}
-    >
-      <div className="footer-top">
+    <footer ref={footerRef} className={isAiLabPage ? 'is-ai-lab-footer' : ''}>
+      <div className="footer-top" data-gsap-reveal="up">
         <div className="fc">
           &copy; {year} — CREATED BY <b>A WAHID SAPHADI</b>
         </div>
@@ -64,7 +57,7 @@ const Footer = ({ isAiLabPage = false }) => {
           </nav>
         </div>
       </div>
-      <div className="footer-wordmark-wrap" aria-hidden="true">
+      <div className="footer-wordmark-wrap" aria-hidden="true" data-gsap-reveal="up">
         <div className="footer-wordmark">awahids</div>
       </div>
       <button
@@ -76,7 +69,7 @@ const Footer = ({ isAiLabPage = false }) => {
       >
         ↑
       </button>
-    </motion.footer>
+    </footer>
   );
 };
 

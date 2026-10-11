@@ -1,11 +1,9 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useSectionMotion } from '../lib/sectionMotion';
 import { BOOKING_URL } from '../lib/links';
-import { useWordSplit } from '../lib/useWordSplit';
 import { useTextScramble } from '../lib/useTextScramble';
 import { useGsapReveal } from '../lib/useGsapReveal';
-import { modalCardVariants, modalChildVariants, modalOverlayMotion } from '../lib/modalMotion';
+import { prefersReducedMotion, usePresence } from '../lib/motion';
+import { modalEnter, modalEnterFromRect, modalExit, modalExitToElement } from '../lib/modalMotion';
 import ProjectCoverflow from './ProjectCoverflow';
 
 const FOCUSABLE_SELECTOR = [
@@ -343,17 +341,29 @@ const projects = [
 const Portfolio = ({ lenisRef }) => {
   const [selectedProject, setSelectedProject] = useState(null);
   const sectionRef = useRef(null);
+  const overlayRef = useRef(null);
   const modalRef = useRef(null);
   const closeButtonRef = useRef(null);
   const previousFocusedRef = useRef(null);
+  // The tile the modal was opened from, so the card can grow out of it and back.
+  const originRef = useRef(null);
 
-  useWordSplit(sectionRef);
   useTextScramble(sectionRef);
   useGsapReveal(sectionRef);
-  const { viewport, sectionContainer, sectionItem, eyebrow, reduceMotion } =
-    useSectionMotion();
 
-  const openModal = useCallback((project) => {
+  // Keep the last project around so the modal still has content while it exits.
+  const [shownProject, setShownProject] = useState(null);
+  if (selectedProject && selectedProject !== shownProject) setShownProject(selectedProject);
+  const [presence] = useState(() => ({
+    enter: (el) => (originRef.current ? modalEnterFromRect(el, originRef.current.rect) : modalEnter(el)),
+    exit: (el) => (originRef.current && modalExitToElement(el, originRef.current.tile)) || modalExit(el),
+  }));
+  const modalShown = usePresence(Boolean(selectedProject), overlayRef, presence);
+  const project = selectedProject || shownProject;
+
+  const openModal = useCallback((project, tile) => {
+    originRef.current =
+      tile && !prefersReducedMotion() ? { tile, rect: tile.getBoundingClientRect() } : null;
     setSelectedProject(project);
   }, []);
 
@@ -417,160 +427,144 @@ const Portfolio = ({ lenisRef }) => {
 
   return (
     <section className="s-portfolio" id="portfolio">
-      <motion.div
-        ref={sectionRef}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewport}
-        variants={sectionContainer}
-      >
-        <motion.div className="s-eyebrow" variants={eyebrow}>
+      <div ref={sectionRef}>
+        <div className="s-eyebrow" data-gsap-reveal="left">
           // <span data-scramble="SELECTED_WORK">SELECTED_WORK</span>
-        </motion.div>
-        <motion.h2 className="s-title" variants={sectionItem} data-word-split>
+        </div>
+        <h2 className="s-title" data-gsap-reveal="split">
           Selected <span className="s-outline">Projects</span>
-        </motion.h2>
-        <motion.div
-          className="section-lime-rule"
-          variants={{
-            hidden: { scaleX: 0, originX: 0 },
-            visible: { scaleX: 1, originX: 0, transition: { type: 'spring', stiffness: 60, damping: 18, delay: 0.2 } },
-          }}
-        />
-        <motion.p className="port-intro" variants={sectionItem}>
+        </h2>
+        <div className="section-lime-rule" data-gsap-reveal="line" />
+        <p className="port-intro" data-gsap-reveal="up">
           Real projects across web apps, dashboards, backend systems, automation, and deployment.
-        </motion.p>
+        </p>
 
         <ProjectCoverflow projects={projects} onOpen={openModal} lenisRef={lenisRef} />
-      </motion.div>
+      </div>
 
-      <AnimatePresence>
-        {selectedProject && (
-          <motion.div
-            className="modal-overlay active"
-            onClick={closeModal}
-            {...modalOverlayMotion(reduceMotion)}
+      {modalShown && project && (
+        <div
+          className="modal-overlay active has-backdrop"
+          ref={overlayRef}
+          onClick={closeModal}
+        >
+          <div className="modal-backdrop" data-modal-backdrop aria-hidden="true" />
+          <div
+            className="modal-card"
+            data-modal-card
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`project-modal-title-${project.id}`}
+            tabIndex="-1"
+            data-lenis-prevent
+            data-lenis-prevent-wheel
+            data-lenis-prevent-touch
+            onClick={e => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
+            onTouchMove={(e) => e.stopPropagation()}
           >
-            <motion.div
-              className="modal-card"
-              ref={modalRef}
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby={`project-modal-title-${selectedProject.id}`}
-              tabIndex="-1"
-              data-lenis-prevent
-              data-lenis-prevent-wheel
-              data-lenis-prevent-touch
-              onClick={e => e.stopPropagation()}
-              onWheel={(e) => e.stopPropagation()}
-              onTouchMove={(e) => e.stopPropagation()}
-              variants={modalCardVariants(reduceMotion)}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-            >
-              <button ref={closeButtonRef} className="modal-close" onClick={closeModal} aria-label="Close project details">✕</button>
-              <motion.div className="modal-header" variants={modalChildVariants}>
-                {selectedProject.cat && (
-                  <div className="mh-cat">{selectedProject.cat}</div>
-                )}
-                <h2 id={`project-modal-title-${selectedProject.id}`} className="mh-title">{selectedProject.title}</h2>
-                {selectedProject.year && (
-                  <div className="mh-year">Release: {selectedProject.year}</div>
-                )}
-              </motion.div>
-              <motion.div className="modal-content" variants={modalChildVariants}>
-                <div className="m-case-sections">
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Overview</div>
-                    <p className="m-body-text">{selectedProject.desc}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Problem</div>
-                    <p className="m-body-text">{selectedProject.problem}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">What I Built</div>
-                    <p className="m-body-text">{selectedProject.built}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Result</div>
-                    <p className="m-body-text">{selectedProject.result}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Business Impact</div>
-                    <p className="m-body-text">{selectedProject.impact}</p>
-                  </article>
-                  <article className="m-case-block">
-                    <div className="m-case-lbl">Key Outcomes</div>
-                    <ul className="m-impact-list">
-                      {selectedProject.outcomes.map((outcome) => (
-                        <li key={outcome}>{outcome}</li>
-                      ))}
-                    </ul>
-                  </article>
-                </div>
-                <div className="modal-sidebar">
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Project Snapshot</div>
-                    <div className="m-meta-grid">
-                      <div className="m-meta-item">
-                        <span>Type</span>
-                        <strong>{selectedProject.type}</strong>
-                      </div>
-                      <div className="m-meta-item">
-                        <span>Role</span>
-                        <strong>{selectedProject.role}</strong>
-                      </div>
-                      <div className="m-meta-item">
-                        <span>Focus</span>
-                        <strong>{selectedProject.focus.join(' · ')}</strong>
-                      </div>
+            <button ref={closeButtonRef} className="modal-close" onClick={closeModal} aria-label="Close project details">✕</button>
+            <div className="modal-header" data-modal-child>
+              {project.cat && (
+                <div className="mh-cat">{project.cat}</div>
+              )}
+              <h2 id={`project-modal-title-${project.id}`} className="mh-title">{project.title}</h2>
+              {project.year && (
+                <div className="mh-year">Release: {project.year}</div>
+              )}
+            </div>
+            <div className="modal-content" data-modal-child>
+              <div className="m-case-sections">
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Overview</div>
+                  <p className="m-body-text">{project.desc}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Problem</div>
+                  <p className="m-body-text">{project.problem}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">What I Built</div>
+                  <p className="m-body-text">{project.built}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Result</div>
+                  <p className="m-body-text">{project.result}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Business Impact</div>
+                  <p className="m-body-text">{project.impact}</p>
+                </article>
+                <article className="m-case-block">
+                  <div className="m-case-lbl">Key Outcomes</div>
+                  <ul className="m-impact-list">
+                    {project.outcomes.map((outcome) => (
+                      <li key={outcome}>{outcome}</li>
+                    ))}
+                  </ul>
+                </article>
+              </div>
+              <div className="modal-sidebar">
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Project Snapshot</div>
+                  <div className="m-meta-grid">
+                    <div className="m-meta-item">
+                      <span>Type</span>
+                      <strong>{project.type}</strong>
                     </div>
-                  </div>
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Impact Signals</div>
-                    <div className="m-signal-grid">
-                      {selectedProject.signals.map((signal) => (
-                        <div key={signal.label} className="m-signal-item">
-                          <span className="m-signal-label">{signal.label}</span>
-                          <strong className="m-signal-value">{signal.value}</strong>
-                          <span className="m-signal-note">{signal.note}</span>
-                        </div>
-                      ))}
+                    <div className="m-meta-item">
+                      <span>Role</span>
+                      <strong>{project.role}</strong>
                     </div>
-                  </div>
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Fullstack Scope</div>
-                    <div className="m-ss-tags">
-                      {selectedProject.scope.map((scope) => (
-                        <span key={scope} className="m-ss-tag">{scope}</span>
-                      ))}
+                    <div className="m-meta-item">
+                      <span>Focus</span>
+                      <strong>{project.focus.join(' · ')}</strong>
                     </div>
-                  </div>
-                  <div className="m-sidebar-section">
-                    <div className="m-ss-lbl">Tech Stack</div>
-                    <div className="m-ss-tags">
-                      {selectedProject.stack.map(s => (
-                        <span key={s} className="m-ss-tag">{s}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="m-actions">
-                    <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="m-btn prime">Discuss Similar Project ↗</a>
-                    {selectedProject.live !== '#' && (
-                      <a href={selectedProject.live} target="_blank" rel="noopener noreferrer" className="m-btn ghost">View Live Product ↗</a>
-                    )}
-                    {selectedProject.case !== '#' && (
-                      <a href={selectedProject.case} target="_blank" rel="noopener noreferrer" className="m-btn ghost">Case Study ↗</a>
-                    )}
                   </div>
                 </div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Impact Signals</div>
+                  <div className="m-signal-grid">
+                    {project.signals.map((signal) => (
+                      <div key={signal.label} className="m-signal-item">
+                        <span className="m-signal-label">{signal.label}</span>
+                        <strong className="m-signal-value">{signal.value}</strong>
+                        <span className="m-signal-note">{signal.note}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Fullstack Scope</div>
+                  <div className="m-ss-tags">
+                    {project.scope.map((scope) => (
+                      <span key={scope} className="m-ss-tag">{scope}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="m-sidebar-section">
+                  <div className="m-ss-lbl">Tech Stack</div>
+                  <div className="m-ss-tags">
+                    {project.stack.map(s => (
+                      <span key={s} className="m-ss-tag">{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="m-actions">
+                  <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="m-btn prime">Discuss Similar Project ↗</a>
+                  {project.live !== '#' && (
+                    <a href={project.live} target="_blank" rel="noopener noreferrer" className="m-btn ghost">View Live Product ↗</a>
+                  )}
+                  {project.case !== '#' && (
+                    <a href={project.case} target="_blank" rel="noopener noreferrer" className="m-btn ghost">Case Study ↗</a>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
