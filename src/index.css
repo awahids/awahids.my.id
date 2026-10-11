@@ -568,12 +568,13 @@ body.is-on-light-section .spotlight-glow {
   padding:10px 0;
 }
 
-/* Motion is GSAP-driven (Ticker.jsx): looping x, scroll-velocity speed + skew. */
+/* Motion is GSAP-driven (Ticker.jsx): the track loops on xPercent, the
+   .ticker-skew wrapper leans with scroll velocity. No CSS transforms here —
+   GSAP would read them in as an extra offset. */
 .ticker-track {
   display:flex; width:max-content;
   will-change:transform;
 }
-.ticker-track-rev { transform:translateX(-33.333%); }
 
 /* Track 1 — tech stack items */
 .t-item {
@@ -3240,8 +3241,7 @@ footer {
   a,button,.nav-cta,.btn-prime,.btn-ghost,.cf-submit,.floating-top-btn,.ai-submit,.ai-send,.ai-quick-btn { cursor:pointer !important; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ticker-track,
-  .ticker-track-rev { will-change:auto; transform:translateX(0); }
+  .ticker-track { will-change:auto; }
   .hero-badge,
   .pl-dot,
   .status-pulse,

@@ -29,34 +29,35 @@ const CAPABILITY_ITEMS = [
 
 // Each track holds three copies, so sliding a third of its width loops seamlessly.
 // Scrolling speeds the rows up (and flips them when scrolling back up) and leans
-// them into the motion; both ease back to rest once scrolling stops.
+// them into the motion; both ease back to rest shortly after scrolling stops.
+// The lean lives on .ticker-skew, a wrapper, so it never fights the loop's x.
 const useScrollTicker = (rootRef) => {
   useIsoLayoutEffect(() => {
     const root = rootRef.current;
     if (!root || prefersReducedMotion()) return undefined;
 
-    const ctx = gsap.context((self) => {
+    const ctx = gsap.context(() => {
       const tracks = gsap.utils.toArray('.ticker-track', root);
+      const leans = gsap.utils.toArray('.ticker-skew', root);
       const loops = tracks.map((track, i) => {
         const reverse = track.classList.contains('ticker-track-rev');
         return gsap.fromTo(track,
           { xPercent: reverse ? -100 / 3 : 0 },
           { xPercent: reverse ? 0 : -100 / 3, duration: LOOP_SECONDS[i] ?? 40, ease: 'none', repeat: -1 });
       });
-      let direction = 1;
 
-      self.add('react', (velocity, scrollDirection) => {
-        direction = scrollDirection;
-        const boost = gsap.utils.clamp(0, MAX_BOOST, Math.abs(velocity) / 400);
-        loops.forEach((loop) => {
-          gsap.timeline()
-            .to(loop, { timeScale: (1 + boost) * direction, duration: 0.2, ease: 'power2.out', overwrite: true })
-            .to(loop, { timeScale: direction, duration: 1.2, ease: 'power2.out' });
-        });
-        gsap.timeline()
-          .to(tracks, { skewX: gsap.utils.clamp(-MAX_SKEW, MAX_SKEW, -velocity / 300), duration: 0.2, overwrite: true })
-          .to(tracks, { skewX: 0, duration: 0.8, ease: 'power3.out' });
+      const speed = { value: 1 };
+      const speedTo = gsap.quickTo(speed, 'value', {
+        duration: 0.6,
+        ease: 'power2.out',
+        onUpdate: () => loops.forEach((loop) => loop.timeScale(speed.value)),
       });
+      const skewTo = leans.map((el) => gsap.quickTo(el, 'skewX', { duration: 0.5, ease: 'power3.out' }));
+      let direction = 1;
+      const settle = gsap.delayedCall(0.15, () => {
+        speedTo(direction);
+        skewTo.forEach((to) => to(0));
+      }).pause();
 
       ScrollTrigger.create({
         trigger: root,
@@ -64,7 +65,15 @@ const useScrollTicker = (rootRef) => {
         end: 'bottom top',
         // Off screen the rows just stop — no work while nobody can see them.
         onToggle: ({ isActive }) => loops.forEach((loop) => loop.paused(!isActive)),
-        onUpdate: (st) => self.react(st.getVelocity(), st.direction),
+        onUpdate: (st) => {
+          const velocity = st.getVelocity();
+          direction = st.direction;
+          const boost = gsap.utils.clamp(0, MAX_BOOST, Math.abs(velocity) / 400);
+          speedTo((1 + boost) * direction);
+          const lean = gsap.utils.clamp(-MAX_SKEW, MAX_SKEW, -velocity / 300);
+          skewTo.forEach((to) => to(lean));
+          settle.restart(true);
+        },
       });
     }, root);
 
@@ -80,26 +89,30 @@ const Ticker = () => {
     <div className="ticker-wrap" aria-hidden="true" ref={rootRef}>
       {/* ── Row 1: tech stack → ── */}
       <div className="ticker ticker-is-lime">
-        <div className="ticker-track">
-          {[...TECH_ITEMS, ...TECH_ITEMS, ...TECH_ITEMS].map((tech, i) => (
-            <span key={i} className="t-item">
-              <span className="t-prefix">$</span>
-              {tech}
-              <span className="t-sep">//</span>
-            </span>
-          ))}
+        <div className="ticker-skew">
+          <div className="ticker-track">
+            {[...TECH_ITEMS, ...TECH_ITEMS, ...TECH_ITEMS].map((tech, i) => (
+              <span key={i} className="t-item">
+                <span className="t-prefix">$</span>
+                {tech}
+                <span className="t-sep">//</span>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ── Row 2: capabilities ← ── */}
       <div className="ticker ticker-is-dark">
-        <div className="ticker-track ticker-track-rev">
-          {[...CAPABILITY_ITEMS, ...CAPABILITY_ITEMS, ...CAPABILITY_ITEMS].map((cap, i) => (
-            <span key={i} className="t-item t-cap">
-              <span className="t-arrow">→</span>
-              {cap}
-            </span>
-          ))}
+        <div className="ticker-skew">
+          <div className="ticker-track ticker-track-rev">
+            {[...CAPABILITY_ITEMS, ...CAPABILITY_ITEMS, ...CAPABILITY_ITEMS].map((cap, i) => (
+              <span key={i} className="t-item t-cap">
+                <span className="t-arrow">→</span>
+                {cap}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
