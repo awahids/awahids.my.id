@@ -4864,6 +4864,30 @@ footer {
   color: var(--text-muted);
 }
 .rg-workflow-credit a { color: var(--lime); }
+.rg-workflow-block { display: flex; flex-direction: column; gap: 8px; }
+.rg-workflow-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.875rem;
+  color: var(--white);
+}
+.rg-workflow-head code {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--lime);
+  overflow-wrap: anywhere;
+}
+.rg-workflow-head .rg-btn-ghost { padding: 6px 14px; }
+.rg-workflow-note {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
 
 /* Nav buttons */
 .rg-nav {

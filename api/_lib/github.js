@@ -60,10 +60,28 @@ const PROFILE_QUERY = `
   }
 `;
 
+const REPO_QUERY = `
+  query GithubRepoCard($owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+      name
+      nameWithOwner
+      description
+      stargazerCount
+      forkCount
+      isArchived
+      isPrivate
+      primaryLanguage {
+        name
+        color
+      }
+    }
+  }
+`;
+
 const createGithubError = ({ status = 500, code = 'UPSTREAM_ERROR', message }) =>
   Object.assign(new Error(message), { name: 'GithubServiceError', status, code });
 
-const fetchGraphqlPage = async (login, reposCursor, timeoutMs) => {
+const fetchGraphql = async (query, variables, timeoutMs) => {
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
     throw createGithubError({
@@ -84,7 +102,7 @@ const fetchGraphqlPage = async (login, reposCursor, timeoutMs) => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ query: PROFILE_QUERY, variables: { login, reposCursor } }),
+      body: JSON.stringify({ query, variables }),
       signal: controller.signal,
     });
   } catch (error) {
@@ -124,11 +142,15 @@ const fetchGraphqlPage = async (login, reposCursor, timeoutMs) => {
     });
   }
 
-  if (!payload.data?.user) {
+  return payload.data;
+};
+
+const fetchGraphqlPage = async (login, reposCursor, timeoutMs) => {
+  const data = await fetchGraphql(PROFILE_QUERY, { login, reposCursor }, timeoutMs);
+  if (!data?.user) {
     throw createGithubError({ status: 404, code: 'NOT_FOUND', message: `GitHub user "${login}" not found` });
   }
-
-  return payload.data.user;
+  return data.user;
 };
 
 const mergeLanguageTotals = (languageTotals, repo) => {
@@ -229,4 +251,17 @@ export const getCombinedRepoStars = async (username, repoNames, { timeoutMs = DE
   );
 
   return counts.reduce((sum, count) => sum + count, 0);
+};
+
+/**
+ * One public repo for the repo card. A private repo is reported as missing
+ * even if GITHUB_TOKEN could read it, so a broad token never leaks one.
+ */
+export const getRepoCardData = async (owner, name, { timeoutMs = DEFAULT_TIMEOUT_MS } = {}) => {
+  const data = await fetchGraphql(REPO_QUERY, { owner, name }, timeoutMs);
+  const repo = data?.repository;
+  if (!repo || repo.isPrivate) {
+    throw createGithubError({ status: 404, code: 'NOT_FOUND', message: `Repository "${owner}/${name}" not found` });
+  }
+  return repo;
 };

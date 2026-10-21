@@ -10,13 +10,18 @@ const limitGithubCardRequests = createRateLimiter({
   maxRequests: 30,
 });
 
+// Only the username reaches the profile fetch: passing the whole query along
+// would let `?timeoutMs=` through to its options.
+const fetchProfile = (username) => getGithubProfileData(username);
+
 /**
- * Shared GET handler for the stats/top-langs/streak/activity-graph cards:
- * validates the username, rate-limits, fetches profile data once, and
- * turns any GithubServiceError into a renderable SVG instead of JSON
- * (these endpoints are embedded as <img>, so a JSON error body is useless).
+ * Shared GET handler for the stats/top-langs/streak/activity-graph/repo
+ * cards: validates the username, rate-limits, fetches the card's data
+ * (profile data unless `fetchData` says otherwise), and turns any
+ * GithubServiceError into a renderable SVG instead of JSON (these endpoints
+ * are embedded as <img>, so a JSON error body is useless).
  */
-export const handleGithubCardRequest = async (req, res, buildCard) => {
+export const handleGithubCardRequest = async (req, res, buildCard, { fetchData = fetchProfile } = {}) => {
   if (!ensureMethod(req, res, 'GET')) return;
   if (!limitGithubCardRequests(req, res)) return;
 
@@ -33,7 +38,7 @@ export const handleGithubCardRequest = async (req, res, buildCard) => {
   const hideBorder = isHideBorder(req.query);
 
   try {
-    const data = await getGithubProfileData(username);
+    const data = await fetchData(username, req.query || {});
     const svg = buildCard(data, { colors, hideBorder, query: req.query });
     sendSvg(res, svg);
   } catch (error) {

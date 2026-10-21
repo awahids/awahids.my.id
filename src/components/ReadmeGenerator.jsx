@@ -10,6 +10,7 @@ import {
   buildCodeStatsWorkflow,
   parseHighlightLangs,
 } from '../lib/codeStatsWorkflow';
+import { SNAKE_SOURCE_URL, SNAKE_WORKFLOW_PATH, buildSnakeWorkflow, snakeImageUrls } from '../lib/snakeWorkflow';
 
 // `label` is the form field caption; `linkLabel` is the shorter text shown
 // on the actual README link. `toUrl` turns whatever the field collects (a
@@ -43,15 +44,19 @@ const ReadmeGenerator = () => {
   const [showVisitorCounter, setShowVisitorCounter] = useState(false);
   const [showCodeStats, setShowCodeStats] = useState(false);
   const [codeStatsLangsText, setCodeStatsLangsText] = useState(DEFAULT_HIGHLIGHT_LANGS.join(', '));
+  const [showRepoCards, setShowRepoCards] = useState(false);
+  const [showSnake, setShowSnake] = useState(false);
   const [taglineText, setTaglineText] = useState('Hello, There! 👋\nNice to meet you!');
   const [bioText, setBioText] = useState('');
   const [skillIds, setSkillIds] = useState(DEFAULT_SKILL_IDS);
   const [socials, setSocials] = useState(() => Object.fromEntries(SOCIAL_FIELDS.map((f) => [f.key, ''])));
   const [theme, setTheme] = useState(DEFAULT_THEME);
+  const [lightTheme, setLightTheme] = useState('');
   const [typing, setTyping] = useState({ font: 'mono', bold: false, speed: 'normal', align: 'center', size: 30, color: '' });
   const setTypingOption = (key, value) => setTyping((prev) => ({ ...prev, [key]: value }));
   const [previewTab, setPreviewTab] = useState('preview');
-  const [copied, setCopied] = useState(false);
+  // Which copy button last succeeded: 'readme' or a workflow id.
+  const [copiedId, setCopiedId] = useState('');
 
   const markdown = useMemo(() => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -61,10 +66,13 @@ const ReadmeGenerator = () => {
         pinnedRepos: pinnedReposText.split(',').map((repo) => repo.trim()),
         showVisitorCounter,
         showCodeStats,
+        showRepoCards,
+        showSnake,
         taglineLines: taglineText.split('\n').map((line) => line.trim()),
         bio: bioText.split('\n').map((line) => line.trim()),
         skills: skillIds,
         theme,
+        lightTheme,
         typing,
         socialLinks: SOCIAL_FIELDS.map((field) => {
           const value = socials[field.key].trim();
@@ -73,11 +81,31 @@ const ReadmeGenerator = () => {
       },
       { origin }
     );
-  }, [username, pinnedReposText, showVisitorCounter, showCodeStats, taglineText, bioText, skillIds, socials, theme, typing]);
+  }, [username, pinnedReposText, showVisitorCounter, showCodeStats, showRepoCards, showSnake, taglineText, bioText, skillIds, socials, theme, lightTheme, typing]);
 
-  const workflow = useMemo(
-    () => (showCodeStats ? buildCodeStatsWorkflow({ highlightLangs: parseHighlightLangs(codeStatsLangsText) }) : ''),
-    [showCodeStats, codeStatsLangsText]
+  // One entry per README section that needs a GitHub Action in the profile
+  // repo. The snake is only listed when the README actually got its section.
+  const workflows = useMemo(
+    () =>
+      [
+        showCodeStats && {
+          id: 'code-stats',
+          title: 'Lines of code',
+          path: CODE_STATS_WORKFLOW_PATH,
+          note: 'Runs on every push and every Sunday at 00:17 UTC, and rewrites the table between the markers.',
+          source: { url: CODE_STATS_SOURCE_URL, label: 'arhamkhnz/github-code-analyzer' },
+          yaml: buildCodeStatsWorkflow({ highlightLangs: parseHighlightLangs(codeStatsLangsText) }),
+        },
+        showSnake && snakeImageUrls(username) && {
+          id: 'snake',
+          title: 'Contribution snake',
+          path: SNAKE_WORKFLOW_PATH,
+          note: 'Runs daily and on pushes to main/master, and publishes the SVGs to the output branch. The image stays broken until the first run.',
+          source: { url: SNAKE_SOURCE_URL, label: 'Platane/snk' },
+          yaml: buildSnakeWorkflow(),
+        },
+      ].filter(Boolean),
+    [showCodeStats, codeStatsLangsText, showSnake, username]
   );
 
   const applySuggestion = ({ taglines, bio, skills }) => {
@@ -91,17 +119,17 @@ const ReadmeGenerator = () => {
   const toggleSkill = (id) =>
     setSkillIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
-  // The Workflow tab only exists while the section is enabled; fall back to
-  // the preview if it was switched off after visiting that tab.
-  const activeTab = previewTab === 'workflow' && !showCodeStats ? 'preview' : previewTab;
+  // The Workflows tab only exists while a section needs one; fall back to
+  // the preview if they were all switched off after visiting that tab.
+  const activeTab = previewTab === 'workflows' && !workflows.length ? 'preview' : previewTab;
 
-  const handleCopy = async () => {
+  const handleCopy = async (text, id) => {
     try {
-      await navigator.clipboard.writeText(activeTab === 'workflow' ? workflow : markdown);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId((current) => (current === id ? '' : current)), 2000);
     } catch {
-      setCopied(false);
+      setCopiedId('');
     }
   };
 
@@ -125,7 +153,7 @@ const ReadmeGenerator = () => {
                 <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="awahids" />
               </label>
               <label>
-                Pinned repos for stars badges (comma-separated, optional)
+                Pinned repos for the stars badge and repo cards (comma-separated, optional)
                 <input
                   value={pinnedReposText}
                   onChange={(e) => setPinnedReposText(e.target.value)}
@@ -147,6 +175,18 @@ const ReadmeGenerator = () => {
                   onChange={(e) => setShowCodeStats(e.target.checked)}
                 />
                 Add a lines-of-code section (counted by a GitHub Action)
+              </label>
+              <label className="rg-checkbox">
+                <input
+                  type="checkbox"
+                  checked={showRepoCards}
+                  onChange={(e) => setShowRepoCards(e.target.checked)}
+                />
+                Show a card for each pinned repo
+              </label>
+              <label className="rg-checkbox">
+                <input type="checkbox" checked={showSnake} onChange={(e) => setShowSnake(e.target.checked)} />
+                Add a contribution snake (drawn by a GitHub Action)
               </label>
               {showCodeStats && (
                 <label>
@@ -177,6 +217,19 @@ const ReadmeGenerator = () => {
                   ))}
                 </div>
               </div>
+              <label>
+                Light-mode theme (cards switch to it when the viewer uses GitHub in light mode)
+                <select value={lightTheme} onChange={(e) => setLightTheme(e.target.value)}>
+                  <option value="">Same as the card theme</option>
+                  {Object.entries(CARD_THEMES)
+                    .filter(([id]) => id !== theme)
+                    .map(([id, t]) => (
+                      <option key={id} value={id}>
+                        {t.label}
+                      </option>
+                    ))}
+                </select>
+              </label>
             </div>
           )}
 
@@ -285,33 +338,46 @@ const ReadmeGenerator = () => {
                 <button type="button" className={activeTab === 'markdown' ? 'is-active' : ''} onClick={() => setPreviewTab('markdown')}>
                   Markdown
                 </button>
-                {showCodeStats && (
-                  <button type="button" className={activeTab === 'workflow' ? 'is-active' : ''} onClick={() => setPreviewTab('workflow')}>
-                    Workflow
+                {workflows.length > 0 && (
+                  <button type="button" className={activeTab === 'workflows' ? 'is-active' : ''} onClick={() => setPreviewTab('workflows')}>
+                    {workflows.length > 1 ? `Workflows (${workflows.length})` : 'Workflow'}
                   </button>
                 )}
               </div>
 
-              {activeTab === 'workflow' ? (
+              {activeTab === 'workflows' ? (
                 <div className="rg-workflow">
                   <ol className="rg-workflow-steps">
                     <li>
-                      Save this file as <code>{CODE_STATS_WORKFLOW_PATH}</code> in your profile repo
-                      {username.trim() ? <> (<code>{username.trim()}/{username.trim()}</code>)</> : null}, next to the README.
+                      Save {workflows.length > 1 ? 'each file below at its path' : 'the file below at its path'} in your
+                      profile repo{username.trim() ? <> (<code>{username.trim()}/{username.trim()}</code>)</> : null}, next to the README.
                     </li>
                     <li>
-                      If the run cannot push, go to <strong>Settings → Actions → General → Workflow permissions</strong> and
+                      If a run cannot push, go to <strong>Settings → Actions → General → Workflow permissions</strong> and
                       pick <strong>Read and write permissions</strong>.
                     </li>
                     <li>
-                      Open <strong>Actions → Analyze Public Repositories by Username → Run workflow</strong>. After that it
-                      runs on every push and every Sunday at 00:17 UTC.
+                      Open <strong>Actions</strong>, pick the workflow, and click <strong>Run workflow</strong> once. After
+                      that it runs on its own schedule.
                     </li>
                   </ol>
-                  <textarea className="rg-review-markdown" readOnly wrap="off" value={workflow} aria-label="Workflow file" />
-                  <p className="rg-workflow-credit">
-                    Workflow from <a href={CODE_STATS_SOURCE_URL} target="_blank" rel="noreferrer">arhamkhnz/github-code-analyzer</a>.
-                  </p>
+                  {workflows.map((wf) => (
+                    <div key={wf.id} className="rg-workflow-block">
+                      <div className="rg-workflow-head">
+                        <span>
+                          <strong>{wf.title}</strong> <code>{wf.path}</code>
+                        </span>
+                        <button type="button" className="rg-btn-ghost" onClick={() => handleCopy(wf.yaml, wf.id)}>
+                          {copiedId === wf.id ? 'Copied!' : 'Copy'}
+                        </button>
+                      </div>
+                      <p className="rg-workflow-note">{wf.note}</p>
+                      <textarea className="rg-review-markdown" readOnly wrap="off" value={wf.yaml} aria-label={`${wf.title} workflow file`} />
+                      <p className="rg-workflow-credit">
+                        Workflow from <a href={wf.source.url} target="_blank" rel="noreferrer">{wf.source.label}</a>.
+                      </p>
+                    </div>
+                  ))}
                 </div>
               ) : activeTab === 'preview' ? (
                 // Safe: buildReadmeMarkdown escapes all text content and only
@@ -332,8 +398,8 @@ const ReadmeGenerator = () => {
                 Continue
               </button>
             ) : (
-              <button type="button" className="rg-btn-primary" onClick={handleCopy}>
-                {copied ? 'Copied!' : activeTab === 'workflow' ? 'Copy workflow' : 'Copy README'}
+              <button type="button" className="rg-btn-primary" onClick={() => handleCopy(markdown, 'readme')}>
+                {copiedId === 'readme' ? 'Copied!' : 'Copy README'}
               </button>
             )}
           </div>
