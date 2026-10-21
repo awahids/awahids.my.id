@@ -4764,6 +4764,22 @@ footer {
 }
 .rg-theme-swatch i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .rg-theme-swatch.is-active { outline: 2px solid var(--lime); outline-offset: 2px; }
+.rg-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.rg-template {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--dark);
+  border: 1px solid var(--stroke-soft);
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+}
+.rg-template strong { font: 600 0.8125rem 'Syne', sans-serif; }
+.rg-template span { font-family: 'DM Mono', monospace; font-size: 0.6875rem; line-height: 1.5; color: var(--text-muted); }
+.rg-template:hover { border-color: var(--lime); }
+.rg-template.is-active { border-color: var(--lime); outline: 2px solid var(--lime); outline-offset: 2px; }
 .rg-typing-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
 
 .rg-social-fields {

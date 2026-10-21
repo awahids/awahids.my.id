@@ -1,12 +1,25 @@
 import React, { useRef, useState } from 'react';
 import { skillIconUrl } from '../lib/skillIcons';
+import { CARD_THEMES } from '../lib/cardThemes';
+import { STATS_SECTIONS, findStatsTemplate } from '../lib/statsTemplates';
 
 const ENDPOINT = import.meta.env.VITE_README_ASSISTANT_ENDPOINT || '/api/readme-assistant';
 
 const QUICK_ASKS = {
   about: ['Suggest taglines for my profile', 'Write my bio', 'Make my bio shorter'],
   skills: ['Suggest skill icons for my stack'],
+  stats: ['Recommend a stats layout for my profile', 'Which repos should I pin?', 'Pick a theme for my stats cards'],
 };
+
+const INTROS = {
+  about: "Helps with taglines, your bio and skill icons for this README. It won't answer anything else.",
+  skills: "Helps with taglines, your bio and skill icons for this README. It won't answer anything else.",
+  stats:
+    "Recommends a stats template, themes, sections and repos to pin. With a GitHub username it reads your public stars, commits, languages and top repos first. It won't answer anything else.",
+};
+
+const sectionLabel = (id) => STATS_SECTIONS.find((section) => section.id === id)?.label || id;
+const themeLabel = (id) => CARD_THEMES[id]?.label || id;
 
 const ReadmeAiHelper = ({ focus, context, onApply }) => {
   const [request, setRequest] = useState('');
@@ -29,7 +42,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
       const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ request: trimmed, context }),
+        body: JSON.stringify({ request: trimmed, context, focus }),
         signal: controller.signal,
       });
       const data = await response.json();
@@ -58,7 +71,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
     <div className="rg-ai">
       <div className="rg-ai-head">
         <strong>AI helper</strong>
-        <span>Helps with taglines, your bio and skill icons for this README. It won't answer anything else.</span>
+        <span>{INTROS[focus]}</span>
       </div>
 
       <div className="rg-ai-quick">
@@ -117,6 +130,27 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
                   {result.skills.map((id) => <img key={id} src={skillIconUrl(id)} alt={id} title={id} loading="lazy" />)}
                 </div>
                 <button type="button" onClick={() => onApply({ skills: result.skills })}>Add these icons</button>
+              </div>
+            )}
+
+            {result.stats && (
+              <div className="rg-ai-block">
+                <span className="rg-ai-label">Stats layout</span>
+                <ul>
+                  {result.stats.template && <li>Template: {findStatsTemplate(result.stats.template)?.name}</li>}
+                  {result.stats.theme && (
+                    <li>
+                      Theme: {themeLabel(result.stats.theme)}
+                      {result.stats.lightTheme ? `, ${themeLabel(result.stats.lightTheme)} in light mode` : ''}
+                    </li>
+                  )}
+                  <li>
+                    Sections:{' '}
+                    {result.stats.sections.length ? result.stats.sections.map(sectionLabel).join(', ') : 'core stats cards only'}
+                  </li>
+                  {result.stats.pinnedRepos.length > 0 && <li>Pin: {result.stats.pinnedRepos.join(', ')}</li>}
+                </ul>
+                <button type="button" onClick={() => onApply({ stats: result.stats })}>Apply this layout</button>
               </div>
             )}
           </>

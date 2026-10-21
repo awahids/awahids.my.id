@@ -12,6 +12,7 @@ import {
 } from '../lib/codeStatsWorkflow';
 import { SNAKE_SOURCE_URL, SNAKE_WORKFLOW_PATH, buildSnakeWorkflow, snakeImageUrls } from '../lib/snakeWorkflow';
 import { decodeConfig, encodeConfig } from '../lib/readmeConfig';
+import { STATS_SECTIONS, STATS_TEMPLATES, statsLayoutSettings } from '../lib/statsTemplates';
 
 // Safari throws if replaceState runs more than ~100 times in 30s, so typing
 // only rewrites the URL once it pauses.
@@ -156,13 +157,50 @@ const ReadmeGenerator = () => {
     [showCodeStats, codeStatsLangsText, showSnake, username]
   );
 
-  const applySuggestion = ({ taglines, bio, skills }) => {
+  const sectionSetters = {
+    showTrophies: setShowTrophies,
+    showRepoCards: setShowRepoCards,
+    showSnake: setShowSnake,
+    showCodeStats: setShowCodeStats,
+    showVisitorCounter: setShowVisitorCounter,
+  };
+  const sectionValues = { showTrophies, showRepoCards, showSnake, showCodeStats, showVisitorCounter };
+
+  // A template or an AI layout sets every optional section (on or off), the
+  // themes it names, and the repos to pin when it has some.
+  const applyStatsLayout = (layout) => {
+    const settings = statsLayoutSettings(layout);
+    for (const [field, setter] of Object.entries(sectionSetters)) setter(settings[field]);
+    if (settings.theme) setTheme(settings.theme);
+    if ('lightTheme' in settings) setLightTheme(settings.lightTheme);
+    if (layout.pinnedRepos?.length) setPinnedReposText(layout.pinnedRepos.join(', '));
+  };
+
+  // A template button is marked active while the form still matches it.
+  const isTemplateActive = (template) =>
+    Object.entries(statsLayoutSettings(template)).every(([field, value]) =>
+      field === 'theme' ? theme === value : field === 'lightTheme' ? lightTheme === value : sectionValues[field] === value
+    );
+
+  const applySuggestion = ({ taglines, bio, skills, stats }) => {
     if (taglines) setTaglineText(taglines.join('\n'));
     if (bio) setBioText(bio.join('\n'));
     if (skills) setSkillIds((prev) => [...prev, ...skills.filter((id) => !prev.includes(id))]);
+    if (stats) applyStatsLayout(stats);
   };
 
-  const aiContext = { username, tagline: taglineText, bio: bioText, skills: skillIds };
+  const aiContext = {
+    username,
+    tagline: taglineText,
+    bio: bioText,
+    skills: skillIds,
+    stats: {
+      sections: STATS_SECTIONS.filter((section) => sectionValues[section.field]).map((section) => section.id),
+      theme,
+      lightTheme,
+      pinnedRepos: pinnedReposText.split(',').map((repo) => repo.trim()).filter(Boolean),
+    },
+  };
 
   const toggleSkill = (id) =>
     setSkillIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
@@ -285,6 +323,24 @@ const ReadmeGenerator = () => {
                     ))}
                 </select>
               </label>
+              <fieldset className="rg-social-fields">
+                <legend>Stats templates</legend>
+                <div className="rg-templates">
+                  {STATS_TEMPLATES.map((template) => (
+                    <button
+                      type="button"
+                      key={template.id}
+                      className={`rg-template${isTemplateActive(template) ? ' is-active' : ''}`}
+                      aria-pressed={isTemplateActive(template)}
+                      onClick={() => applyStatsLayout(template)}
+                    >
+                      <strong>{template.name}</strong>
+                      <span>{template.fits}</span>
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+              <ReadmeAiHelper focus="stats" context={aiContext} onApply={applySuggestion} />
             </div>
           )}
 

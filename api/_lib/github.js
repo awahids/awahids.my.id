@@ -1,6 +1,7 @@
 const GITHUB_GRAPHQL_URL = 'https://api.github.com/graphql';
 const DEFAULT_TIMEOUT_MS = 12_000;
 const MAX_REPOS = 100;
+const TOP_REPOS = 10;
 
 const PROFILE_QUERY = `
   query GithubProfileData($login: String!, $reposCursor: String) {
@@ -180,6 +181,7 @@ export const getGithubProfileData = async (username, { timeoutMs = DEFAULT_TIMEO
   let user;
   let reposCursor;
   let repoCount = 0;
+  const repos = [];
 
   do {
     user = await fetchGraphqlPage(login, reposCursor, timeoutMs);
@@ -187,6 +189,7 @@ export const getGithubProfileData = async (username, { timeoutMs = DEFAULT_TIMEO
       totalStars += repo.stargazerCount || 0;
       totalForks += repo.forkCount || 0;
       mergeLanguageTotals(languageTotals, repo);
+      repos.push({ name: repo.name, stars: repo.stargazerCount || 0, language: repo.primaryLanguage?.name || null });
     }
     repoCount += user.repositories.nodes.length;
     reposCursor = user.repositories.pageInfo.hasNextPage ? user.repositories.pageInfo.endCursor : null;
@@ -213,6 +216,10 @@ export const getGithubProfileData = async (username, { timeoutMs = DEFAULT_TIMEO
       contributions: calendar.totalContributions,
     },
     languages: [...languageTotals.values()].sort((a, b) => b.size - a.size),
+    // Most-starred first (name order breaks ties), for repo suggestions.
+    topRepos: repos
+      .sort((a, b) => b.stars - a.stars || a.name.localeCompare(b.name))
+      .slice(0, TOP_REPOS),
     contributionCalendar: contributionDays,
   };
 };

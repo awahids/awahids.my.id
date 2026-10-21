@@ -88,3 +88,18 @@ test('getCombinedRepoStars: sums stars across repos and treats a 404 repo as 0',
   const total = await getCombinedRepoStars('awahids', ['belajar-ngaji', 'aw-prd', 'missing-repo']);
   assert.equal(total, 52);
 });
+
+test('getGithubProfileData: lists the most-starred repos first', async (t) => {
+  process.env.GITHUB_TOKEN = 'test-token';
+  t.mock.method(global, 'fetch', async () => ({
+    status: 200,
+    headers: new Map(),
+    json: async () => userPayload([repoNode('b', 5, [['JS', 1]]), repoNode('c', 9, []), repoNode('a', 5, [])]),
+  }));
+  const result = await getGithubProfileData('awahids');
+  assert.deepEqual(result.topRepos, [
+    { name: 'c', stars: 9, language: null },
+    { name: 'a', stars: 5, language: null },
+    { name: 'b', stars: 5, language: 'JS' },
+  ]);
+});
