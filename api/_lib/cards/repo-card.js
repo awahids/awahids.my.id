@@ -1,6 +1,6 @@
-import { handleGithubCardRequest } from '../_lib/githubCard.js';
-import { getRepoCardData } from '../_lib/github.js';
-import { renderCard, escapeXml } from '../_lib/svgCard.js';
+import { handleGithubCardRequest } from '../githubCard.js';
+import { getRepoCardData } from '../github.js';
+import { renderCard, escapeXml } from '../svgCard.js';
 
 const REPO_PATTERN = /^[a-zA-Z0-9._-]{1,100}$/;
 const FALLBACK_COLOR = '#858585';

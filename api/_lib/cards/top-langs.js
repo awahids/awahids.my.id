@@ -1,5 +1,5 @@
-import { handleGithubCardRequest } from '../_lib/githubCard.js';
-import { renderCard, escapeXml } from '../_lib/svgCard.js';
+import { handleGithubCardRequest } from '../githubCard.js';
+import { renderCard, escapeXml } from '../svgCard.js';
 
 const FALLBACK_COLOR = '858585';
 const MAX_LANGUAGES = 5;

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TIERS, TROPHIES, buildTrophiesCard, computeTrophies } from '../../github/trophies.js';
+import { TIERS, TROPHIES, buildTrophiesCard, computeTrophies } from '../../_lib/cards/trophies.js';
 import { cardThemeColors } from '../../../src/lib/cardThemes.js';
 
 const tierOf = (totals, key) => computeTrophies(totals).find((trophy) => trophy.key === key).tier;

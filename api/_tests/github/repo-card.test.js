@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import handler, { buildRepoCard, wrapDescription } from '../../github/repo-card.js';
+import handler, { buildRepoCard, wrapDescription } from '../../_lib/cards/repo-card.js';
 import { cardThemeColors } from '../../../src/lib/cardThemes.js';
 
 const makeRes = () => ({

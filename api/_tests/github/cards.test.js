@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeRank } from '../../github/stats.js';
-import { computeStreakStats, formatRange } from '../../github/streak.js';
+import { computeRank } from '../../_lib/cards/stats.js';
+import { computeStreakStats, formatRange } from '../../_lib/cards/streak.js';
 
 test('computeRank: matches the github-readme-stats formula (the numbers on the reported card give B+)', () => {
   const mine = computeRank({ stars: 61, commits: 1153, pullRequests: 40, issues: 4, reviews: 0, followers: 24 });

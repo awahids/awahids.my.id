@@ -1,6 +1,6 @@
-import { getCombinedRepoStars } from '../_lib/github.js';
-import { renderErrorCard, renderFlatBadge, sendSvg } from '../_lib/svgCard.js';
-import { ensureMethod, createRateLimiter } from '../_lib/requestGuards.js';
+import { getCombinedRepoStars } from '../github.js';
+import { renderErrorCard, renderFlatBadge, sendSvg } from '../svgCard.js';
+import { ensureMethod, createRateLimiter } from '../requestGuards.js';
 
 const USERNAME_PATTERN = /^[a-zA-Z0-9-]{1,39}$/;
 const REPO_PATTERN = /^[a-zA-Z0-9._-]{1,100}$/;

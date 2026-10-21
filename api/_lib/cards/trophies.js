@@ -1,5 +1,5 @@
-import { handleGithubCardRequest } from '../_lib/githubCard.js';
-import { renderCard, escapeXml } from '../_lib/svgCard.js';
+import { handleGithubCardRequest } from '../githubCard.js';
+import { renderCard, escapeXml } from '../svgCard.js';
 
 // Lowest value that earns each tier, in TIERS order. Below the first one the
 // trophy shows as locked. Contribution counts cover the last 12 months, like
