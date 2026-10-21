@@ -19,6 +19,7 @@ import Experience from './components/Experience';
 import Certificates from './components/Certificates';
 import Contact from './components/Contact';
 import FloatingFAQ from './components/FloatingFAQ';
+import CookieConsent from './components/CookieConsent';
 import CvDownloadModal from './components/CvDownloadModal';
 import PrdPromo from './components/PrdPromo';
 import {
@@ -485,6 +486,8 @@ function App() {
 
       {!toolPage && !notFoundPage && <Footer isAiLabPage={aiLabPage} />}
       {!toolPage && !notFoundPage && <FloatingFAQ />}
+      {/* Every page, tool pages included; after the preloader so it is not hidden under it. */}
+      {!effectiveLoading && <CookieConsent />}
       {!toolPage && !notFoundPage && <CvDownloadModal />}
     </div>
   );

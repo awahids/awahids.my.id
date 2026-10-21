@@ -2678,6 +2678,7 @@ footer {
   text-transform:uppercase;
   transition:color var(--tr-fast), border-color var(--tr-fast), background var(--tr-fast);
 }
+.footer-link-button { background:transparent; cursor:pointer; }
 .footer-link:hover,
 .footer-link:focus-visible,
 .footer-link[aria-current='page'] {
@@ -5067,4 +5068,59 @@ body:not(.has-custom-cursor) .ffh-close,
 body:not(.has-custom-cursor) .ff-suggestion-btn,
 body:not(.has-custom-cursor) .floating-faq-footer button {
   cursor: pointer;
+}
+
+/* Cookie consent banner. Same z-index as the floating FAQ but later in the
+   DOM, so it sits above the FAQ launcher and below the custom cursor. */
+.cookie-consent {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  width: min(420px, calc(100vw - 48px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  background: var(--mid);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  color: var(--white);
+}
+.cookie-consent-title {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+.cookie-consent-text,
+.cookie-consent-current {
+  margin: 0;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,.78);
+}
+.cookie-consent-current { color: var(--text-muted); font-size: 0.75rem; }
+.cookie-consent-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.cookie-consent-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  padding: 10px 18px;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255,255,255,.8);
+  border: 1px solid rgba(255,255,255,.25);
+}
+.cookie-consent-btn:hover,
+.cookie-consent-btn:focus-visible { border-color: var(--lime); color: var(--lime); }
+.cookie-consent-btn.is-primary { background: var(--lime); color: var(--dark); border-color: var(--lime); font-weight: 700; }
+.cookie-consent-btn.is-primary:hover,
+.cookie-consent-btn.is-primary:focus-visible { color: var(--dark); box-shadow: 3px 3px 0 0 var(--white); }
+@media (max-width: 600px) {
+  .cookie-consent { left: 12px; right: 12px; bottom: 12px; width: auto; }
+  .cookie-consent-actions .cookie-consent-btn { flex: 1; }
 }

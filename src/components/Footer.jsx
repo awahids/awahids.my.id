@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap, prefersReducedMotion } from '../lib/motion';
 import { useGsapReveal } from '../lib/useGsapReveal';
+import { openConsentSettings } from '../lib/consent';
 
 const FOOTER_LINKS = [
   { href: '/', label: 'Portfolio' },
@@ -54,6 +55,9 @@ const Footer = ({ isAiLabPage = false }) => {
                 </a>
               );
             })}
+            <button type="button" className="footer-link footer-link-button" onClick={openConsentSettings}>
+              Cookie settings
+            </button>
           </nav>
         </div>
       </div>
