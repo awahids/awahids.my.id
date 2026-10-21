@@ -3,6 +3,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabaseClient';
 import { onCvDownloadOpen } from '../lib/cvDownload';
 import { usePresence } from '../lib/motion';
 import { modalEnter, modalExit } from '../lib/modalMotion';
+import { trackEvent } from '../lib/analytics';
 
 const EMPTY_FORM = { name: '', email: '', note: '', website: '' };
 const DOWNLOAD_NAME = 'CV_A_Wahid_Saphadi.pdf';
@@ -109,7 +110,7 @@ const CvDownloadModal = () => {
       return;
     }
 
-    window.plausible?.('CVDownload', { props: { source: request.source } });
+    trackEvent('CVDownload', { source: request.source });
     setDownloadUrl(data.url);
     startDownload(data.url);
     setStatus('done');

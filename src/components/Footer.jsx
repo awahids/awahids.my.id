@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { gsap, prefersReducedMotion } from '../lib/motion';
 import { useGsapReveal } from '../lib/useGsapReveal';
+import { openConsentSettings } from '../lib/consent';
 
 const FOOTER_LINKS = [
   { href: '/', label: 'Portfolio' },
   { href: '/ai-lab', label: 'AI Lab' },
   { href: '/readme-generator', label: 'README Generator' },
   { href: '/prd-generator', label: 'PRD Generator' },
+  { href: '/privacy', label: 'Privacy' },
 ];
 
 const Footer = ({ isAiLabPage = false }) => {
@@ -54,6 +56,9 @@ const Footer = ({ isAiLabPage = false }) => {
                 </a>
               );
             })}
+            <button type="button" className="footer-link footer-link-button" onClick={openConsentSettings}>
+              Cookie settings
+            </button>
           </nav>
         </div>
       </div>

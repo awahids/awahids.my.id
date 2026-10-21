@@ -1,5 +1,5 @@
-import { handleGithubCardRequest } from '../_lib/githubCard.js';
-import { renderCard, escapeXml } from '../_lib/svgCard.js';
+import { handleGithubCardRequest } from '../githubCard.js';
+import { renderCard, escapeXml } from '../svgCard.js';
 
 // ponytail: only tolerates a single trailing zero-contribution day (assumed
 // to be "today, not over yet"). Doesn't handle timezone edge cases around

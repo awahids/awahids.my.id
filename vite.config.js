@@ -4,11 +4,7 @@ import aiFaqHandler from './api/ai-faq.js'
 import aiBriefHandler from './api/ai-brief.js'
 import aiAssistantHandler from './api/ai-assistant.js'
 import readmeAssistantHandler from './api/readme-assistant.js'
-import githubStatsHandler from './api/github/stats.js'
-import githubTopLangsHandler from './api/github/top-langs.js'
-import githubStreakHandler from './api/github/streak.js'
-import githubActivityGraphHandler from './api/github/activity-graph.js'
-import githubStarsBadgeHandler from './api/github/stars-badge.js'
+import { CARD_HANDLERS } from './api/_lib/cards/index.js'
 import typingHandler from './api/typing.js'
 import visitorCountHandler from './api/visitor-count.js'
 
@@ -96,11 +92,7 @@ const devApiMiddleware = () => ({
       ['/api/ai-brief', aiBriefHandler],
       ['/api/ai-assistant', aiAssistantHandler],
       ['/api/readme-assistant', readmeAssistantHandler],
-      ['/api/github/stats', githubStatsHandler],
-      ['/api/github/top-langs', githubTopLangsHandler],
-      ['/api/github/streak', githubStreakHandler],
-      ['/api/github/activity-graph', githubActivityGraphHandler],
-      ['/api/github/stars-badge', githubStarsBadgeHandler],
+      ...Object.entries(CARD_HANDLERS).map(([card, handler]) => [`/api/github/${card}`, handler]),
       ['/api/visitor-count', visitorCountHandler],
       ['/api/typing', typingHandler],
     ])

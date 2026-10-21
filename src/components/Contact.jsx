@@ -3,6 +3,7 @@ import { BOOKING_URL } from '../lib/links';
 import { Waves } from './Waves';
 import { openCvDownload } from '../lib/cvDownload';
 import { useGsapReveal } from '../lib/useGsapReveal';
+import { trackEvent } from '../lib/analytics';
 
 
 const CONTACT = {
@@ -52,6 +53,7 @@ const Contact = () => {
     e.preventDefault();
     try {
       await navigator.clipboard.writeText(contact.email);
+      trackEvent('EmailCopy', { source: 'contact' });
       setCopied(true);
       clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => setCopied(false), 2000);
@@ -87,7 +89,7 @@ const Contact = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="contact-top-link is-prime"
-                onClick={() => window.plausible?.('BookingCTA', { props: { source: 'contact' } })}
+                onClick={() => trackEvent('BookingCTA', { source: 'contact' })}
               >
                 {contact.ctaPrimaryLabel}
               </a>

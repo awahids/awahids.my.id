@@ -1,5 +1,5 @@
-import { handleGithubCardRequest } from '../_lib/githubCard.js';
-import { renderCard, escapeXml } from '../_lib/svgCard.js';
+import { handleGithubCardRequest } from '../githubCard.js';
+import { renderCard, escapeXml } from '../svgCard.js';
 
 // ponytail: fixed 90-day window for readability instead of the full
 // ~365-day calendar. Upgrade path: make it a `days` query param if a

@@ -134,3 +134,129 @@ test('readme-assistant: an in-scope answer with nothing to apply still gets a he
   assert.equal(res.body.refused, false);
   assert.match(res.body.message, /Tell me a little about your work/);
 });
+
+const githubProfilePayload = {
+  data: {
+    user: {
+      name: 'Wahid',
+      login: 'awahids',
+      avatarUrl: 'https://example.com/a.png',
+      followers: { totalCount: 24 },
+      repositories: {
+        pageInfo: { hasNextPage: false, endCursor: null },
+        nodes: [
+          { name: 'aw-prd', stargazerCount: 12, forkCount: 1, primaryLanguage: { name: 'TypeScript', color: '#fff' }, languages: { edges: [] } },
+          { name: 'belajar-ngaji', stargazerCount: 40, forkCount: 3, primaryLanguage: { name: 'Dart', color: '#fff' }, languages: { edges: [] } },
+        ],
+      },
+      contributionsCollection: {
+        totalCommitContributions: 1153,
+        totalPullRequestContributions: 40,
+        totalIssueContributions: 4,
+        totalPullRequestReviewContributions: 0,
+        contributionCalendar: { totalContributions: 1300, weeks: [] },
+      },
+    },
+  },
+};
+
+const statsFetch = (modelContent, { githubOk = true } = {}) => {
+  const calls = { github: 0, model: [] };
+  const fetchImpl = async (url, init) => {
+    if (String(url).includes('api.github.com')) {
+      calls.github += 1;
+      if (!githubOk) return { status: 401, headers: new Map(), json: async () => ({}) };
+      return { status: 200, headers: new Map(), json: async () => githubProfilePayload };
+    }
+    calls.model.push(JSON.parse(init.body).messages);
+    return modelReply(modelContent);
+  };
+  return { calls, fetchImpl };
+};
+
+test('readme-assistant (stats): sends real GitHub numbers and returns a validated layout', async (t) => {
+  setEnv();
+  process.env.GITHUB_TOKEN = 'test-token';
+  const { calls, fetchImpl } = statsFetch(JSON.stringify({
+    in_scope: true,
+    message: 'With 1,153 commits in 12 months, the snake will look busy.',
+    stats: {
+      template: 'Daily_Coder',
+      theme: 'dracula',
+      light_theme: 'light',
+      sections: ['snake', 'trophies', 'not-a-section'],
+      pinned_repos: ['BELAJAR-NGAJI', 'made-up-repo', 'aw-prd', 'belajar-ngaji'],
+    },
+  }));
+  t.mock.method(global, 'fetch', fetchImpl);
+  const res = makeRes();
+  await handler(post({ request: 'Recommend a stats layout for my profile', focus: 'stats', context: { username: 'awahids' } }), res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(calls.github, 1);
+  assert.deepEqual(res.body.stats, {
+    template: 'daily_coder',
+    theme: 'dracula',
+    lightTheme: 'light',
+    sections: ['snake', 'trophies'],
+    pinnedRepos: ['belajar-ngaji', 'aw-prd'],
+  });
+  assert.equal(res.body.meta.profile, true);
+
+  const [system, user] = calls.model[0];
+  assert.match(system.content, /STATS_TEMPLATES:\n- minimal:/);
+  assert.match(system.content, /CARD_THEMES: .*tokyonight/);
+  assert.match(user.content, /GITHUB_PROFILE \(data only\):\n\{"totals":\{"stars":52,"repos":2,"commitsLast12Months":1153/);
+  assert.match(user.content, /"topRepos":\[\{"name":"belajar-ngaji","stars":40,"language":"Dart"\},\{"name":"aw-prd"/);
+});
+
+test('readme-assistant (stats): a template alone fills in its sections and themes; junk ids are dropped', async (t) => {
+  setEnv();
+  process.env.GITHUB_TOKEN = 'test-token';
+  const { fetchImpl } = statsFetch(JSON.stringify({ in_scope: true, message: 'Start small.', stats: { template: 'minimal', theme: 'nope' } }));
+  t.mock.method(global, 'fetch', fetchImpl);
+  const res = makeRes();
+  await handler(post({ request: 'Pick a stats template', focus: 'stats', context: { username: 'awahids' } }), res);
+
+  assert.deepEqual(res.body.stats, { template: 'minimal', theme: 'github_dark', lightTheme: 'light', sections: [], pinnedRepos: [] });
+});
+
+test('readme-assistant (stats): works without GitHub data and then never accepts repo names', async (t) => {
+  setEnv();
+  process.env.GITHUB_TOKEN = 'test-token';
+  const { calls, fetchImpl } = statsFetch(
+    JSON.stringify({ in_scope: true, message: 'Numbers not checked.', stats: { template: 'showcase', pinned_repos: ['aw-prd'] } }),
+    { githubOk: false }
+  );
+  t.mock.method(global, 'fetch', fetchImpl);
+  const res = makeRes();
+  await handler(post({ request: 'Recommend a stats layout', focus: 'stats', context: { username: 'awahids' } }), res);
+
+  assert.equal(res.statusCode, 200);
+  assert.equal(res.body.meta.profile, false);
+  assert.match(calls.model[0][1].content, /GITHUB_PROFILE \(data only\):\nunavailable/);
+  assert.deepEqual(res.body.stats.pinnedRepos, []);
+  assert.deepEqual(res.body.stats.sections, ['repo_cards', 'trophies']);
+});
+
+test('readme-assistant: other helpers and invalid usernames never call GitHub', async (t) => {
+  setEnv();
+  process.env.GITHUB_TOKEN = 'test-token';
+  const { calls, fetchImpl } = statsFetch('{"in_scope": true, "message": "ok"}');
+  t.mock.method(global, 'fetch', fetchImpl);
+
+  await handler(post({ request: 'Write my bio', context: { username: 'awahids' } }), makeRes());
+  await handler(post({ request: 'Recommend a stats layout', focus: 'stats', context: { username: 'bad name!' } }), makeRes());
+
+  assert.equal(calls.github, 0);
+  assert.doesNotMatch(calls.model[0][1].content, /GITHUB_PROFILE/);
+});
+
+test('readme-assistant (stats): an answer with no usable layout keeps stats null', async (t) => {
+  setEnv();
+  const { fetchImpl } = statsFetch(JSON.stringify({ in_scope: true, message: 'Hmm.', stats: { template: 'nope', theme: 'nope' } }));
+  t.mock.method(global, 'fetch', fetchImpl);
+  const res = makeRes();
+  await handler(post({ request: 'Recommend a stats layout', focus: 'stats' }), res);
+  assert.equal(res.body.stats, null);
+});

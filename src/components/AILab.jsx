@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useGsapReveal } from '../lib/useGsapReveal';
+import { trackEvent } from '../lib/analytics';
 
 const BRIEF_WEBHOOK_URL = import.meta.env.VITE_AI_BRIEF_ENDPOINT || '/api/ai-brief';
 
@@ -456,6 +457,8 @@ const AILab = () => {
         .join(' ')
     );
 
+    // Only the language: the brief itself is the visitor's own text.
+    trackEvent('AIBriefSubmit', { language: briefLanguage });
     setBriefLoading(true);
     setBriefStatus(
       briefLanguage === 'id' ? 'Sedang menganalisis brief...' : 'Analyzing brief...'

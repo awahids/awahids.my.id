@@ -1,12 +1,26 @@
 import React, { useRef, useState } from 'react';
 import { skillIconUrl } from '../lib/skillIcons';
+import { CARD_THEMES } from '../lib/cardThemes';
+import { STATS_SECTIONS, findStatsTemplate } from '../lib/statsTemplates';
+import { trackEvent } from '../lib/analytics';
 
 const ENDPOINT = import.meta.env.VITE_README_ASSISTANT_ENDPOINT || '/api/readme-assistant';
 
 const QUICK_ASKS = {
   about: ['Suggest taglines for my profile', 'Write my bio', 'Make my bio shorter'],
   skills: ['Suggest skill icons for my stack'],
+  stats: ['Recommend a stats layout for my profile', 'Which repos should I pin?', 'Pick a theme for my stats cards'],
 };
+
+const INTROS = {
+  about: "Helps with taglines, your bio and skill icons for this README. It won't answer anything else.",
+  skills: "Helps with taglines, your bio and skill icons for this README. It won't answer anything else.",
+  stats:
+    "Recommends a stats template, themes, sections and repos to pin. With a GitHub username it reads your public stars, commits, languages and top repos first. It won't answer anything else.",
+};
+
+const sectionLabel = (id) => STATS_SECTIONS.find((section) => section.id === id)?.label || id;
+const themeLabel = (id) => CARD_THEMES[id]?.label || id;
 
 const ReadmeAiHelper = ({ focus, context, onApply }) => {
   const [request, setRequest] = useState('');
@@ -17,6 +31,8 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
   const ask = async (text) => {
     const trimmed = text.trim();
     if (!trimmed || status === 'loading') return;
+    // The request text stays out of analytics; whether it was a quick ask does not.
+    trackEvent('ReadmeAiAsk', { focus, quick: QUICK_ASKS[focus].includes(trimmed) });
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -29,7 +45,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
       const response = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ request: trimmed, context }),
+        body: JSON.stringify({ request: trimmed, context, focus }),
         signal: controller.signal,
       });
       const data = await response.json();
@@ -42,6 +58,11 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
     } finally {
       clearTimeout(timeout);
     }
+  };
+
+  const apply = (kind, suggestion) => {
+    trackEvent('ReadmeAiApply', { focus, kind });
+    onApply(suggestion);
   };
 
   const submit = (event) => {
@@ -58,7 +79,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
     <div className="rg-ai">
       <div className="rg-ai-head">
         <strong>AI helper</strong>
-        <span>Helps with taglines, your bio and skill icons for this README. It won't answer anything else.</span>
+        <span>{INTROS[focus]}</span>
       </div>
 
       <div className="rg-ai-quick">
@@ -98,7 +119,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
               <div className="rg-ai-block">
                 <span className="rg-ai-label">Typing lines</span>
                 <ul>{result.taglines.map((line) => <li key={line}>{line}</li>)}</ul>
-                <button type="button" onClick={() => onApply({ taglines: result.taglines })}>Use these lines</button>
+                <button type="button" onClick={() => apply('taglines', { taglines: result.taglines })}>Use these lines</button>
               </div>
             )}
 
@@ -106,7 +127,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
               <div className="rg-ai-block">
                 <span className="rg-ai-label">Bio</span>
                 {result.bio.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                <button type="button" onClick={() => onApply({ bio: result.bio })}>Use this bio</button>
+                <button type="button" onClick={() => apply('bio', { bio: result.bio })}>Use this bio</button>
               </div>
             )}
 
@@ -116,7 +137,28 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
                 <div className="rg-ai-icons">
                   {result.skills.map((id) => <img key={id} src={skillIconUrl(id)} alt={id} title={id} loading="lazy" />)}
                 </div>
-                <button type="button" onClick={() => onApply({ skills: result.skills })}>Add these icons</button>
+                <button type="button" onClick={() => apply('skills', { skills: result.skills })}>Add these icons</button>
+              </div>
+            )}
+
+            {result.stats && (
+              <div className="rg-ai-block">
+                <span className="rg-ai-label">Stats layout</span>
+                <ul>
+                  {result.stats.template && <li>Template: {findStatsTemplate(result.stats.template)?.name}</li>}
+                  {result.stats.theme && (
+                    <li>
+                      Theme: {themeLabel(result.stats.theme)}
+                      {result.stats.lightTheme ? `, ${themeLabel(result.stats.lightTheme)} in light mode` : ''}
+                    </li>
+                  )}
+                  <li>
+                    Sections:{' '}
+                    {result.stats.sections.length ? result.stats.sections.map(sectionLabel).join(', ') : 'core stats cards only'}
+                  </li>
+                  {result.stats.pinnedRepos.length > 0 && <li>Pin: {result.stats.pinnedRepos.join(', ')}</li>}
+                </ul>
+                <button type="button" onClick={() => apply('stats', { stats: result.stats })}>Apply this layout</button>
               </div>
             )}
           </>

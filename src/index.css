@@ -2678,6 +2678,7 @@ footer {
   text-transform:uppercase;
   transition:color var(--tr-fast), border-color var(--tr-fast), background var(--tr-fast);
 }
+.footer-link-button { background:transparent; cursor:pointer; }
 .footer-link:hover,
 .footer-link:focus-visible,
 .footer-link[aria-current='page'] {
@@ -4764,6 +4765,22 @@ footer {
 }
 .rg-theme-swatch i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
 .rg-theme-swatch.is-active { outline: 2px solid var(--lime); outline-offset: 2px; }
+.rg-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.rg-template {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: var(--dark);
+  border: 1px solid var(--stroke-soft);
+  color: var(--white);
+  text-align: left;
+  cursor: pointer;
+}
+.rg-template strong { font: 600 0.8125rem 'Syne', sans-serif; }
+.rg-template span { font-family: 'DM Mono', monospace; font-size: 0.6875rem; line-height: 1.5; color: var(--text-muted); }
+.rg-template:hover { border-color: var(--lime); }
+.rg-template.is-active { border-color: var(--lime); outline: 2px solid var(--lime); outline-offset: 2px; }
 .rg-typing-opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
 
 .rg-social-fields {
@@ -4787,6 +4804,7 @@ footer {
 /* Review step */
 .rg-review-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
 }
@@ -4800,6 +4818,8 @@ footer {
   padding: 6px 14px;
   cursor: pointer;
 }
+
+.rg-review-tabs .rg-share { margin-left: auto; }
 
 .rg-review-tabs button.is-active {
   background: var(--lime);
@@ -4839,6 +4859,54 @@ footer {
   padding: 16px;
   font-family: Menlo, Consolas, monospace;
   font-size: 0.75rem;
+}
+
+.rg-workflow { display: flex; flex-direction: column; gap: 16px; }
+.rg-workflow-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.875rem;
+  color: rgba(255,255,255,.75);
+}
+.rg-workflow-steps code {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: var(--lime);
+}
+.rg-workflow-credit {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.rg-workflow-credit a { color: var(--lime); }
+.rg-workflow-block { display: flex; flex-direction: column; gap: 8px; }
+.rg-workflow-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.875rem;
+  color: var(--white);
+}
+.rg-workflow-head code {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--lime);
+  overflow-wrap: anywhere;
+}
+.rg-workflow-head .rg-btn-ghost { padding: 6px 14px; }
+.rg-workflow-note {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
 }
 
 /* Nav buttons */
@@ -4960,6 +5028,37 @@ footer {
   .rg-panel { padding: 20px; }
 }
 
+/* ── Privacy policy ───────────────────────────────────────────── */
+.s-privacy {
+  min-height:100svh; padding:120px var(--section-pad-x) 80px;
+  background:var(--dark); color:rgba(255,255,255,.78);
+  max-width:860px; margin:0 auto;
+  font-size:0.9375rem; line-height:1.7;
+}
+.privacy-head h1 { font-family:'Syne',sans-serif; font-size:clamp(2rem,6vw,3.375rem); font-weight:800; margin:8px 0 8px; color:var(--white); }
+.privacy-updated { font-family:'DM Mono',monospace; font-size:0.75rem; color:var(--text-muted); margin:0 0 32px; }
+.s-privacy section { margin:0 0 36px; }
+.s-privacy h2 { font-family:'Syne',sans-serif; font-size:1.375rem; font-weight:700; color:var(--white); margin:0 0 12px; }
+.s-privacy h3 { font-family:'DM Mono',monospace; font-size:0.75rem; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--lime); margin:24px 0 8px; }
+.s-privacy p { margin:0 0 12px; }
+.s-privacy ul { margin:0 0 12px; padding-left:20px; display:grid; gap:8px; }
+.s-privacy b { color:var(--white); }
+.s-privacy a, .privacy-inline-btn { color:var(--lime); }
+.s-privacy code { font-family:'DM Mono',monospace; font-size:0.8125rem; color:var(--white); }
+.privacy-summary { border:1px solid var(--border); background:var(--mid); padding:20px 24px; }
+.privacy-inline-btn { background:none; border:none; padding:0; font:inherit; text-decoration:underline; cursor:pointer; }
+.privacy-table-wrap { overflow-x:auto; margin:0 0 16px; }
+/* Narrow screens scroll the table sideways instead of one word per line. */
+.privacy-table { width:100%; min-width:560px; border-collapse:collapse; font-size:0.8125rem; }
+.privacy-table th, .privacy-table td { text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--border); }
+.privacy-table thead th { font-family:'DM Mono',monospace; font-size:0.6875rem; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); }
+.privacy-table tbody th { font-weight:400; white-space:nowrap; }
+.cookie-consent-text a { color:var(--lime); }
+
+@media (max-width:768px) {
+  .s-privacy { padding:100px var(--section-pad-x-mobile) 60px; }
+}
+
 /* ── PRD generator promo ───────────────────────────────────────── */
 .s-prd-generator {
   min-height:100svh; padding:120px var(--section-pad-x) 80px;
@@ -5000,4 +5099,59 @@ body:not(.has-custom-cursor) .ffh-close,
 body:not(.has-custom-cursor) .ff-suggestion-btn,
 body:not(.has-custom-cursor) .floating-faq-footer button {
   cursor: pointer;
+}
+
+/* Cookie consent banner. Same z-index as the floating FAQ but later in the
+   DOM, so it sits above the FAQ launcher and below the custom cursor. */
+.cookie-consent {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 9999;
+  width: min(420px, calc(100vw - 48px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  background: var(--mid);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 40px rgba(0,0,0,.45);
+  color: var(--white);
+}
+.cookie-consent-title {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--lime);
+}
+.cookie-consent-text,
+.cookie-consent-current {
+  margin: 0;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,.78);
+}
+.cookie-consent-current { color: var(--text-muted); font-size: 0.75rem; }
+.cookie-consent-actions { display: flex; justify-content: flex-end; gap: 8px; }
+.cookie-consent-btn {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  padding: 10px 18px;
+  cursor: pointer;
+  background: transparent;
+  color: rgba(255,255,255,.8);
+  border: 1px solid rgba(255,255,255,.25);
+}
+.cookie-consent-btn:hover,
+.cookie-consent-btn:focus-visible { border-color: var(--lime); color: var(--lime); }
+.cookie-consent-btn.is-primary { background: var(--lime); color: var(--dark); border-color: var(--lime); font-weight: 700; }
+.cookie-consent-btn.is-primary:hover,
+.cookie-consent-btn.is-primary:focus-visible { color: var(--dark); box-shadow: 3px 3px 0 0 var(--white); }
+@media (max-width: 600px) {
+  .cookie-consent { left: 12px; right: 12px; bottom: 12px; width: auto; }
+  .cookie-consent-actions .cookie-consent-btn { flex: 1; }
 }

@@ -1,5 +1,5 @@
-import { handleGithubCardRequest } from '../_lib/githubCard.js';
-import { renderCard, escapeXml } from '../_lib/svgCard.js';
+import { handleGithubCardRequest } from '../githubCard.js';
+import { renderCard, escapeXml } from '../svgCard.js';
 
 // Same model as github-readme-stats (MIT): each metric is squashed through a
 // CDF around a "typical" value, then combined by weight. A lower percentile
