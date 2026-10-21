@@ -4787,6 +4787,7 @@ footer {
 /* Review step */
 .rg-review-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
 }
@@ -4800,6 +4801,8 @@ footer {
   padding: 6px 14px;
   cursor: pointer;
 }
+
+.rg-review-tabs .rg-share { margin-left: auto; }
 
 .rg-review-tabs button.is-active {
   background: var(--lime);

@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { buildReadmeMarkdown } from '../lib/readmeTemplate';
 import ReadmeAiHelper from './ReadmeAiHelper';
-import { CARD_THEMES, DEFAULT_THEME } from '../lib/cardThemes';
-import { DEFAULT_SKILL_IDS, SKILL_GROUPS, skillIconUrl } from '../lib/skillIcons';
+import { CARD_THEMES } from '../lib/cardThemes';
+import { SKILL_GROUPS, skillIconUrl } from '../lib/skillIcons';
 import {
   CODE_STATS_SOURCE_URL,
   CODE_STATS_WORKFLOW_PATH,
@@ -11,6 +11,11 @@ import {
   parseHighlightLangs,
 } from '../lib/codeStatsWorkflow';
 import { SNAKE_SOURCE_URL, SNAKE_WORKFLOW_PATH, buildSnakeWorkflow, snakeImageUrls } from '../lib/snakeWorkflow';
+import { decodeConfig, encodeConfig } from '../lib/readmeConfig';
+
+// Safari throws if replaceState runs more than ~100 times in 30s, so typing
+// only rewrites the URL once it pauses.
+const URL_SYNC_DELAY_MS = 400;
 
 // `label` is the form field caption; `linkLabel` is the shorter text shown
 // on the actual README link. `toUrl` turns whatever the field collects (a
@@ -38,26 +43,67 @@ const StepRail = ({ current }) => (
 );
 
 const ReadmeGenerator = () => {
+  // Settings start from the page URL, so a bookmarked or shared link reopens
+  // the same README. Read once: later URL changes come from this page itself.
+  const [initial] = useState(() => decodeConfig(typeof window !== 'undefined' ? window.location.search : ''));
   const [step, setStep] = useState(0);
-  const [username, setUsername] = useState('');
-  const [pinnedReposText, setPinnedReposText] = useState('');
-  const [showVisitorCounter, setShowVisitorCounter] = useState(false);
-  const [showCodeStats, setShowCodeStats] = useState(false);
-  const [codeStatsLangsText, setCodeStatsLangsText] = useState(DEFAULT_HIGHLIGHT_LANGS.join(', '));
-  const [showRepoCards, setShowRepoCards] = useState(false);
-  const [showSnake, setShowSnake] = useState(false);
-  const [showTrophies, setShowTrophies] = useState(false);
-  const [taglineText, setTaglineText] = useState('Hello, There! 👋\nNice to meet you!');
-  const [bioText, setBioText] = useState('');
-  const [skillIds, setSkillIds] = useState(DEFAULT_SKILL_IDS);
-  const [socials, setSocials] = useState(() => Object.fromEntries(SOCIAL_FIELDS.map((f) => [f.key, ''])));
-  const [theme, setTheme] = useState(DEFAULT_THEME);
-  const [lightTheme, setLightTheme] = useState('');
-  const [typing, setTyping] = useState({ font: 'mono', bold: false, speed: 'normal', align: 'center', size: 30, color: '' });
+  const [username, setUsername] = useState(initial.username);
+  const [pinnedReposText, setPinnedReposText] = useState(initial.pinnedReposText);
+  const [showVisitorCounter, setShowVisitorCounter] = useState(initial.showVisitorCounter);
+  const [showCodeStats, setShowCodeStats] = useState(initial.showCodeStats);
+  const [codeStatsLangsText, setCodeStatsLangsText] = useState(initial.codeStatsLangsText);
+  const [showRepoCards, setShowRepoCards] = useState(initial.showRepoCards);
+  const [showSnake, setShowSnake] = useState(initial.showSnake);
+  const [showTrophies, setShowTrophies] = useState(initial.showTrophies);
+  const [taglineText, setTaglineText] = useState(initial.taglineText);
+  const [bioText, setBioText] = useState(initial.bioText);
+  const [skillIds, setSkillIds] = useState(initial.skillIds);
+  const [socials, setSocials] = useState(initial.socials);
+  const [theme, setTheme] = useState(initial.theme);
+  const [lightTheme, setLightTheme] = useState(initial.lightTheme);
+  const [typing, setTyping] = useState(initial.typing);
   const setTypingOption = (key, value) => setTyping((prev) => ({ ...prev, [key]: value }));
   const [previewTab, setPreviewTab] = useState('preview');
-  // Which copy button last succeeded: 'readme' or a workflow id.
+  // Which copy button last succeeded: 'readme', 'link' or a workflow id.
   const [copiedId, setCopiedId] = useState('');
+
+  const configQuery = useMemo(
+    () =>
+      encodeConfig({
+        username,
+        pinnedReposText,
+        showVisitorCounter,
+        showCodeStats,
+        codeStatsLangsText,
+        showRepoCards,
+        showSnake,
+        showTrophies,
+        taglineText,
+        bioText,
+        skillIds,
+        socials,
+        theme,
+        lightTheme,
+        typing,
+      }),
+    [username, pinnedReposText, showVisitorCounter, showCodeStats, codeStatsLangsText, showRepoCards, showSnake, showTrophies, taglineText, bioText, skillIds, socials, theme, lightTheme, typing]
+  );
+
+  // replaceState, not pushState: editing a field should not fill the back button.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const { pathname, hash } = window.location;
+      try {
+        window.history.replaceState(window.history.state, '', `${pathname}${configQuery ? `?${configQuery}` : ''}${hash}`);
+      } catch {
+        // Rate-limited: the next change writes the URL again.
+      }
+    }, URL_SYNC_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [configQuery]);
+
+  const shareUrl = () =>
+    `${window.location.origin}${window.location.pathname}${configQuery ? `?${configQuery}` : ''}`;
 
   const markdown = useMemo(() => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -143,7 +189,10 @@ const ReadmeGenerator = () => {
       <div className="rg-shell">
         <a href="/" className="rg-back">← Back to portfolio</a>
         <h1 className="rg-title">GitHub README Generator</h1>
-        <p className="rg-subtitle">Fill in your details, then copy a ready-to-paste README.md.</p>
+        <p className="rg-subtitle">
+          Fill in your details, then copy a ready-to-paste README.md. Your settings are kept in the page URL, so you
+          can bookmark it or share it to pick up where you left off.
+        </p>
 
         <StepRail current={step} />
 
@@ -338,7 +387,7 @@ const ReadmeGenerator = () => {
           {step === 3 && (
             <div className="rg-review">
               <div className="rg-review-tabs">
-                <button type="button" className={previewTab === 'preview' ? 'is-active' : ''} onClick={() => setPreviewTab('preview')}>
+                <button type="button" className={activeTab === 'preview' ? 'is-active' : ''} onClick={() => setPreviewTab('preview')}>
                   Preview
                 </button>
                 <button type="button" className={activeTab === 'markdown' ? 'is-active' : ''} onClick={() => setPreviewTab('markdown')}>
@@ -349,6 +398,9 @@ const ReadmeGenerator = () => {
                     {workflows.length > 1 ? `Workflows (${workflows.length})` : 'Workflow'}
                   </button>
                 )}
+                <button type="button" className="rg-share" onClick={() => handleCopy(shareUrl(), 'link')}>
+                  {copiedId === 'link' ? 'Link copied!' : 'Copy share link'}
+                </button>
               </div>
 
               {activeTab === 'workflows' ? (
