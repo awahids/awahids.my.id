@@ -522,7 +522,7 @@ const AILab = () => {
               </span>
             </div>
 
-            <form className="ai-form" onSubmit={onBriefSubmit}>
+            <form className="ai-form" onSubmit={onBriefSubmit} data-clarity-mask="true">
               <div className="ai-field">
                 <label htmlFor="productType">Product Type</label>
                 <input
@@ -616,7 +616,7 @@ const AILab = () => {
             </form>
 
             {briefResult && (
-              <div className="ai-result">
+              <div className="ai-result" data-clarity-mask="true">
                 <h4>Analysis Result</h4>
                 <p className="ai-result-summary">{briefResult.summary}</p>
                 <div className="ai-result-effort">Estimated Scope: {briefResult.effort}</div>

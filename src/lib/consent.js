@@ -8,6 +8,8 @@
 // index.html reads this key too, before the app loads; keep the two in sync.
 export const CONSENT_STORAGE_KEY = 'aw-analytics-consent';
 export const OPEN_CONSENT_EVENT = 'aw:open-consent';
+// Fired with the new choice as event.detail, for tags that load on consent (clarity.js).
+export const CONSENT_CHANGE_EVENT = 'aw:consent-change';
 
 const CHOICES = new Set(['granted', 'denied']);
 
@@ -33,12 +35,12 @@ const cookieDomains = (hostname) => {
   return domains;
 };
 
-/** Expires every Google Analytics cookie (_ga, _ga_<id>, _gid, _gat...). */
+/** Expires every analytics cookie: Google Analytics (_ga, _ga_<id>, _gid, _gat) and Clarity (_clck, _clsk). */
 export const clearAnalyticsCookies = () => {
   const names = document.cookie
     .split(';')
     .map((cookie) => cookie.split('=')[0].trim())
-    .filter((name) => /^_g(a|id|at)(_|$)/.test(name));
+    .filter((name) => /^(_g(a|id|at)(_|$)|_cl(ck|sk)$)/.test(name));
   for (const name of names) {
     for (const domain of cookieDomains(window.location.hostname)) {
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/${domain}`;
@@ -56,6 +58,7 @@ export const saveConsent = (choice) => {
   }
   window.gtag?.('consent', 'update', { analytics_storage: choice });
   if (choice === 'denied') clearAnalyticsCookies();
+  window.dispatchEvent(new CustomEvent(CONSENT_CHANGE_EVENT, { detail: choice }));
 };
 
 /** Reopens the banner, e.g. from a "Cookie settings" link. */

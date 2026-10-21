@@ -240,7 +240,7 @@ const ReadmeGenerator = () => {
 
         <StepRail current={step} />
 
-        <div className="rg-panel">
+        <div className="rg-panel" data-clarity-mask="true">
           {step === 0 && (
             <div className="rg-fields">
               <label>

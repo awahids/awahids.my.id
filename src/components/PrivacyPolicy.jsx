@@ -9,6 +9,8 @@ const CONTACT_EMAIL = 'awahid.safhadi@gmail.com';
 const COOKIES = [
   ['_ga', 'Google Analytics', 'Tells visits from the same browser apart', 'Up to 2 years', 'Only after you accept'],
   ['_ga_BGRDF5BFFD', 'Google Analytics', 'Keeps the state of your current visit', 'Up to 2 years', 'Only after you accept'],
+  ['_clck', 'Microsoft Clarity', 'Recognises the same browser across visits', 'Up to 13 months', 'Only after you accept'],
+  ['_clsk', 'Microsoft Clarity', 'Links page views into one session recording', 'Up to 30 days', 'Only after you accept'],
 ];
 
 const BROWSER_STORAGE = [
@@ -20,6 +22,8 @@ const RETENTION = [
   ['CV download details (name, email, note)', 'Until you ask me to delete them'],
   ['AI assistant questions and answers', '90 days, then deleted automatically'],
   ['Google Analytics data', 'As set in Google Analytics (2 or 14 months), then deleted by Google'],
+  ['Microsoft Clarity recordings', '30 days (13 months for the few I save to study), then deleted by Microsoft'],
+  ['Microsoft Clarity heatmaps', '13 months, aggregated'],
   ['Plausible statistics', 'Aggregated counts only, with no personal data'],
   ['Hosting and error logs (Vercel, n8n)', 'Short-term, for security and fixing errors'],
 ];
@@ -28,6 +32,7 @@ const PROCESSORS = [
   ['Vercel', 'Hosts the site and runs its server functions'],
   ['Supabase', 'Database for CV download details, the AI Q&A archive and visitor counters'],
   ['Google Analytics', 'Usage statistics, only with your consent'],
+  ['Microsoft Clarity', 'Session recordings and heatmaps, only with your consent'],
   ['Plausible Analytics', 'Cookieless, aggregated visit statistics'],
   ['SumoPod', 'AI gateway that generates the AI assistant, AI Lab and README helper answers'],
   ['n8n and Hermes', 'My automation server: runs the Hermes assistant, logs AI request outcomes and alerts me to errors'],
@@ -65,7 +70,10 @@ const PrivacyPolicy = () => (
       <h2>The short version</h2>
       <ul>
         <li>No ads, and no selling or sharing of your data for marketing.</li>
-        <li>Google Analytics only sets cookies after you accept them. Plausible counts visits without cookies.</li>
+        <li>
+          Google Analytics and Microsoft Clarity only set cookies after you accept them, and Clarity does not run at
+          all before that. Plausible counts visits without cookies.
+        </li>
         <li>I only get your name and email if you give them to me, for example to download my CV.</li>
         <li>Questions you send to the AI features go to an AI provider to be answered and are kept for 90 days.</li>
         <li>You can ask me to see, correct or delete your data at any time: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</li>
@@ -104,6 +112,12 @@ const PrivacyPolicy = () => (
           sends Google cookieless signals without identifiers, which cannot be linked to you. I record actions such as
           copying the README, choosing a template or asking the AI assistant, but never what you type: no questions,
           names or emails go to Google Analytics.
+        </li>
+        <li>
+          <b>Microsoft Clarity.</b> Only loads after you click <i>Accept</i>. It records how pages are used (mouse
+          movement, clicks, scrolling, the page layout) as session replays and heatmaps, so I can see where people get
+          stuck. Text you type is hidden, and so are the areas that show your own words: the FAQ chat, the AI Lab
+          brief, the README Generator form and preview, and the CV download form.
         </li>
       </ul>
 
@@ -152,7 +166,7 @@ const PrivacyPolicy = () => (
 
     <section>
       <h2>Cookies and browser storage</h2>
-      <p>The only cookies are Google Analytics cookies, and only after you accept them:</p>
+      <p>The only cookies are analytics cookies from Google Analytics and Microsoft Clarity, and only after you accept them:</p>
       <Table head={['Cookie', 'Set by', 'Purpose', 'Lasts', 'When']} rows={COOKIES} />
       <p>The site also keeps two small items in your browser's local storage, which never leave your device:</p>
       <Table head={['Key', 'Holds', 'Kept']} rows={BROWSER_STORAGE} />
@@ -161,14 +175,17 @@ const PrivacyPolicy = () => (
         <button type="button" className="privacy-inline-btn" onClick={openConsentSettings}>
           open cookie settings
         </button>
-        . Declining removes the Google Analytics cookies that were already set.
+        . Declining removes the Google Analytics and Clarity cookies that were already set.
       </p>
     </section>
 
     <section>
       <h2>Legal basis</h2>
       <ul>
-        <li><b>Consent</b> for Google Analytics cookies, and for the details you give me in the CV and AI forms.</li>
+        <li>
+          <b>Consent</b> for Google Analytics and Microsoft Clarity, and for the details you give me in the CV and AI
+          forms.
+        </li>
         <li>
           <b>Legitimate interest</b> for server logs, cookieless statistics and error monitoring, to run a secure and
           working site.

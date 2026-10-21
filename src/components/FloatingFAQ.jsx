@@ -586,7 +586,7 @@ const FloatingFAQ = () => {
   };
 
   return (
-    <div className="floating-faq-container">
+    <div className="floating-faq-container" data-clarity-mask="true">
       {notificationShown && (
         <div
           ref={notificationRef}
