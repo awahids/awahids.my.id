@@ -114,3 +114,13 @@ test('buildReadmeMarkdown: typing options map to query params and ignore invalid
   const bad = buildReadmeMarkdown({ taglineLines: ['Hi'], typing: { font: 'x', speed: 'x', color: 'zzz' } }, { origin: ORIGIN });
   assert.doesNotMatch(bad, /font=|speed=|color=|weight=/);
 });
+
+test('buildReadmeMarkdown: lines-of-code section only appears when opted in, with one marker pair', () => {
+  assert.doesNotMatch(buildReadmeMarkdown({ username: 'awahids' }, { origin: ORIGIN }), /PUBLIC CODE STATS/);
+
+  const markdown = buildReadmeMarkdown({ username: 'awahids', showCodeStats: true }, { origin: ORIGIN });
+  assert.equal((markdown.match(/<!-- PUBLIC CODE STATS START -->/g) || []).length, 1);
+  assert.equal((markdown.match(/<!-- PUBLIC CODE STATS END -->/g) || []).length, 1);
+  assert.ok(markdown.indexOf('START -->') < markdown.indexOf('END -->'));
+  assert.ok(markdown.indexOf('api/github/activity-graph') < markdown.indexOf('PUBLIC CODE STATS START'));
+});

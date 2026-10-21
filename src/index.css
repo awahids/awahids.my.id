@@ -4841,6 +4841,30 @@ footer {
   font-size: 0.75rem;
 }
 
+.rg-workflow { display: flex; flex-direction: column; gap: 16px; }
+.rg-workflow-steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.875rem;
+  color: rgba(255,255,255,.75);
+}
+.rg-workflow-steps code {
+  font-family: Menlo, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: var(--lime);
+}
+.rg-workflow-credit {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+}
+.rg-workflow-credit a { color: var(--lime); }
+
 /* Nav buttons */
 .rg-nav {
   display: flex;

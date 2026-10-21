@@ -1,5 +1,6 @@
 import { DEFAULT_THEME, isCardTheme } from './cardThemes.js';
 import { isSkillIcon, skillIconsBannerUrl } from './skillIcons.js';
+import { CODE_STATS_END, CODE_STATS_START } from './codeStatsWorkflow.js';
 
 const escapeHtml = (value) =>
   String(value ?? '').replace(/[&<>"']/g, (char) => ({
@@ -105,10 +106,22 @@ ${socialLinks.map((link) => `  <code><a href="${escapeHtml(link.url)}" title="${
   <img src="${cardUrl(origin, '/api/github/top-langs', themed({ username }))}" />
   <br>
   <img src="${cardUrl(origin, '/api/github/activity-graph', themed({ username }))}" width="100%"/>
-</p>\n`
+</p>\n\n`
     : '';
 
-  return [starsBadge, typingHeader, socialRow, bioSection, skillsSection, statsSection]
+  // Only the marker pair matters: the copied workflow replaces everything
+  // between them with a cloc table on its first run, placeholder included.
+  const codeStatsSection = values.showCodeStats
+    ? `<hr>
+<h2 align="center">📊 Lines of Code 📊</h2>
+<br>
+
+${CODE_STATS_START}
+<p align="center"><em>Filled in by the Analyze Public Repositories workflow after its first run.</em></p>
+${CODE_STATS_END}\n`
+    : '';
+
+  return [starsBadge, typingHeader, socialRow, bioSection, skillsSection, statsSection, codeStatsSection]
     .join('')
     .trim();
 };

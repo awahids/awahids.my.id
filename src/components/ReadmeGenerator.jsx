@@ -3,6 +3,13 @@ import { buildReadmeMarkdown } from '../lib/readmeTemplate';
 import ReadmeAiHelper from './ReadmeAiHelper';
 import { CARD_THEMES, DEFAULT_THEME } from '../lib/cardThemes';
 import { DEFAULT_SKILL_IDS, SKILL_GROUPS, skillIconUrl } from '../lib/skillIcons';
+import {
+  CODE_STATS_SOURCE_URL,
+  CODE_STATS_WORKFLOW_PATH,
+  DEFAULT_HIGHLIGHT_LANGS,
+  buildCodeStatsWorkflow,
+  parseHighlightLangs,
+} from '../lib/codeStatsWorkflow';
 
 // `label` is the form field caption; `linkLabel` is the shorter text shown
 // on the actual README link. `toUrl` turns whatever the field collects (a
@@ -34,6 +41,8 @@ const ReadmeGenerator = () => {
   const [username, setUsername] = useState('');
   const [pinnedReposText, setPinnedReposText] = useState('');
   const [showVisitorCounter, setShowVisitorCounter] = useState(false);
+  const [showCodeStats, setShowCodeStats] = useState(false);
+  const [codeStatsLangsText, setCodeStatsLangsText] = useState(DEFAULT_HIGHLIGHT_LANGS.join(', '));
   const [taglineText, setTaglineText] = useState('Hello, There! 👋\nNice to meet you!');
   const [bioText, setBioText] = useState('');
   const [skillIds, setSkillIds] = useState(DEFAULT_SKILL_IDS);
@@ -51,6 +60,7 @@ const ReadmeGenerator = () => {
         username,
         pinnedRepos: pinnedReposText.split(',').map((repo) => repo.trim()),
         showVisitorCounter,
+        showCodeStats,
         taglineLines: taglineText.split('\n').map((line) => line.trim()),
         bio: bioText.split('\n').map((line) => line.trim()),
         skills: skillIds,
@@ -63,7 +73,12 @@ const ReadmeGenerator = () => {
       },
       { origin }
     );
-  }, [username, pinnedReposText, showVisitorCounter, taglineText, bioText, skillIds, socials, theme, typing]);
+  }, [username, pinnedReposText, showVisitorCounter, showCodeStats, taglineText, bioText, skillIds, socials, theme, typing]);
+
+  const workflow = useMemo(
+    () => (showCodeStats ? buildCodeStatsWorkflow({ highlightLangs: parseHighlightLangs(codeStatsLangsText) }) : ''),
+    [showCodeStats, codeStatsLangsText]
+  );
 
   const applySuggestion = ({ taglines, bio, skills }) => {
     if (taglines) setTaglineText(taglines.join('\n'));
@@ -76,9 +91,13 @@ const ReadmeGenerator = () => {
   const toggleSkill = (id) =>
     setSkillIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
+  // The Workflow tab only exists while the section is enabled; fall back to
+  // the preview if it was switched off after visiting that tab.
+  const activeTab = previewTab === 'workflow' && !showCodeStats ? 'preview' : previewTab;
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(markdown);
+      await navigator.clipboard.writeText(activeTab === 'workflow' ? workflow : markdown);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
@@ -121,6 +140,24 @@ const ReadmeGenerator = () => {
                 />
                 Show a visitor counter badge
               </label>
+              <label className="rg-checkbox">
+                <input
+                  type="checkbox"
+                  checked={showCodeStats}
+                  onChange={(e) => setShowCodeStats(e.target.checked)}
+                />
+                Add a lines-of-code section (counted by a GitHub Action)
+              </label>
+              {showCodeStats && (
+                <label>
+                  Languages to list by name (cloc names, comma-separated; the rest go under Others)
+                  <input
+                    value={codeStatsLangsText}
+                    onChange={(e) => setCodeStatsLangsText(e.target.value)}
+                    placeholder={DEFAULT_HIGHLIGHT_LANGS.join(', ')}
+                  />
+                </label>
+              )}
               <div className="rg-theme">
                 <span>Card theme</span>
                 <div className="rg-theme-grid" role="radiogroup" aria-label="Card theme">
@@ -245,12 +282,38 @@ const ReadmeGenerator = () => {
                 <button type="button" className={previewTab === 'preview' ? 'is-active' : ''} onClick={() => setPreviewTab('preview')}>
                   Preview
                 </button>
-                <button type="button" className={previewTab === 'markdown' ? 'is-active' : ''} onClick={() => setPreviewTab('markdown')}>
+                <button type="button" className={activeTab === 'markdown' ? 'is-active' : ''} onClick={() => setPreviewTab('markdown')}>
                   Markdown
                 </button>
+                {showCodeStats && (
+                  <button type="button" className={activeTab === 'workflow' ? 'is-active' : ''} onClick={() => setPreviewTab('workflow')}>
+                    Workflow
+                  </button>
+                )}
               </div>
 
-              {previewTab === 'preview' ? (
+              {activeTab === 'workflow' ? (
+                <div className="rg-workflow">
+                  <ol className="rg-workflow-steps">
+                    <li>
+                      Save this file as <code>{CODE_STATS_WORKFLOW_PATH}</code> in your profile repo
+                      {username.trim() ? <> (<code>{username.trim()}/{username.trim()}</code>)</> : null}, next to the README.
+                    </li>
+                    <li>
+                      If the run cannot push, go to <strong>Settings → Actions → General → Workflow permissions</strong> and
+                      pick <strong>Read and write permissions</strong>.
+                    </li>
+                    <li>
+                      Open <strong>Actions → Analyze Public Repositories by Username → Run workflow</strong>. After that it
+                      runs on every push and every Sunday at 00:17 UTC.
+                    </li>
+                  </ol>
+                  <textarea className="rg-review-markdown" readOnly wrap="off" value={workflow} aria-label="Workflow file" />
+                  <p className="rg-workflow-credit">
+                    Workflow from <a href={CODE_STATS_SOURCE_URL} target="_blank" rel="noreferrer">arhamkhnz/github-code-analyzer</a>.
+                  </p>
+                </div>
+              ) : activeTab === 'preview' ? (
                 // Safe: buildReadmeMarkdown escapes all text content and only
                 // allows http(s)/mailto link schemes before this ever renders.
                 <div className="rg-review-preview" dangerouslySetInnerHTML={{ __html: markdown }} />
@@ -270,7 +333,7 @@ const ReadmeGenerator = () => {
               </button>
             ) : (
               <button type="button" className="rg-btn-primary" onClick={handleCopy}>
-                {copied ? 'Copied!' : 'Copy README'}
+                {copied ? 'Copied!' : activeTab === 'workflow' ? 'Copy workflow' : 'Copy README'}
               </button>
             )}
           </div>
