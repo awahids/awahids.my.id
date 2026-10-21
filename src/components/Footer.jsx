@@ -8,6 +8,7 @@ const FOOTER_LINKS = [
   { href: '/ai-lab', label: 'AI Lab' },
   { href: '/readme-generator', label: 'README Generator' },
   { href: '/prd-generator', label: 'PRD Generator' },
+  { href: '/privacy', label: 'Privacy' },
 ];
 
 const Footer = ({ isAiLabPage = false }) => {

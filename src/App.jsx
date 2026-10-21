@@ -22,10 +22,12 @@ import FloatingFAQ from './components/FloatingFAQ';
 import CookieConsent from './components/CookieConsent';
 import CvDownloadModal from './components/CvDownloadModal';
 import PrdPromo from './components/PrdPromo';
+import PrivacyPolicy from './components/PrivacyPolicy';
 import {
   isAiLabRoute,
   isNotFoundRoute,
   isPrdGeneratorRoute,
+  isPrivacyRoute,
   isReadmeGeneratorRoute,
 } from './lib/routes';
 const AILab = lazy(() => import('./components/AILab'));
@@ -103,6 +105,13 @@ const PRD_GENERATOR_SETTINGS = {
   siteTitle: 'PRD Generator | A Wahid Saphadi',
   seoDescription:
     'Turn a raw app idea into a feature structure, a full PRD and ready-to-build tasks.',
+  ogImage: DEFAULT_SITE_SETTINGS.ogImage,
+};
+
+const PRIVACY_SETTINGS = {
+  siteTitle: 'Privacy Policy | A Wahid Saphadi',
+  seoDescription:
+    'What awahids.my.id collects, why, how long it is kept, which services process it, and how to see, correct or delete your data.',
   ogImage: DEFAULT_SITE_SETTINGS.ogImage,
 };
 
@@ -193,8 +202,9 @@ function App() {
   const aiLabPage = isAiLabRoute(currentPathname);
   const readmeGeneratorPage = isReadmeGeneratorRoute(currentPathname);
   const prdPage = isPrdGeneratorRoute(currentPathname);
+  const privacyPage = isPrivacyRoute(currentPathname);
   // Standalone tool pages skip the preloader, smooth scroll and homepage chrome.
-  const toolPage = readmeGeneratorPage || prdPage;
+  const toolPage = readmeGeneratorPage || prdPage || privacyPage;
   const notFoundPage = isNotFoundRoute(currentPathname);
   const [loading, setLoading] = useState(
     () => !toolPage && !notFoundPage && !shouldBypassPreloader()
@@ -273,9 +283,11 @@ function App() {
             ? README_GENERATOR_SETTINGS
             : prdPage
               ? PRD_GENERATOR_SETTINGS
-              : DEFAULT_SITE_SETTINGS
+              : privacyPage
+                ? PRIVACY_SETTINGS
+                : DEFAULT_SITE_SETTINGS
     );
-  }, [notFoundPage, aiLabPage, readmeGeneratorPage, prdPage]);
+  }, [notFoundPage, aiLabPage, readmeGeneratorPage, prdPage, privacyPage]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
@@ -393,7 +405,7 @@ function App() {
       <CustomCursor />
       {!aiLabPage && !toolPage && !notFoundPage && <SpotlightGlow />}
       {!readmeGeneratorPage && (
-        <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage || prdPage} />
+        <Navbar isAiLabPage={aiLabPage} isNotFoundPage={notFoundPage || prdPage || privacyPage} />
       )}
       {!aiLabPage && !toolPage && !notFoundPage && <MobileNav />}
       {!aiLabPage && !toolPage && !notFoundPage && <SocialRail />}
@@ -406,6 +418,8 @@ function App() {
               ? 'main-readme-generator-page'
               : prdPage
                 ? 'main-prd-generator-page'
+                : privacyPage
+                ? 'main-privacy-page'
                 : notFoundPage
                 ? 'main-not-found-page'
                 : ''
@@ -422,6 +436,8 @@ function App() {
           </Suspense>
         ) : prdPage ? (
           <PrdPromo />
+        ) : privacyPage ? (
+          <PrivacyPolicy />
         ) : notFoundPage ? (
           <NotFoundPage />
         ) : (

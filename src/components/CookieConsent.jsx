@@ -30,7 +30,8 @@ const CookieConsent = () => {
       <h2 id="cookie-consent-title" className="cookie-consent-title">Analytics cookies</h2>
       <p className="cookie-consent-text">
         I use Google Analytics cookies to see which pages and tools people use, so I can improve them. They hold no
-        ads and nothing you type. Plausible, which sets no cookies, counts visits either way.
+        ads and nothing you type. Plausible, which sets no cookies, counts visits either way.{' '}
+        <a href="/privacy">Privacy policy</a>
       </p>
       {current && (
         <p className="cookie-consent-current">

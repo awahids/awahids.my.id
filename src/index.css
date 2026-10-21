@@ -5028,6 +5028,37 @@ footer {
   .rg-panel { padding: 20px; }
 }
 
+/* ── Privacy policy ───────────────────────────────────────────── */
+.s-privacy {
+  min-height:100svh; padding:120px var(--section-pad-x) 80px;
+  background:var(--dark); color:rgba(255,255,255,.78);
+  max-width:860px; margin:0 auto;
+  font-size:0.9375rem; line-height:1.7;
+}
+.privacy-head h1 { font-family:'Syne',sans-serif; font-size:clamp(2rem,6vw,3.375rem); font-weight:800; margin:8px 0 8px; color:var(--white); }
+.privacy-updated { font-family:'DM Mono',monospace; font-size:0.75rem; color:var(--text-muted); margin:0 0 32px; }
+.s-privacy section { margin:0 0 36px; }
+.s-privacy h2 { font-family:'Syne',sans-serif; font-size:1.375rem; font-weight:700; color:var(--white); margin:0 0 12px; }
+.s-privacy h3 { font-family:'DM Mono',monospace; font-size:0.75rem; font-weight:500; letter-spacing:.12em; text-transform:uppercase; color:var(--lime); margin:24px 0 8px; }
+.s-privacy p { margin:0 0 12px; }
+.s-privacy ul { margin:0 0 12px; padding-left:20px; display:grid; gap:8px; }
+.s-privacy b { color:var(--white); }
+.s-privacy a, .privacy-inline-btn { color:var(--lime); }
+.s-privacy code { font-family:'DM Mono',monospace; font-size:0.8125rem; color:var(--white); }
+.privacy-summary { border:1px solid var(--border); background:var(--mid); padding:20px 24px; }
+.privacy-inline-btn { background:none; border:none; padding:0; font:inherit; text-decoration:underline; cursor:pointer; }
+.privacy-table-wrap { overflow-x:auto; margin:0 0 16px; }
+/* Narrow screens scroll the table sideways instead of one word per line. */
+.privacy-table { width:100%; min-width:560px; border-collapse:collapse; font-size:0.8125rem; }
+.privacy-table th, .privacy-table td { text-align:left; vertical-align:top; padding:10px 12px; border-bottom:1px solid var(--border); }
+.privacy-table thead th { font-family:'DM Mono',monospace; font-size:0.6875rem; font-weight:500; letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); }
+.privacy-table tbody th { font-weight:400; white-space:nowrap; }
+.cookie-consent-text a { color:var(--lime); }
+
+@media (max-width:768px) {
+  .s-privacy { padding:100px var(--section-pad-x-mobile) 60px; }
+}
+
 /* ── PRD generator promo ───────────────────────────────────────── */
 .s-prd-generator {
   min-height:100svh; padding:120px var(--section-pad-x) 80px;
