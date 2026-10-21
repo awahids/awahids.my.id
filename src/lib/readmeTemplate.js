@@ -124,12 +124,14 @@ ${repoCards.map((repo) => `  <a href="https://github.com/${username}/${repo}">${
 </p>\n\n`
     : '';
 
+  const trophiesRow = values.showTrophies ? `${cardImg('/api/github/trophies', { username })}<br>\n  ` : '';
+
   const statsSection = username
     ? `<hr>
 <h2 align="center">⚡ Stats ⚡</h2>
 <br>
 <p align="center">
-  ${cardImg('/api/github/streak', { username })}<br>
+  ${trophiesRow}${cardImg('/api/github/streak', { username })}<br>
   ${cardImg('/api/github/stats', { username })}
   ${cardImg('/api/github/top-langs', { username })}
   <br>

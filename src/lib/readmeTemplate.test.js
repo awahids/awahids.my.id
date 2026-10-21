@@ -180,3 +180,15 @@ test('buildReadmeMarkdown: the snake uses both palettes from the output branch, 
   assert.match(markdown, /media="\(prefers-color-scheme: dark\)" srcset="https:\/\/raw\.githubusercontent\.com\/awahids\/awahids\/output\/github-snake-dark\.svg"/);
   assert.match(markdown, /<img alt="[^"]+" src="https:\/\/raw\.githubusercontent\.com\/awahids\/awahids\/output\/github-snake\.svg"/);
 });
+
+test('buildReadmeMarkdown: the trophy row opens the stats section only when opted in, and follows the themes', () => {
+  assert.doesNotMatch(buildReadmeMarkdown({ username: 'awahids' }, { origin: ORIGIN }), /api\/github\/trophies/);
+
+  const markdown = buildReadmeMarkdown(
+    { username: 'awahids', showTrophies: true, theme: 'nord', lightTheme: 'light' },
+    { origin: ORIGIN }
+  );
+  assert.match(markdown, /srcset="[^"]*api\/github\/trophies\?username=awahids&theme=light" \/><img src="[^"]*api\/github\/trophies\?username=awahids&theme=nord"/);
+  assert.ok(markdown.indexOf('api/github/trophies') < markdown.indexOf('api/github/streak'));
+  assert.ok(markdown.indexOf('⚡ Stats ⚡') < markdown.indexOf('api/github/trophies'));
+});

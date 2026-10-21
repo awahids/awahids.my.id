@@ -46,6 +46,7 @@ const ReadmeGenerator = () => {
   const [codeStatsLangsText, setCodeStatsLangsText] = useState(DEFAULT_HIGHLIGHT_LANGS.join(', '));
   const [showRepoCards, setShowRepoCards] = useState(false);
   const [showSnake, setShowSnake] = useState(false);
+  const [showTrophies, setShowTrophies] = useState(false);
   const [taglineText, setTaglineText] = useState('Hello, There! 👋\nNice to meet you!');
   const [bioText, setBioText] = useState('');
   const [skillIds, setSkillIds] = useState(DEFAULT_SKILL_IDS);
@@ -68,6 +69,7 @@ const ReadmeGenerator = () => {
         showCodeStats,
         showRepoCards,
         showSnake,
+        showTrophies,
         taglineLines: taglineText.split('\n').map((line) => line.trim()),
         bio: bioText.split('\n').map((line) => line.trim()),
         skills: skillIds,
@@ -81,7 +83,7 @@ const ReadmeGenerator = () => {
       },
       { origin }
     );
-  }, [username, pinnedReposText, showVisitorCounter, showCodeStats, showRepoCards, showSnake, taglineText, bioText, skillIds, socials, theme, lightTheme, typing]);
+  }, [username, pinnedReposText, showVisitorCounter, showCodeStats, showRepoCards, showSnake, showTrophies, taglineText, bioText, skillIds, socials, theme, lightTheme, typing]);
 
   // One entry per README section that needs a GitHub Action in the profile
   // repo. The snake is only listed when the README actually got its section.
@@ -183,6 +185,10 @@ const ReadmeGenerator = () => {
                   onChange={(e) => setShowRepoCards(e.target.checked)}
                 />
                 Show a card for each pinned repo
+              </label>
+              <label className="rg-checkbox">
+                <input type="checkbox" checked={showTrophies} onChange={(e) => setShowTrophies(e.target.checked)} />
+                Show a trophy row (stars, commits, PRs, reviews, followers, repos)
               </label>
               <label className="rg-checkbox">
                 <input type="checkbox" checked={showSnake} onChange={(e) => setShowSnake(e.target.checked)} />
