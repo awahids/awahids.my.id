@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { buildReadmeMarkdown } from '../lib/readmeTemplate';
 import ReadmeAiHelper from './ReadmeAiHelper';
 import { CARD_THEMES } from '../lib/cardThemes';
@@ -14,6 +14,13 @@ import { SNAKE_SOURCE_URL, SNAKE_WORKFLOW_PATH, buildSnakeWorkflow, snakeImageUr
 import { decodeConfig, encodeConfig } from '../lib/readmeConfig';
 import { STATS_SECTIONS, STATS_TEMPLATES, statsLayoutSettings } from '../lib/statsTemplates';
 import { trackEvent } from '../lib/analytics';
+
+// Shown in the preview instead of an image that fails to load. The snake SVG
+// only exists after its workflow has run once in the profile repo, so for a
+// new setup it is always missing at first.
+const SNAKE_PENDING_NOTE =
+  'Your contribution snake appears here once the snake workflow has run in your profile repo (see the Workflow tab). Until then GitHub shows a broken image too.';
+const IMAGE_MISSING_NOTE = 'This image could not be loaded right now.';
 
 // Safari throws if replaceState runs more than ~100 times in 30s, so typing
 // only rewrites the URL once it pauses.
@@ -212,6 +219,26 @@ const ReadmeGenerator = () => {
   // the preview if they were all switched off after visiting that tab.
   const activeTab = previewTab === 'workflows' && !workflows.length ? 'preview' : previewTab;
 
+  // Swap broken preview images for a note. A layout effect, so the listeners
+  // are attached in the same task that inserted the HTML and no error event
+  // can fire before them. Only the preview changes; the copied README does not.
+  const previewRef = useRef(null);
+  useLayoutEffect(() => {
+    const root = previewRef.current;
+    if (!root) return undefined;
+    const detach = [...root.querySelectorAll('img')].map((img) => {
+      const replace = () => {
+        const note = document.createElement('span');
+        note.className = 'rg-preview-missing';
+        note.textContent = img.src.includes('/output/github-snake') ? SNAKE_PENDING_NOTE : IMAGE_MISSING_NOTE;
+        (img.closest('picture') || img).replaceWith(note);
+      };
+      img.addEventListener('error', replace, { once: true });
+      return () => img.removeEventListener('error', replace);
+    });
+    return () => detach.forEach((off) => off());
+  }, [markdown, activeTab, step]);
+
   const handleCopy = async (text, id) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -240,7 +267,7 @@ const ReadmeGenerator = () => {
 
         <StepRail current={step} />
 
-        <div className="rg-panel">
+        <div className="rg-panel" data-clarity-mask="true">
           {step === 0 && (
             <div className="rg-fields">
               <label>
@@ -505,7 +532,7 @@ const ReadmeGenerator = () => {
               ) : activeTab === 'preview' ? (
                 // Safe: buildReadmeMarkdown escapes all text content and only
                 // allows http(s)/mailto link schemes before this ever renders.
-                <div className="rg-review-preview" dangerouslySetInnerHTML={{ __html: markdown }} />
+                <div ref={previewRef} className="rg-review-preview" dangerouslySetInnerHTML={{ __html: markdown }} />
               ) : (
                 <textarea className="rg-review-markdown" readOnly value={markdown} />
               )}

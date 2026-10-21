@@ -4848,6 +4848,17 @@ footer {
 }
 .rg-review-preview code a { color: inherit; }
 .rg-review-preview img { vertical-align: middle; margin: 2px; }
+.rg-preview-missing {
+  display: inline-block;
+  max-width: 520px;
+  margin: 4px;
+  padding: 12px 16px;
+  border: 1px dashed rgba(255,255,255,.25);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,.6);
+}
 .rg-review-preview hr { border-color: rgba(255,255,255,.1); margin: 24px 0; }
 
 .rg-review-markdown {

@@ -128,6 +128,7 @@ const CvDownloadModal = () => {
         data-modal-card
         ref={cardRef}
         role="dialog"
+        data-clarity-mask="true"
         aria-modal="true"
         aria-labelledby="cvm-title"
         onClick={(event) => event.stopPropagation()}

@@ -12,14 +12,14 @@ beforeEach(() => {
   store = new Map();
   jar = new Map();
   gtagCalls = [];
-  globalThis.window = {
+  globalThis.window = Object.assign(new EventTarget(), {
     location: { hostname: 'www.awahids.my.id' },
     localStorage: {
       getItem: (key) => (store.has(key) ? store.get(key) : null),
       setItem: (key, value) => store.set(key, String(value)),
     },
     gtag: (...args) => gtagCalls.push(args),
-  };
+  });
   globalThis.document = {
     get cookie() {
       return [...jar.keys()].map((key) => `${key.split('|')[0]}=1`).join('; ');
@@ -59,12 +59,24 @@ test('saveConsent("denied"): removes GA cookies on any domain variant, keeps oth
   jar.set('_ga_BGRDF5BFFD|.awahids.my.id', true);
   jar.set('_gid|www.awahids.my.id', true);
   jar.set('_gat|', true);
+  jar.set('_clck|.awahids.my.id', true);
+  jar.set('_clsk|.awahids.my.id', true);
   jar.set('theme|', true);
+  jar.set('_clckx|', true);
   jar.set('_gallery|', true);
 
   saveConsent('denied');
-  assert.deepEqual([...jar.keys()].sort(), ['_gallery|', 'theme|']);
+  assert.deepEqual([...jar.keys()].sort(), ['_clckx|', '_gallery|', 'theme|']);
   assert.deepEqual(gtagCalls, [['consent', 'update', { analytics_storage: 'denied' }]]);
+});
+
+test('saveConsent: announces the new choice to tags that load on consent', () => {
+  const seen = [];
+  window.addEventListener('aw:consent-change', (event) => seen.push(event.detail));
+  saveConsent('granted');
+  saveConsent('denied');
+  saveConsent('bogus');
+  assert.deepEqual(seen, ['granted', 'denied']);
 });
 
 test('saveConsent: works when storage is blocked', () => {
