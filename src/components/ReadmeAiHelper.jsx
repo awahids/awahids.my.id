@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { skillIconUrl } from '../lib/skillIcons';
 import { CARD_THEMES } from '../lib/cardThemes';
 import { STATS_SECTIONS, findStatsTemplate } from '../lib/statsTemplates';
+import { trackEvent } from '../lib/analytics';
 
 const ENDPOINT = import.meta.env.VITE_README_ASSISTANT_ENDPOINT || '/api/readme-assistant';
 
@@ -30,6 +31,8 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
   const ask = async (text) => {
     const trimmed = text.trim();
     if (!trimmed || status === 'loading') return;
+    // The request text stays out of analytics; whether it was a quick ask does not.
+    trackEvent('ReadmeAiAsk', { focus, quick: QUICK_ASKS[focus].includes(trimmed) });
 
     abortRef.current?.abort();
     const controller = new AbortController();
@@ -55,6 +58,11 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
     } finally {
       clearTimeout(timeout);
     }
+  };
+
+  const apply = (kind, suggestion) => {
+    trackEvent('ReadmeAiApply', { focus, kind });
+    onApply(suggestion);
   };
 
   const submit = (event) => {
@@ -111,7 +119,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
               <div className="rg-ai-block">
                 <span className="rg-ai-label">Typing lines</span>
                 <ul>{result.taglines.map((line) => <li key={line}>{line}</li>)}</ul>
-                <button type="button" onClick={() => onApply({ taglines: result.taglines })}>Use these lines</button>
+                <button type="button" onClick={() => apply('taglines', { taglines: result.taglines })}>Use these lines</button>
               </div>
             )}
 
@@ -119,7 +127,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
               <div className="rg-ai-block">
                 <span className="rg-ai-label">Bio</span>
                 {result.bio.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
-                <button type="button" onClick={() => onApply({ bio: result.bio })}>Use this bio</button>
+                <button type="button" onClick={() => apply('bio', { bio: result.bio })}>Use this bio</button>
               </div>
             )}
 
@@ -129,7 +137,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
                 <div className="rg-ai-icons">
                   {result.skills.map((id) => <img key={id} src={skillIconUrl(id)} alt={id} title={id} loading="lazy" />)}
                 </div>
-                <button type="button" onClick={() => onApply({ skills: result.skills })}>Add these icons</button>
+                <button type="button" onClick={() => apply('skills', { skills: result.skills })}>Add these icons</button>
               </div>
             )}
 
@@ -150,7 +158,7 @@ const ReadmeAiHelper = ({ focus, context, onApply }) => {
                   </li>
                   {result.stats.pinnedRepos.length > 0 && <li>Pin: {result.stats.pinnedRepos.join(', ')}</li>}
                 </ul>
-                <button type="button" onClick={() => onApply({ stats: result.stats })}>Apply this layout</button>
+                <button type="button" onClick={() => apply('stats', { stats: result.stats })}>Apply this layout</button>
               </div>
             )}
           </>

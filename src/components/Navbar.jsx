@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { gsap, ScrollTrigger, EASE, DUR, prefersReducedMotion, useIsoLayoutEffect, sectionEnd } from '../lib/motion';
 import { BOOKING_URL } from '../lib/links';
+import { trackEvent } from '../lib/analytics';
 
 const mainNavItems = [
   { id: 'services', label: 'Services', num: '01' },
@@ -158,7 +159,7 @@ const Navbar = ({ isAiLabPage = false, isNotFoundPage = false }) => {
         target="_blank"
         rel="noopener noreferrer"
         className="nav-cta"
-        onClick={() => window.plausible?.('BookingCTA', { props: { source: 'navbar' } })}
+        onClick={() => trackEvent('BookingCTA', { source: 'navbar' })}
       >
         Discuss a Project
       </a>

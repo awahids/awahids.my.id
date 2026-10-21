@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { gsap, DUR, EASE_IN_OUT, prefersReducedMotion, useIsoLayoutEffect, usePresence } from '../lib/motion';
+import { trackEvent } from '../lib/analytics';
 
 const FAQ_WEBHOOK_URL = import.meta.env.VITE_AI_FAQ_ENDPOINT || '/api/ai-faq';
 const AI_ASSISTANT_URL = import.meta.env.VITE_AI_ASSISTANT_ENDPOINT || '/api/ai-assistant';
@@ -513,6 +514,8 @@ const FloatingFAQ = () => {
     const cleanedQuestion = questionText.trim();
     if (!cleanedQuestion || loading) return;
     const faqLanguage = detectInputLanguage(cleanedQuestion);
+    // That a question was asked, not what it says.
+    trackEvent('FaqQuestion', { mode: forceHermes || useHermes ? 'assistant' : 'faq', language: faqLanguage });
 
     setLoading(true);
     setInput('');

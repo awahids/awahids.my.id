@@ -78,7 +78,7 @@ const setPath = (object, path, value) => {
   keys.reduce((parent, key) => parent[key], object)[last] = value;
 };
 
-/** The query string (without "?") for every setting that differs from the defaults. */
+/** Query-string syntax (no leading "#" or "?") for every setting that differs from the defaults. */
 export const encodeConfig = (config) => {
   const params = new URLSearchParams();
   for (const [param, path, codec] of FIELDS) {
@@ -89,7 +89,7 @@ export const encodeConfig = (config) => {
 };
 
 /**
- * A full config from a query string: defaults, overridden by every param
+ * A full config from query-string syntax (the URL hash): defaults, overridden by every param
  * that parses. Unknown params and invalid values are ignored, so a hand-edited
  * or outdated link still opens.
  */

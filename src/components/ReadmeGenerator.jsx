@@ -13,6 +13,7 @@ import {
 import { SNAKE_SOURCE_URL, SNAKE_WORKFLOW_PATH, buildSnakeWorkflow, snakeImageUrls } from '../lib/snakeWorkflow';
 import { decodeConfig, encodeConfig } from '../lib/readmeConfig';
 import { STATS_SECTIONS, STATS_TEMPLATES, statsLayoutSettings } from '../lib/statsTemplates';
+import { trackEvent } from '../lib/analytics';
 
 // Safari throws if replaceState runs more than ~100 times in 30s, so typing
 // only rewrites the URL once it pauses.
@@ -44,9 +45,11 @@ const StepRail = ({ current }) => (
 );
 
 const ReadmeGenerator = () => {
-  // Settings start from the page URL, so a bookmarked or shared link reopens
-  // the same README. Read once: later URL changes come from this page itself.
-  const [initial] = useState(() => decodeConfig(typeof window !== 'undefined' ? window.location.search : ''));
+  // Settings start from the URL hash, so a bookmarked or shared link reopens
+  // the same README. The hash, not the query: it never reaches a server log,
+  // a Referer header or analytics page URLs, and it can hold an email or a bio.
+  // Read once: later URL changes come from this page itself.
+  const [initial] = useState(() => decodeConfig(typeof window !== 'undefined' ? window.location.hash.slice(1) : ''));
   const [step, setStep] = useState(0);
   const [username, setUsername] = useState(initial.username);
   const [pinnedReposText, setPinnedReposText] = useState(initial.pinnedReposText);
@@ -93,9 +96,9 @@ const ReadmeGenerator = () => {
   // replaceState, not pushState: editing a field should not fill the back button.
   useEffect(() => {
     const timer = setTimeout(() => {
-      const { pathname, hash } = window.location;
+      const { pathname, search } = window.location;
       try {
-        window.history.replaceState(window.history.state, '', `${pathname}${configQuery ? `?${configQuery}` : ''}${hash}`);
+        window.history.replaceState(window.history.state, '', `${pathname}${search}${configQuery ? `#${configQuery}` : ''}`);
       } catch {
         // Rate-limited: the next change writes the URL again.
       }
@@ -104,7 +107,7 @@ const ReadmeGenerator = () => {
   }, [configQuery]);
 
   const shareUrl = () =>
-    `${window.location.origin}${window.location.pathname}${configQuery ? `?${configQuery}` : ''}`;
+    `${window.location.origin}${window.location.pathname}${configQuery ? `#${configQuery}` : ''}`;
 
   const markdown = useMemo(() => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -212,6 +215,9 @@ const ReadmeGenerator = () => {
   const handleCopy = async (text, id) => {
     try {
       await navigator.clipboard.writeText(text);
+      if (id === 'readme') trackEvent('ReadmeCopy');
+      else if (id === 'link') trackEvent('ReadmeShareLink');
+      else trackEvent('ReadmeWorkflowCopy', { workflow: id });
       setCopiedId(id);
       setTimeout(() => setCopiedId((current) => (current === id ? '' : current)), 2000);
     } catch {
@@ -332,7 +338,10 @@ const ReadmeGenerator = () => {
                       key={template.id}
                       className={`rg-template${isTemplateActive(template) ? ' is-active' : ''}`}
                       aria-pressed={isTemplateActive(template)}
-                      onClick={() => applyStatsLayout(template)}
+                      onClick={() => {
+                        trackEvent('ReadmeTemplate', { template: template.id });
+                        applyStatsLayout(template);
+                      }}
                     >
                       <strong>{template.name}</strong>
                       <span>{template.fits}</span>
